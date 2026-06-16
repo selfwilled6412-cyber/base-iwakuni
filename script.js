@@ -13,3 +13,17 @@ document.querySelectorAll('.scope-tab').forEach(btn=>btn.addEventListener('click
 function burst(){const c=['#00a8ff','#72ecff','#fff','#7dffb2','#ffd166'];for(let i=0;i<96;i++){const b=document.createElement('i');b.className='confetti';b.style.left=`${innerWidth/2}px`;b.style.top=`${innerHeight*.45}px`;b.style.background=c[i%c.length];b.style.setProperty('--x',`${(Math.random()-.5)*820}px`);b.style.setProperty('--y',`${Math.random()*760-120}px`);document.body.appendChild(b);setTimeout(()=>b.remove(),2100)}}
 const btn=document.getElementById('launchBtn'),status=document.getElementById('launchStatus');
 btn?.addEventListener('click',()=>{const s=['回線 接続完了','POS 起動完了','防犯 起動完了','Web 公開完了','照明 点灯','事業所オープン！'];let i=0;btn.disabled=true;document.body.classList.add('launching');const t=setInterval(()=>{status.textContent=s[i++];status.animate([{opacity:.2,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:400});if(i===s.length){clearInterval(t);btn.textContent='オープン完了';document.body.classList.add('launched');burst();setTimeout(()=>document.querySelector('.network')?.scrollIntoView({behavior:'smooth'}),800)}},520)});
+
+
+
+// v3 startup and scroll-built office experience
+const startup=document.getElementById('startup');
+if(sessionStorage.getItem('baseStartupSeen')){startup?.remove()}else{setTimeout(()=>sessionStorage.setItem('baseStartupSeen','1'),3400)}
+const buildScene=document.querySelector('.build-scene');
+const buildStatus=[...document.querySelectorAll('.build-status span')];
+const roadSteps=[...document.querySelectorAll('.road-step')];
+const stageObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){const idx=roadSteps.indexOf(entry.target)+1;if(buildScene){buildScene.dataset.stage=String(idx)}buildStatus.forEach((s,i)=>s.classList.toggle('active',i<idx));}})},{threshold:.55,rootMargin:'-12% 0px -28%'});
+roadSteps.forEach(s=>stageObserver.observe(s));
+// Mobile tilt/parallax without hover
+let ticking=false;
+window.addEventListener('scroll',()=>{if(ticking)return;ticking=true;requestAnimationFrame(()=>{const y=window.scrollY;document.documentElement.style.setProperty('--scrollShift',`${(y%700)*.035}px`);document.querySelectorAll('.orb').forEach((o,i)=>o.style.transform=`translate3d(0,${(y*.04*(i?-.7:1)).toFixed(1)}px,0)`);ticking=false})},{passive:true});
