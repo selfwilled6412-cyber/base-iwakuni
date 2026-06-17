@@ -18,7 +18,8 @@ btn?.addEventListener('click',()=>{const s=['回線 接続完了','POS 起動完
 
 // v3 startup and scroll-built office experience
 const startup=document.getElementById('startup');
-if(sessionStorage.getItem('baseStartupSeen')){startup?.remove()}else{setTimeout(()=>sessionStorage.setItem('baseStartupSeen','1'),3400)}
+// Show the opening animation on every page load.
+if(startup){startup.addEventListener('animationend',e=>{if(e.animationName==='startupGone')startup.remove()})}
 const buildScene=document.querySelector('.build-scene');
 const buildStatus=[...document.querySelectorAll('.build-status span')];
 const roadSteps=[...document.querySelectorAll('.road-step')];
