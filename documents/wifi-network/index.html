@@ -1,1 +1,202 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>岩国市｜Wi-Fi・ネットワーク環境見直しガイド｜株式会社BASE</title><meta name="description" content="店舗・事業所のWi-Fi、VPN、拠点間通信、ネットワーク診断の要点を整理した資料です。"><link rel="stylesheet" href="../styles.css"></head><body><header class="header"><a class="brand" href="../../"><span class="mark">B</span><span>株式会社BASE</span></a><nav><a href="../">資料一覧</a><a href="https://lin.ee/z5T92Yn">LINE相談</a></nav></header><section class="hero"><div class="hero-inner"><div class="kicker">株式会社BASE 資料</div><h1>Wi-Fi・ネットワーク環境見直しガイド</h1><p>店舗・事業所のWi-Fi、VPN、拠点間通信、ネットワーク診断の要点を整理した資料です。</p></div></section><main class="section"><div class="container"><div class="section-head"><h2>掲載予定内容</h2><p>岩国市を中心とした事業者向けの説明ページと資料配布ページです。</p></div><div class="card"><h3>主な内容</h3><p>通信速度だけでなく、利用台数、電波範囲、アクセスポイント構成、来店客用ネットワーク分離、VPN、拠点間通信、ネットワーク診断。</p><div class="actions"><a class="btn primary" href="guide.pdf">PDFを見る</a><a class="btn ghost" href="https://lin.ee/z5T92Yn">LINEで相談</a></div></div></div></main><footer class="footer"><strong>株式会社BASE</strong><a href="../">資料一覧へ戻る</a></footer></body></html>
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>岩国市｜Wi-Fi・ネットワーク環境見直しガイド｜株式会社BASE</title>
+  <meta name="description" content="岩国市の中小事業者向け。Wi-Fi速度が遅い・電波が届かない・キャッシュレス端末が不安定などのお悩みを解決。BASEがネットワーク診断から改善まで対応します。">
+  <link rel="stylesheet" href="../../styles.css">
+  
+</head>
+<body>
+<!-- ── Mobile Navigation Overlay ─────────────────── -->
+<nav class="mobile-nav" id="mobileNav" aria-label="モバイルナビゲーション">
+  <a href="../../" onclick="closeMobileNav()">ホーム</a>
+  <a href="../" onclick="closeMobileNav()">資料一覧</a>
+  <a href="https://lin.ee/z5T92Yn" target="_blank" class="mobile-cta" id="mnavLine">LINEで相談</a>
+</nav>
+
+<!-- ヘッダー -->
+<header class="doc-header">
+  <a href="../../" class="doc-brand">
+    <div class="doc-brand-mark">B</div>
+    <span>株式会社BASE</span>
+  </a>
+  <nav class="doc-nav">
+    <a href="../../">ホーム</a>
+    <a href="../">資料一覧</a>
+    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener">LINE相談</a>
+  </nav>
+  <button class="hamburger" id="hamburger" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobileNav">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ヒーロー -->
+<section class="doc-hero">
+  <div class="doc-hero-inner">
+    <p class="doc-eyebrow">DOCUMENT / NETWORK</p>
+    <div class="badge-gold">岩国市・山口県東部 対応</div>
+    <h1>Wi-Fi・ネットワーク環境<br>見直しガイド</h1>
+    <p>「通信が遅い」「電波が届かない」「キャッシュレス端末が不安定」——よくある業務の通信トラブルを診断・改善するためのガイドです。</p>
+  </div>
+</section>
+
+<!-- よくある通信トラブル -->
+<section class="doc-section">
+  <div class="doc-container">
+    <h2 class="doc-h2">よくある通信トラブル 5選</h2>
+    <div class="trouble-grid">
+      <div class="trouble-card">
+        <div class="trouble-icon">🐢</div>
+        <h4>通信速度が遅い</h4>
+        <p>複数人が同時接続すると極端に遅くなる。動画・クラウドファイルの操作に支障が出る。</p>
+      </div>
+      <div class="trouble-card">
+        <div class="trouble-icon">📡</div>
+        <h4>電波が届かないエリアがある</h4>
+        <p>店舗奥・倉庫・2階など特定場所で圏外になる。ルーター1台では広い店内をカバーできない。</p>
+      </div>
+      <div class="trouble-card">
+        <div class="trouble-icon">💳</div>
+        <h4>キャッシュレス端末が不安定</h4>
+        <p>決済時にエラーが頻発。Wi-Fi接続が切れてレジが止まるトラブルが発生。</p>
+      </div>
+      <div class="trouble-card">
+        <div class="trouble-icon">🔀</div>
+        <h4>お客様用と業務用が混在</h4>
+        <p>ゲスト用Wi-Fiと業務用PCが同一ネットワーク上にある。セキュリティリスクが高い状態。</p>
+      </div>
+      <div class="trouble-card">
+        <div class="trouble-icon">🔒</div>
+        <h4>テレワーク・VPN接続が不安定</h4>
+        <p>在宅スタッフがVPN経由で社内システムに接続できない・頻繁に切断される。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 環境改善の判断基準テーブル -->
+<section class="doc-section">
+  <div class="doc-container">
+    <h2 class="doc-h2">環境改善の判断基準</h2>
+    <p style="color:#c5dbec;margin: 0 0 20px;">以下の項目を確認して、自社の通信環境を評価してみてください。</p>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>確認項目</th>
+          <th>現状のよくある問題</th>
+          <th>主な改善策</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>通信速度</strong></td>
+          <td>回線が遅い・夕方だけ重くなる</td>
+          <td>回線の見直し（光回線への切替）、ルーター交換</td>
+        </tr>
+        <tr>
+          <td><strong>電波カバー範囲</strong></td>
+          <td>一部エリアで圏外・弱い</td>
+          <td>Wi-Fiアクセスポイント（AP）の追加、メッシュWi-Fi導入</td>
+        </tr>
+        <tr>
+          <td><strong>セキュリティ分離</strong></td>
+          <td>業務PC・レジ・ゲスト端末が混在</td>
+          <td>VLAN設定でネットワークを論理分離</td>
+        </tr>
+        <tr>
+          <td><strong>拠点間通信</strong></td>
+          <td>複数店舗・本社-店舗間でファイル共有できない</td>
+          <td>SD-WAN・VPN・クラウドストレージ活用</td>
+        </tr>
+        <tr>
+          <td><strong>クラウドPBX</strong></td>
+          <td>電話が固定回線のみで外出時に取れない</td>
+          <td>クラウドPBX導入で内線・外線をスマホで一元化</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- VPN・拠点間ネットワーク -->
+<section class="doc-section">
+  <div class="doc-container">
+    <h2 class="doc-h2">VPN・拠点間ネットワークとは？</h2>
+    <div class="doc-card">
+      <h3 class="doc-h3">VPN（仮想プライベートネットワーク）</h3>
+      <p>インターネット上に「専用の暗号化トンネル」を作り、離れた場所から会社のネットワークに安全にアクセスする仕組みです。テレワーク中のスタッフが社内のファイルサーバーや業務システムを使う場合に必要です。</p>
+    </div>
+    <div class="doc-card">
+      <h3 class="doc-h3">拠点間ネットワーク（サイト間VPN）</h3>
+      <p>複数の店舗・事業所を、あたかも同じLANにつながっているように接続する仕組みです。本社と店舗間でデータを共有したり、集中管理サーバーにアクセスする際に使用します。専用線よりコストを大幅に抑えて構築できます。</p>
+    </div>
+    <div class="doc-card">
+      <h3 class="doc-h3">クラウドPBX（電話交換機のクラウド化）</h3>
+      <p>従来の固定電話交換機をクラウド上に移行し、スマートフォン・PCで内線・外線を受発信できる仕組みです。複数拠点の電話番号を一元管理でき、在宅勤務中でも会社番号で電話対応が可能になります。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ネットワーク診断の流れ -->
+<section class="doc-section">
+  <div class="doc-container">
+    <h2 class="doc-h2">BASEのネットワーク診断の流れ</h2>
+    <p style="color:#c5dbec;margin:0 0 28px;">まずは現状を把握することから始めます。費用は無料でご相談を承っています。</p>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>ヒアリング・現状確認</h4>
+          <p>LINEまたはお電話で「困っていること・現在の機器構成・店舗・事務所の間取り」をヒアリング。必要に応じて現地調査に伺います。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>通信速度・電波強度の測定</h4>
+          <p>各エリアの通信速度・電波強度をツールで可視化。問題箇所を特定します（電波の死角・帯域幅の不足 など）。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>改善プランのご提案</h4>
+          <p>機器交換・追加・設定変更など、費用対効果の高い改善策を複数案でご提示。優先順位もご相談の上で決定します。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>工事・設定・動作確認</h4>
+          <p>ルーター・アクセスポイントの設置、VLAN設定、VPN構築などを実施。作業後に全エリアで動作を確認してお引き渡しします。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="doc-cta-block">
+      <h3>通信環境の悩み、まずLINEで相談</h3>
+      <p>「何が原因か分からない」という状態でもOKです。<br>岩国市・柳井市・大竹市・周南市エリアで現地対応します。</p>
+      <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="doc-btn-primary">この内容についてLINEで相談する</a>
+      <a href="../" class="doc-btn-ghost">資料一覧へ戻る</a>
+    </div>
+  </div>
+</section>
+
+<!-- フッター -->
+<footer class="doc-footer">
+  <div>
+    <strong>株式会社BASE</strong><br>
+    〒741-0071 山口県岩国市牛野谷町2-13-23
+  </div>
+  <div style="text-align:right;">
+    <a href="../">資料一覧へ戻る</a>　|　
+    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener">LINEで相談</a>
+  </div>
+</footer>
+
+<script src="../../script.js?v=8"></script>
+</body>
+</html>
