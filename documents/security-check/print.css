@@ -1,0 +1,41 @@
+/* ── 印刷用CSS — documents/security-check/print.css ── */
+@media print {
+  /* ナビ・ヘッダー・フッター・CTAを非表示 */
+  .header,
+  .mobile-nav,
+  .scroll-meter,
+  .cursor-light,
+  .print-save-btn,
+  .sec-cta,
+  .sec-footer {
+    display: none !important;
+  }
+
+  /* 白背景・黒文字 */
+  body,
+  .print-doc {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  /* ページ余白 */
+  @page {
+    margin: 18mm 14mm;
+    size: A4;
+  }
+
+  /* フォントサイズ調整 */
+  .print-doc h1 { font-size: 22pt; }
+  .print-doc h2 { font-size: 14pt; border-bottom: 1.5pt solid #00a8ff; }
+  .print-doc li  { font-size: 11pt; }
+  .print-doc p   { font-size: 10pt; }
+
+  /* チェックボックスを印刷用に */
+  .print-doc li::before { content: '☐'; }
+
+  /* ページ区切り */
+  .print-page-break { page-break-before: always; }
+
+  /* リンクのURLを表示しない */
+  a::after { content: none !important; }
+}

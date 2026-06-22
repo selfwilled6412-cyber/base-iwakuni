@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>セキュリティ対策・通信環境チェックシート｜BASE Security Map｜株式会社BASE</title>
+<meta name="description" content="株式会社BASEのセキュリティ対策・通信環境チェックシート。印刷またはPDF保存して活用できます。岩国の中小企業・店舗向け。">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://selfwilled6412-cyber.github.io/base-iwakuni/documents/security-check/">
+<link rel="stylesheet" href="../../styles.css?v=8">
+<link rel="stylesheet" href="../../security/security.css">
+<link rel="stylesheet" href="print.css" media="print">
+<style>
+  /* ── このページ専用スタイル（画面表示用） ── */
+  .check-page-wrap {
+    background: var(--bg);
+    min-height: 100vh;
+    padding-top: 70px;
+  }
+  .check-doc-area {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: clamp(32px, 5vw, 64px) clamp(20px, 4vw, 48px);
+  }
+  .check-doc-header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+    margin-bottom: 36px;
+  }
+  .check-doc-header .doc-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    border: 1px solid rgba(114,236,255,.3);
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .check-doc-header h1 {
+    font-size: clamp(22px, 4vw, 38px);
+    font-weight: 900;
+    color: #fff;
+    margin: 0 0 10px;
+    line-height: 1.2;
+  }
+  .check-doc-header .doc-meta {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .check-section {
+    margin-bottom: 36px;
+  }
+  .check-section h2 {
+    font-size: clamp(16px, 2.4vw, 20px);
+    font-weight: 900;
+    color: var(--cyan);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+    margin: 0 0 16px;
+  }
+  .check-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .check-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: clamp(13px, 1.6vw, 14px);
+    color: var(--text-light);
+    line-height: 1.65;
+    list-style: none;
+  }
+  .check-list li::before {
+    content: '☐';
+    font-size: 18px;
+    color: var(--cyan);
+    flex-shrink: 0;
+    margin-top: -1px;
+  }
+  .check-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    padding: 12px 16px;
+    border: 1px solid var(--line-gold);
+    border-radius: 10px;
+    background: rgba(200,160,48,.04);
+  }
+  .check-save-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+    margin-top: 40px;
+  }
+  @media (max-width: 480px) {
+    .check-save-bar { flex-direction: column; }
+  }
+</style>
+</head>
+<body style="background:#020713;color:#fff;">
+
+<div class="cursor-light" aria-hidden="true"></div>
+<div class="scroll-meter" aria-hidden="true"><span></span></div>
+
+<nav class="mobile-nav" id="mobileNav" aria-label="モバイルナビゲーション">
+  <a href="../../" onclick="closeMobileNav()">公式サイト</a>
+  <a href="../../security/" onclick="closeMobileNav()">Security Map</a>
+  <a href="../" onclick="closeMobileNav()">資料一覧</a>
+  <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="mobile-cta" id="mnavLine">LINEで無料相談</a>
+</nav>
+
+<header class="header">
+  <a class="brand" href="../../">
+    <div class="brand-mark">B</div>
+    <strong>株式会社BASE</strong>
+  </a>
+  <nav>
+    <a href="../../">公式サイト</a>
+    <a href="../../security/">Security Map</a>
+    <a href="../">資料一覧</a>
+    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="nav-cta">LINE相談</a>
+  </nav>
+  <button class="hamburger" id="hamburger" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobileNav">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div class="check-page-wrap">
+  <div class="check-doc-area">
+
+    <!-- ヘッダー -->
+    <div class="check-doc-header">
+      <div class="doc-kicker">BASE Security Map</div>
+      <h1>セキュリティ対策・通信環境<br>チェックシート</h1>
+      <p class="doc-meta">
+        株式会社BASE｜山口県岩国市｜<a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" style="color:var(--cyan);">LINE相談：lin.ee/z5T92Yn</a>
+      </p>
+    </div>
+
+    <!-- チェック1：ネットワーク・Wi-Fi -->
+    <div class="check-section">
+      <h2>① ネットワーク・Wi-Fi</h2>
+      <ul class="check-list">
+        <li>ネットワーク構成（ルーター・Wi-Fiのメーカー・型番）をだいたい把握している</li>
+        <li>業務用Wi-Fiと来客用Wi-Fiを分けている</li>
+        <li>Wi-Fiのパスワードを必要な人だけが知っている</li>
+        <li>インターネット回線が安定していて、業務に支障がない</li>
+      </ul>
+    </div>
+
+    <!-- チェック2：PC・スマホ・アカウント -->
+    <div class="check-section">
+      <h2>② PC・スマホ・アカウント</h2>
+      <ul class="check-list">
+        <li>誰がどのPC・スマホを使っているか分かる</li>
+        <li>退職者のアカウントを削除するルールがある</li>
+        <li>クラウドサービスへのアクセス権限を整理している</li>
+        <li>共有パスワードの管理ルールがある</li>
+      </ul>
+    </div>
+
+    <!-- チェック3：防犯カメラ -->
+    <div class="check-section">
+      <h2>③ 防犯カメラ・店舗防犯</h2>
+      <ul class="check-list">
+        <li>防犯カメラが録画できているか定期的に確認している</li>
+        <li>スマホで防犯カメラの映像を確認できる</li>
+        <li>出入口・資材置き場など必要な場所をカバーできている</li>
+      </ul>
+    </div>
+
+    <!-- チェック4：電話・通信 -->
+    <div class="check-section">
+      <h2>④ 電話・通信環境</h2>
+      <ul class="check-list">
+        <li>外出先・現場でも会社の電話番号で受発信できる</li>
+        <li>電話が止まった時の対応方法が決まっている</li>
+        <li>緊急連絡先の一覧がある</li>
+      </ul>
+    </div>
+
+    <!-- チェック5：Web・LINE・SNS -->
+    <div class="check-section">
+      <h2>⑤ Web・LINE・SNS</h2>
+      <ul class="check-list">
+        <li>会社のホームページに最新情報が掲載されている</li>
+        <li>LINE公式アカウントやSNSのアカウント管理者が明確</li>
+        <li>問い合わせ・予約の受付窓口が整理されている</li>
+      </ul>
+    </div>
+
+    <!-- チェック6：ルール・担当者 -->
+    <div class="check-section">
+      <h2>⑥ 社内ルール・担当者</h2>
+      <ul class="check-list">
+        <li>基本的なセキュリティルールが文書化されている</li>
+        <li>IT・通信担当者（または相談窓口）が決まっている</li>
+        <li>トラブル時の対応フローが共有されている</li>
+        <li>取引先にセキュリティ対策状況を説明できる資料がある</li>
+      </ul>
+    </div>
+
+    <!-- 注意書き -->
+    <div class="check-note">
+      ※ このチェックシートは現状把握のためのものです。チェックできない項目があっても問題ありません。まずは「今の状態を知ること」が第一歩です。<br>
+      ※ 対策の優先順位や具体的な方法は、BASEにご相談ください。<br>
+      ※ このページは印刷またはPDF保存してご活用いただけます。
+    </div>
+
+    <!-- 保存・相談ボタン -->
+    <div class="check-save-bar print-save-btn">
+      <button
+        onclick="window.print()"
+        class="btn primary"
+        id="pdf-save-btn"
+        style="font-size:15px;padding:0 32px;min-height:52px;"
+      >PDFとして保存する</button>
+      <a
+        href="https://lin.ee/z5T92Yn"
+        target="_blank"
+        rel="noopener"
+        class="btn ghost"
+        id="check-line-btn"
+        style="font-size:15px;padding:0 32px;min-height:52px;"
+      >LINEで無料相談</a>
+      <a
+        href="../../security/"
+        class="btn btn-gold"
+        id="check-security-btn"
+        style="font-size:15px;padding:0 28px;min-height:52px;"
+      >Security Map を見る</a>
+    </div>
+
+  </div>
+</div>
+
+<!-- フッター -->
+<footer class="sec-footer">
+  <p><strong>株式会社BASE</strong> &nbsp;〒741-0071 山口県岩国市牛野谷町2-13-23</p>
+  <p style="margin-top:8px;">
+    <a href="../../">公式サイトへ戻る</a> &nbsp;|&nbsp;
+    <a href="../">資料一覧</a> &nbsp;|&nbsp;
+    <a href="../../security/">Security Map</a> &nbsp;|&nbsp;
+    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener">LINEで相談</a>
+  </p>
+</footer>
+
+<script src="../../security/security.js"></script>
+</body>
+</html>

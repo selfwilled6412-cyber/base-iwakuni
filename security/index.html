@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BASE Security Map｜岩国の中小企業向けセキュリティ対策支援｜株式会社BASE</title>
+<meta name="description" content="岩国の中小企業・店舗向け。電話・Wi-Fi・LAN・PC・防犯カメラ・Web/LINEを5分で見える化。セキュリティ対策の入口整理をBASEがサポートします。">
+<meta name="keywords" content="岩国 セキュリティ対策,岩国 中小企業 セキュリティ,岩国 Wi-Fi 見直し,岩国 防犯カメラ,岩国 IT,BASE Security Map">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://selfwilled6412-cyber.github.io/base-iwakuni/security/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:title" content="BASE Security Map｜岩国の中小企業向けセキュリティ対策支援">
+<meta property="og:description" content="電話・Wi-Fi・PC・防犯カメラ・Web/LINEを5分で見える化。BASEが岩国の中小企業の通信・IT環境を整理します。">
+<meta property="og:url" content="https://selfwilled6412-cyber.github.io/base-iwakuni/security/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="../styles.css?v=8">
+<link rel="stylesheet" href="security.css">
+</head>
+<body style="background:#020713;color:#fff;">
+
+<!-- ── カーソル＆スクロール ──────────────────────────── -->
+<div class="cursor-light" aria-hidden="true"></div>
+<div class="scroll-meter" aria-hidden="true"><span></span></div>
+
+<!-- ── モバイルナビ ──────────────────────────────────── -->
+<nav class="mobile-nav" id="mobileNav" aria-label="モバイルナビゲーション">
+  <a href="../" onclick="closeMobileNav()">公式サイト</a>
+  <a href="../documents/" onclick="closeMobileNav()">資料一覧</a>
+  <a href="#sec-check" onclick="closeMobileNav()">チェックリスト</a>
+  <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="mobile-cta" id="mnavLine">LINEで無料相談</a>
+</nav>
+
+<!-- ── ヘッダー ──────────────────────────────────────── -->
+<header class="header">
+  <a class="brand" href="../">
+    <div class="brand-mark">B</div>
+    <strong>株式会社BASE</strong>
+  </a>
+  <nav>
+    <a href="../">公式サイト</a>
+    <a href="../documents/">資料一覧</a>
+    <a href="#sec-check">チェックリスト</a>
+    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="nav-cta">LINE相談</a>
+  </nav>
+  <button class="hamburger" id="hamburger" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobileNav">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ══════════════════════════════════════════════════════
+     01. ヒーロー
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-hero">
+  <div class="sec-hero-orb sec-hero-orb-a" aria-hidden="true"></div>
+  <div class="sec-hero-orb sec-hero-orb-b" aria-hidden="true"></div>
+
+  <div class="sec-hero-kicker">BASE Security Map</div>
+
+  <h1>
+    取引先から「セキュリティ対策、<br>
+    <em>大丈夫ですか？</em>」と聞かれる前に。
+  </h1>
+
+  <p class="sec-hero-sub">
+    岩国の中小企業・店舗向け。<br>
+    電話・Wi-Fi・LAN・PC・防犯カメラ・Web/LINE・基本ルールを、まず5分で見える化します。
+  </p>
+
+  <p class="sec-hero-copy">
+    セキュリティ対策は、高い機械を入れる前に、まず"今の状態"を見える化することから。
+  </p>
+
+  <div class="sec-hero-btns">
+    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="btn primary" id="hero-line-btn">LINEで無料相談</a>
+    <a href="../documents/security-check/" class="btn ghost" id="hero-doc-btn">資料をダウンロード</a>
+    <a href="#sec-industry" class="btn btn-gold" id="hero-industry-btn">業種別に見る</a>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     02. なぜ今、見える化が必要なのか
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-section mid-bg" id="sec-why">
+  <div class="container">
+    <div class="sec-section-head">
+      <div class="eyebrow">Why Now</div>
+      <h2>こんな"困りごと"、ありませんか？</h2>
+      <p>専門用語より先に、日常の困りごとから考えましょう。</p>
+    </div>
+    <div class="sec-trouble-grid">
+      <div class="sec-trouble-card sec-anim">
+        <div class="sec-trouble-icon">💻</div>
+        <div>
+          <h3>パソコンが突然止まる</h3>
+          <p>誰の端末で何のデータが入っているか把握できていない状態は、トラブル時に大きなリスクになります。</p>
+        </div>
+      </div>
+      <div class="sec-trouble-card sec-anim">
+        <div class="sec-trouble-icon">📞</div>
+        <div>
+          <h3>電話が使えなくなる</h3>
+          <p>回線障害や機器故障で電話が止まったとき、誰がどこへ連絡するか決まっていますか？</p>
+        </div>
+      </div>
+      <div class="sec-trouble-card sec-anim">
+        <div class="sec-trouble-icon">📶</div>
+        <div>
+          <h3>ネットが遅い・不安定</h3>
+          <p>業務用と来客用のWi-Fiが混在していたり、古いルーターのまま使い続けていませんか？</p>
+        </div>
+      </div>
+      <div class="sec-trouble-card sec-anim">
+        <div class="sec-trouble-icon">📷</div>
+        <div>
+          <h3>防犯カメラが確認できない</h3>
+          <p>録画できているか、スマホで確認できるか。設置したまま放置されているケースが多くあります。</p>
+        </div>
+      </div>
+      <div class="sec-trouble-card sec-anim">
+        <div class="sec-trouble-icon">📋</div>
+        <div>
+          <h3>取引先に説明できない</h3>
+          <p>今後、セキュリティ対策の状況を確認される場面が増えてきます。説明できる資料はありますか？</p>
+        </div>
+      </div>
+      <div class="sec-trouble-card sec-anim">
+        <div class="sec-trouble-icon">🔑</div>
+        <div>
+          <h3>誰が何を管理しているか分からない</h3>
+          <p>退職者のアカウントが残ったまま、Wi-Fiのパスワードを全員が知っている、という状態は危険です。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     03. セキュリティ対策評価制度をかんたん説明
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-section dark-bg" id="sec-policy">
+  <div class="container">
+    <div class="sec-section-head">
+      <div class="eyebrow">Background</div>
+      <h2>難しい制度の前に、まず自社の状態を知ること。</h2>
+    </div>
+    <div class="sec-policy-box sec-anim">
+      <div class="gold-badge">国の動きを3行で</div>
+      <h3>セキュリティ対策の「見える化」が、少しずつ広がっています。</h3>
+      <p>
+        国の動きとして、企業のセキュリティ対策を段階的に見える化する流れが始まっています。<br>
+        ただし、いきなり高度な認証を取る話ではありません。
+      </p>
+      <p>
+        まず大切なのは、<strong style="color:#fff;">電話・ネット・PC・カメラ・アカウント・ルールが今どうなっているか</strong>を整理することです。
+      </p>
+      <p>
+        今後、取引先からセキュリティ対策状況を確認される場面が増える可能性があります。<br>
+        BASEは、必要な環境整理と導入優先順位づけを支援します。
+      </p>
+      <div class="sec-policy-steps">
+        <div class="sec-policy-step"><span class="step-num">1</span>現状を見える化</div>
+        <div class="sec-policy-step"><span class="step-num">2</span>優先順位を整理</div>
+        <div class="sec-policy-step"><span class="step-num">3</span>必要なものを導入</div>
+        <div class="sec-policy-step"><span class="step-num">4</span>説明できる状態に</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     04. BASEが見る6つの場所
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-section mid-bg" id="sec-six">
+  <div class="container">
+    <div class="sec-section-head">
+      <div class="eyebrow">What We Check</div>
+      <h2>BASEが見る6つの場所</h2>
+      <p>専門知識がなくても大丈夫。一緒に確認しながら整理します。</p>
+    </div>
+    <div class="sec-six-grid">
+      <div class="sec-six-card sec-anim">
+        <div class="sec-six-num">01</div>
+        <span class="sec-six-icon">📞</span>
+        <h3>電話・クラウドPBX</h3>
+        <p>会社の電話を、事務所だけでなく外出先・現場でも受けられるか確認します。複数拠点や移動の多い業種に特に重要です。</p>
+      </div>
+      <div class="sec-six-card sec-anim">
+        <div class="sec-six-num">02</div>
+        <span class="sec-six-icon">📡</span>
+        <h3>インターネット・Wi-Fi・LAN</h3>
+        <p>業務用と来客用Wi-Fi、LAN配線、ネットの遅さや不安定さを確認します。分離されているかどうかが最初のポイントです。</p>
+      </div>
+      <div class="sec-six-card sec-anim">
+        <div class="sec-six-num">03</div>
+        <span class="sec-six-icon">🖥️</span>
+        <h3>PC・スマホ・アカウント</h3>
+        <p>誰がどの端末を使っているか、退職者アカウントが残っていないかを確認します。一覧があるだけで大きく違います。</p>
+      </div>
+      <div class="sec-six-card sec-anim">
+        <div class="sec-six-num">04</div>
+        <span class="sec-six-icon">📷</span>
+        <h3>防犯カメラ・店舗防犯</h3>
+        <p>録画できているか、スマホで確認できるか、出入口や資材置き場をカバーできているかを確認します。</p>
+      </div>
+      <div class="sec-six-card sec-anim">
+        <div class="sec-six-num">05</div>
+        <span class="sec-six-icon">🌐</span>
+        <h3>Web・LINE・SNS</h3>
+        <p>問い合わせ導線、予約導線、公式情報の置き場を確認します。古い情報が放置されていないかも重要です。</p>
+      </div>
+      <div class="sec-six-card sec-anim">
+        <div class="sec-six-num">06</div>
+        <span class="sec-six-icon">📄</span>
+        <h3>ルール・担当者・緊急連絡先</h3>
+        <p>ネットや電話が止まった時、誰がどこへ連絡するかを確認します。口頭だけのルールは共有されていないのと同じです。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     05. よくある危ない状態
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-section dark-bg" id="sec-danger">
+  <div class="container">
+    <div class="sec-section-head">
+      <div class="eyebrow">Common Risks</div>
+      <h2>よくある「危ない状態」</h2>
+      <p>どれか一つでも当てはまったら、まず整理するところから始めましょう。</p>
+    </div>
+    <div class="sec-danger-grid">
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>Wi-Fiのパスワードを全員で共有している</p>
+      </div>
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>業務用Wi-Fiと来客用Wi-Fiが同じ</p>
+      </div>
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>誰がどのPCを使っているか分からない</p>
+      </div>
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>退職者のアカウントが残っている</p>
+      </div>
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>防犯カメラが録画できているか確認していない</p>
+      </div>
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>電話やネットが止まった時の連絡先が分からない</p>
+      </div>
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>取引先に説明できる資料がない</p>
+      </div>
+      <div class="sec-danger-item sec-anim">
+        <span class="sec-danger-icon">⚠️</span>
+        <p>社内の基本ルールが口頭だけになっている</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     06. 業種別入口
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-section mid-bg" id="sec-industry">
+  <div class="container">
+    <div class="sec-section-head">
+      <div class="eyebrow">By Industry</div>
+      <h2>業種別に見る</h2>
+      <p>自分の業種に近い入口から確認できます。</p>
+    </div>
+    <div class="sec-industry-grid">
+      <a href="construction/" class="sec-industry-card sec-anim" id="ind-construction">
+        <span class="sec-industry-emoji">🏗️</span>
+        <h3>建築・土木向け</h3>
+        <p>図面・現場写真・元請け対応を守るために。<br>現場と事務所、協力会社、元請けとのやり取りが多い会社ほど、電話・スマホ・写真データ・ネットワークの整理が重要です。</p>
+        <span class="sec-industry-link">詳しく見る</span>
+      </a>
+      <a href="professional/" class="sec-industry-card sec-anim" id="ind-professional">
+        <span class="sec-industry-emoji">⚖️</span>
+        <h3>士業向け</h3>
+        <p>顧客情報・契約書・マイナンバーを守るために。<br>税理士、行政書士、司法書士、社労士など、重要情報を扱う事務所では、PC・クラウド・アカウント・Wi-Fiの整理が重要です。</p>
+        <span class="sec-industry-link">詳しく見る</span>
+      </a>
+      <a href="restaurant/" class="sec-industry-card sec-anim" id="ind-restaurant">
+        <span class="sec-industry-emoji">🍽️</span>
+        <h3>飲食店向け</h3>
+        <p>POS・決済・予約・店舗Wi-Fiを止めないために。<br>レジ、決済、予約、LINE、SNS、防犯カメラが止まると営業に影響します。まずは店舗の通信環境を確認しましょう。</p>
+        <span class="sec-industry-link">詳しく見る</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     07. 無料簡易チェックリスト
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-section dark-bg" id="sec-check">
+  <div class="container">
+    <div class="sec-section-head">
+      <div class="eyebrow">Free Check</div>
+      <h2>まずは5分で、今の状態をチェック。</h2>
+      <p>当てはまる項目にチェックを入れてみてください。</p>
+    </div>
+    <div class="sec-checklist">
+      <div class="sec-check-item sec-anim" id="chk-1">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">ネットワーク構成がだいたい分かる</span>
+      </div>
+      <div class="sec-check-item sec-anim" id="chk-2">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">Wi-Fiを業務用と来客用で分けている</span>
+      </div>
+      <div class="sec-check-item sec-anim" id="chk-3">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">PC・スマホ・アカウントの一覧がある</span>
+      </div>
+      <div class="sec-check-item sec-anim" id="chk-4">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">防犯カメラの録画確認をしている</span>
+      </div>
+      <div class="sec-check-item sec-anim" id="chk-5">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">トラブル時の連絡先が決まっている</span>
+      </div>
+      <div class="sec-check-item sec-anim" id="chk-6">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">会社の基本ルールを説明できる</span>
+      </div>
+      <div class="sec-check-item sec-anim" id="chk-7">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">退職者のアカウント削除ルールがある</span>
+      </div>
+      <div class="sec-check-item sec-anim" id="chk-8">
+        <div class="sec-check-box"></div>
+        <span class="sec-check-text">取引先に説明できる簡単な資料がある</span>
+      </div>
+
+      <div class="sec-check-score sec-anim">
+        <div class="score-num">0 / 8</div>
+        <div class="score-label">項目クリア</div>
+        <div class="score-msg">まずは現状を把握することから始めましょう。</div>
+        <div style="margin-top:20px;">
+          <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="btn primary" id="check-line-btn">結果をLINEで相談する</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     08. BASEができること
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-section mid-bg" id="sec-can">
+  <div class="container">
+    <div class="sec-section-head">
+      <div class="eyebrow">What BASE Does</div>
+      <h2>いきなり全部売るのではなく、<br>必要な順番を整理します。</h2>
+      <p>必要に応じて専門業者やメーカーと連携します。</p>
+    </div>
+    <div class="sec-can-list">
+      <div class="sec-can-item sec-anim">
+        <span class="sec-can-icon">📡</span>
+        <span>通信環境の整理（Wi-Fi・LAN・インターネット回線）</span>
+      </div>
+      <div class="sec-can-item sec-anim">
+        <span class="sec-can-icon">☁️</span>
+        <span>クラウドPBX導入相談（外出先でも電話を受けられる環境）</span>
+      </div>
+      <div class="sec-can-item sec-anim">
+        <span class="sec-can-icon">🔧</span>
+        <span>Wi-Fi・LAN配線の見直しと改善提案</span>
+      </div>
+      <div class="sec-can-item sec-anim">
+        <span class="sec-can-icon">📷</span>
+        <span>防犯カメラ・防犯設備の相談・導入支援</span>
+      </div>
+      <div class="sec-can-item sec-anim">
+        <span class="sec-can-icon">🌐</span>
+        <span>Web・LINE公式アカウント・資料ページ整備</span>
+      </div>
+      <div class="sec-can-item sec-anim">
+        <span class="sec-can-icon">🤝</span>
+        <span>専門業者・メーカーとの連携サポート</span>
+      </div>
+      <div class="sec-can-item sec-anim">
+        <span class="sec-can-icon">📋</span>
+        <span>セキュリティ対策の入口整理と優先順位づけ</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     09. 最後のCTA
+     ══════════════════════════════════════════════════════ -->
+<section class="sec-cta" id="sec-final-cta">
+  <div class="sec-cta-inner">
+    <div class="eyebrow" style="color:var(--cyan);font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;">Contact</div>
+    <h2>まずは、あなたの会社の<br>「今の状態」を一緒に見える化しましょう。</h2>
+    <p>費用はかかりません。まずは現状を聞かせてください。</p>
+    <div class="sec-cta-btns">
+      <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="btn primary" id="cta-line-btn">LINEで無料相談</a>
+      <a href="../documents/security-check/" class="btn ghost" id="cta-doc-btn">資料をダウンロードする</a>
+      <a href="#sec-industry" class="btn btn-gold" id="cta-industry-btn">業種別チェックを見る</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── フッター ──────────────────────────────────────── -->
+<footer class="sec-footer">
+  <p><strong>株式会社BASE</strong> &nbsp;〒741-0071 山口県岩国市牛野谷町2-13-23</p>
+  <p style="margin-top:8px;"><a href="../">公式サイトへ戻る</a> &nbsp;|&nbsp; <a href="../documents/">資料一覧</a> &nbsp;|&nbsp; <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener">LINEで相談</a></p>
+</footer>
+
+<script src="security.js"></script>
+</body>
+</html>
