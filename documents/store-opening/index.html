@@ -1,244 +1,309 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>岩国市｜新規店舗開設チェックリスト｜株式会社BASE</title>
-  <meta name="description" content="岩国市で新規店舗・事業所を開設する方向けの完全チェックリスト。計画から集客まで7フェーズで整理。株式会社BASEがトータルサポートします。">
-  <link rel="stylesheet" href="../../styles.css">
-  
+  <title>開業前に、何を相談すればいいか整理するページ｜株式会社BASE</title>
+  <meta name="description" content="電話・ネット・レジ・防犯カメラ・Web・LINE・照明など、開業前に考えることを、むずかしい言葉なしで整理します。">
+  <link rel="stylesheet" href="../../styles.css?v=hp8">
+  <style>
+    /* 追加のレイアウト用スタイル（基本フォント等はstyles.cssに依存） */
+    .docs-hero {
+      position: relative;
+      background: var(--bg);
+      color: #fff;
+      padding: 120px clamp(20px, 5vw, 60px) 80px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    @media(min-width: 900px) {
+      .docs-hero { grid-template-columns: 1fr 1fr; align-items: center; }
+    }
+    .docs-hero::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(110deg, transparent 20%, rgba(114,236,255,.07) 42%, transparent 62%);
+      transform: translateX(-120%); animation: heroSweep 7s ease-in-out infinite;
+    }
+    .docs-hero-copy { position: relative; z-index: 3; }
+    .docs-hero-copy h1 { font-size: clamp(28px, 4vw, 44px); line-height: 1.3; margin-bottom: 24px; letter-spacing: -0.04em; }
+    .docs-hero-copy p { font-size: clamp(15px, 1.8vw, 17px); color: #c5dbec; line-height: 1.8; margin-bottom: 30px; }
+    
+    .docs-map {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media(max-width: 599px) { .docs-map { grid-template-columns: repeat(2, 1fr); } }
+    .map-node {
+      background: rgba(3,18,42,.88);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 900;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,168,255,.1);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .map-node.highlight {
+      background: linear-gradient(135deg, rgba(0,168,255,.15), rgba(3,18,42,.9));
+      border-color: var(--cyan);
+      box-shadow: 0 0 24px rgba(0,168,255,.25);
+    }
+    .map-node svg { width: 24px; height: 24px; stroke: var(--cyan); stroke-width: 1.5; fill: none; }
+    .map-node.highlight svg { stroke: #fff; }
+
+    /* 本編セクション（ライト・プレミアム） */
+    .docs-section { padding: var(--pad-sm) 0; background: #f8fafc; }
+    .docs-section.bg-white { background: #fff; box-shadow: 0 4px 40px rgba(0,20,40,.03); position: relative; z-index: 2; }
+    
+    .notice-box {
+      background: #fff; border: 1px solid #cce5ff; border-left: 4px solid var(--blue);
+      border-radius: var(--r-sm); padding: 24px; margin: 0 auto 40px; max-width: 800px;
+      color: #0f2942; font-weight: 700; line-height: 1.7; font-size: 15px; box-shadow: 0 8px 24px rgba(0,100,200,.04);
+    }
+
+    .check-grid { display: grid; grid-template-columns: 1fr; gap: 16px; max-width: 800px; margin: 0 auto; }
+    @media(min-width: 700px) { .check-grid { grid-template-columns: 1fr 1fr; } }
+    .check-card {
+      background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;
+      display: flex; align-items: flex-start; gap: 12px; font-weight: 700; color: var(--ink);
+      font-size: 15px; line-height: 1.5; box-shadow: 0 4px 12px rgba(0,40,80,.03);
+      position: relative; overflow: hidden; transition: transform .2s, box-shadow .2s;
+    }
+    .check-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #cbd5e1; transition: background .2s; }
+    .check-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,40,80,.06); }
+    .check-card:hover::before { background: var(--blue); }
+    .check-card.highlight::before { background: var(--blue); }
+    .check-icon { color: var(--blue); font-size: 20px; line-height: 1; flex-shrink: 0; font-weight: 900; }
+
+    .step-grid { display: grid; grid-template-columns: 1fr; gap: 16px; max-width: 800px; margin: 0 auto; }
+    @media(min-width: 600px) { .step-grid { grid-template-columns: 1fr 1fr; } }
+    .step-card {
+      background: #fff; border: 1px solid #e2e8f0; padding: 24px; border-radius: var(--r-md);
+      box-shadow: 0 4px 16px rgba(0,40,80,.03);
+    }
+    .step-badge {
+      display: inline-flex; align-items: center; padding: 6px 14px;
+      background: rgba(0,168,255,.1); color: var(--blue); border-radius: 999px;
+      font-weight: 900; font-size: 13px; margin-bottom: 12px; letter-spacing: 0.05em;
+      white-space: nowrap; /* 縦崩れ防止 */
+    }
+    .step-title { font-size: 18px; font-weight: 900; color: var(--ink); line-height: 1.4; }
+
+    .faq-grid { display: grid; grid-template-columns: 1fr; gap: 16px; max-width: 800px; margin: 0 auto; }
+    @media(min-width: 700px) { .faq-grid { grid-template-columns: 1fr 1fr; } }
+    .faq-card {
+      background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px;
+      font-weight: 700; color: #1e293b; line-height: 1.6; box-shadow: 0 4px 12px rgba(0,40,80,.03);
+      display: flex; align-items: flex-start; gap: 12px; transition: transform .2s;
+    }
+    .faq-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,40,80,.06); }
+    .faq-icon {
+      width: 26px; height: 26px; background: #f1f5f9; color: #64748b; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; font-weight: 900;
+    }
+
+    /* LED Dedicated Card */
+    .led-promo-card {
+      background: linear-gradient(135deg, #061528, #0a1930);
+      border: 1px solid var(--cyan);
+      border-radius: var(--r-lg);
+      padding: 40px;
+      max-width: 800px;
+      margin: 60px auto 0;
+      color: #fff;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0,168,255,.15);
+      position: relative; overflow: hidden;
+    }
+    .led-promo-card::before {
+      content: ''; position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(114,236,255,.15), transparent 60%); pointer-events: none;
+    }
+    .led-promo-card h3 { font-size: clamp(20px, 3vw, 26px); color: var(--cyan); margin-bottom: 16px; font-weight: 900; }
+    .led-promo-card p { font-size: 15px; color: #c5dbec; line-height: 1.8; margin-bottom: 0; }
+
+    .docs-cta {
+      text-align: center; background: #fff; padding: 60px 20px; border-radius: var(--r-lg);
+      box-shadow: 0 12px 40px rgba(0,40,80,.05); border: 1px solid #e2e8f0; max-width: 800px; margin: 40px auto 0;
+    }
+    .docs-cta h3 { font-size: 24px; font-weight: 900; color: var(--ink); margin-bottom: 16px; }
+    .docs-cta p { font-size: 16px; color: var(--muted); margin-bottom: 32px; line-height: 1.7; font-weight: 700; }
+  </style>
 </head>
 <body>
-<!-- ── Mobile Navigation Overlay ─────────────────── -->
+
+<!-- Mobile Nav -->
 <nav class="mobile-nav" id="mobileNav" aria-label="モバイルナビゲーション">
   <a href="../../" onclick="closeMobileNav()">ホーム</a>
   <a href="../" onclick="closeMobileNav()">資料一覧</a>
   <a href="https://lin.ee/z5T92Yn" target="_blank" class="mobile-cta" id="mnavLine">LINEで相談</a>
 </nav>
 
-<!-- ヘッダー -->
-<header class="doc-header">
-  <a href="../../" class="doc-brand">
-    <div class="doc-brand-mark">B</div>
+<!-- Header -->
+<header class="header">
+  <a href="../../" class="brand">
+    <div class="brand-mark">B</div>
     <span>株式会社BASE</span>
   </a>
-  <nav class="doc-nav">
+  <nav>
     <a href="../../">ホーム</a>
     <a href="../">資料一覧</a>
-    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener">LINE相談</a>
+    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="nav-cta">LINEで相談</a>
   </nav>
   <button class="hamburger" id="hamburger" aria-label="メニューを開く" aria-expanded="false" aria-controls="mobileNav">
     <span></span><span></span><span></span>
   </button>
 </header>
 
-<!-- ヒーロー -->
-<section class="doc-hero">
-  <div class="doc-hero-inner">
-    <p class="doc-eyebrow">DOCUMENT / STORE OPENING</p>
-    <div class="badge-gold">岩国市・山口県東部 対応</div>
-    <h1>新規店舗・事業所の<br>開設チェックリスト</h1>
-    <p>物件探しからオープン告知まで、漏れなく準備を進めるための7フェーズ・チェックリストです。BASEは複数フェーズでトータルサポートが可能です。</p>
+<!-- Hero -->
+<section class="docs-hero">
+  <div class="grid-bg"></div>
+  <div class="orb orb-a"></div>
+  <div class="container docs-hero-copy">
+    <p class="eyebrow">開業前・見直し 相談窓口</p>
+    <h1>事業に必要なものを、<br><span class="gradient-text">一緒に整理します。</span></h1>
+    <p>電話、ネット、レジ、防犯カメラ、Web、LINE、照明など。まだ決まっていなくても、BASEにご相談いただければ必要な手順と手配を整理します。</p>
   </div>
-</section>
-
-<!-- チェックリスト本体 -->
-<section class="doc-section">
-  <div class="doc-container">
-    <h2 class="doc-h2">7フェーズ 開業チェックリスト</h2>
-    <div class="phase-grid">
-
-      <!-- PHASE 1 -->
-      <div class="phase-card">
-        <p class="phase-num">PHASE 1</p>
-        <p class="phase-title">計画・コンセプト策定</p>
-        <ul class="phase-items">
-          <li>業種・提供サービスの明確化（飲食／美容／物販／サービス業 など）</li>
-          <li>ターゲット顧客層の設定（年齢・性別・エリア・来店動機）</li>
-          <li>提供価値・差別化ポイントの言語化</li>
-          <li>必要面積・坪数・席数・客数の目安を算出</li>
-          <li>開業予算の概算（初期費用＋運転資金6ヶ月分）</li>
-          <li>開業スケジュールの大枠を設定</li>
-        </ul>
-      </div>
-
-      <!-- PHASE 2 -->
-      <div class="phase-card">
-        <p class="phase-num">PHASE 2</p>
-        <p class="phase-title">物件・立地の選定</p>
-        <ul class="phase-items">
-          <li>立地条件の確認（通行量・視認性・競合状況・エリア特性）</li>
-          <li>電気容量（アンペア数）の確認 ※飲食・美容は特に重要</li>
-          <li>ガス・上下水道・排水溝の種類と容量確認</li>
-          <li>駐車場台数・アクセス道路幅・搬入経路の確認</li>
-          <li>内装工事可否（スケルトン／居抜き）の確認</li>
-          <li>契約条件の確認（保証金・礼金・更新料・原状回復範囲）</li>
-          <li>用途地域・建ぺい率・容積率の確認</li>
-        </ul>
-      </div>
-
-      <!-- PHASE 3 -->
-      <div class="phase-card">
-        <p class="phase-num">PHASE 3</p>
-        <p class="phase-title">許認可・資金調達</p>
-        <ul class="phase-items">
-          <li>業種別の許認可リストアップ（飲食：食品衛生法・防火管理者、美容：美容所確認申請 など）</li>
-          <li>保健所・消防署・市役所への事前相談</li>
-          <li>補助金・助成金の確認（小規模事業者持続化補助金・創業補助金 等）</li>
-          <li>日本政策金融公庫・地方銀行への融資相談</li>
-          <li>税理士・行政書士との連携（法人設立 or 個人事業届出）</li>
-          <li>開業届・各種届出書類の準備</li>
-        </ul>
-      </div>
-
-      <!-- PHASE 4 -->
-      <div class="phase-card">
-        <p class="phase-num">PHASE 4</p>
-        <p class="phase-title">空間設計・内外装</p>
-        <ul class="phase-items">
-          <li>内装・外装デザインコンセプトの決定</li>
-          <li>看板・ファサードデザインの検討</li>
-          <li>お客様動線・スタッフ動線の設計</li>
-          <li>照明計画（明るさ・演色性・省エネ）</li>
-          <li>オーダー家具・造作什器・棚・カウンターの発注</li>
-          <li>床材・壁材・天井材の選定</li>
-          <li>防犯カメラ・ネットワーク配線位置の先行確認（工事前に決定）</li>
-        </ul>
-      </div>
-
-      <!-- PHASE 5 -->
-      <div class="phase-card">
-        <p class="phase-num">PHASE 5</p>
-        <p class="phase-title">インフラ・IT環境整備</p>
-        <ul class="phase-items">
-          <li>電気工事（コンセント位置・分電盤・容量増設）</li>
-          <li>LAN配線・ルーター・アクセスポイント設置</li>
-          <li>業務用Wi-Fi とゲスト用Wi-Fiのネットワーク分離</li>
-          <li>電話・クラウドPBX・FAX環境の構築</li>
-          <li>防犯カメラの設置位置確定・工事（内装前が理想）</li>
-          <li>電力会社・インターネット回線の申込み（開通まで数週間）</li>
-          <li>NAS・バックアップ環境の構築</li>
-        </ul>
-      </div>
-
-      <!-- PHASE 6 -->
-      <div class="phase-card">
-        <p class="phase-num">PHASE 6</p>
-        <p class="phase-title">運営環境・機器導入</p>
-        <ul class="phase-items">
-          <li>POSレジ・キャッシュレス決済端末の選定・導入</li>
-          <li>PC・複合機・プリンター・スキャナーの導入</li>
-          <li>勤怠管理・シフト管理システムの選定</li>
-          <li>経費精算・会計ソフトの導入（freee / マネーフォワード 等）</li>
-          <li>在庫管理・予約管理システムの検討</li>
-          <li>スタッフへのITツール操作研修</li>
-          <li>バックオフィス業務フローの整備</li>
-        </ul>
-      </div>
-
-      <!-- PHASE 7 -->
-      <div class="phase-card">
-        <p class="phase-num">PHASE 7</p>
-        <p class="phase-title">集客・オープン告知</p>
-        <ul class="phase-items">
-          <li>Googleビジネスプロフィール（Googleマップ）の登録・最適化</li>
-          <li>SNSアカウント開設（Instagram・LINE公式アカウント 等）</li>
-          <li>ホームページ・ランディングページの公開</li>
-          <li>開業チラシ・ポスター・名刺・ショップカードの制作・配布</li>
-          <li>プレオープン・内覧会の企画</li>
-          <li>地域メディア・フリーペーパーへのリリース</li>
-          <li>開業後の効果測定と改善計画</li>
-        </ul>
-      </div>
-
+  <div class="container docs-map">
+    <div class="map-node">
+      <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+      電話・通信
+    </div>
+    <div class="map-node">
+      <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+      ネット・Wi-Fi
+    </div>
+    <div class="map-node">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+      レジ・決済
+    </div>
+    <div class="map-node">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      防犯カメラ
+    </div>
+    <div class="map-node highlight">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      照明・LED化
+    </div>
+    <div class="map-node">
+      <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+      Web・LINE
     </div>
   </div>
 </section>
 
-<!-- BASEが対応できる範囲 -->
-<section class="doc-section">
-  <div class="doc-container">
-    <h2 class="doc-h2">BASEが対応できる範囲</h2>
-    <p style="color:#c5dbec;margin:0 0 24px;">内装・厨房工事を除く、ITインフラから販促物まで幅広くサポートします。専門家（税理士・行政書士）とも連携します。</p>
-
-    <div class="base-scope">
-      <ul>
-        <li>Wi-Fi・ネットワーク設計・構築</li>
-        <li>防犯カメラ選定・設置</li>
-        <li>クラウドPBX・電話環境</li>
-        <li>POSレジ・キャッシュレス導入</li>
-        <li>PC・OA機器の選定・セットアップ</li>
-        <li>チラシ・看板・名刺のデザイン制作</li>
-        <li>ホームページ・LP制作</li>
-        <li>Googleマップ・SNS登録・運用</li>
-        <li>補助金の活用検討・書類整理支援</li>
-        <li>税理士・行政書士との専門家連携</li>
-        <li>開業後の運用サポート・相談</li>
-        <li>勤怠・経費管理ツール導入支援</li>
-      </ul>
+<section class="docs-section">
+  <div class="container">
+    <div class="notice-box">
+      このページは、これから事業を始める方や、環境を見直したい方向けに、相談前の内容を整理するためのページです。株式会社BASEがフロント窓口として要件を整理し、必要なメーカー・地元業者・専門家と調整しながら導入まで伴走します。
     </div>
 
-    <div style="margin-top:24px;">
-      <table class="doc-table">
-        <thead>
-          <tr>
-            <th>フェーズ</th>
-            <th>BASEの主な対応内容</th>
-            <th>連携先</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>計画・資金調達</td>
-            <td>補助金情報の提供、書類整理サポート</td>
-            <td>行政書士・税理士</td>
-          </tr>
-          <tr>
-            <td>空間設計</td>
-            <td>カメラ・ネットワーク配線位置の先行アドバイス</td>
-            <td>内装業者</td>
-          </tr>
-          <tr>
-            <td>インフラ整備</td>
-            <td>Wi-Fi・ネットワーク・防犯カメラの設計・工事</td>
-            <td>電気工事業者</td>
-          </tr>
-          <tr>
-            <td>運営環境</td>
-            <td>PC・レジ・OA機器の選定・導入・研修</td>
-            <td>各メーカー</td>
-          </tr>
-          <tr>
-            <td>集客・販促</td>
-            <td>チラシ・Web・Googleマップ・SNS</td>
-            <td>印刷会社</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- CTA -->
-    <div class="doc-cta-block">
-      <h3>開業準備、まずはLINEで相談</h3>
-      <p>「何から始めればいいか分からない」という段階からご相談いただけます。<br>岩国市・周南市・柳井市・大竹市エリア対応。</p>
-      <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="doc-btn-primary">この内容についてLINEで相談する</a>
-      <a href="../" class="doc-btn-ghost">資料一覧へ戻る</a>
+    <div class="section-heading center">
+      <h2>まず、決めなくていいです。<br>一緒に整理するところから始めます。</h2>
+      <p style="margin:0 auto; font-weight:700;">最初から全部決める必要はありません。BASEでは、まず「何が必要そうか」をお客様と一緒に整理し、必要な手順と見積りを出していきます。</p>
     </div>
   </div>
 </section>
 
-<!-- フッター -->
-<footer class="doc-footer">
-  <div>
-    <strong>株式会社BASE</strong><br>
-    〒741-0071 山口県岩国市牛野谷町2-13-23
+<section class="docs-section bg-white">
+  <div class="container">
+    <div class="section-heading center">
+      <h2>相談前に、これだけ分かればOK</h2>
+    </div>
+    
+    <div class="check-grid">
+      <div class="check-card"><span class="check-icon">✓</span>どんな事業を始める予定ですか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>店舗、事務所、現場、どこで使いますか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>会社の電話は必要ですか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>お店や事務所のネットやWi-Fiは使いますか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>レジや決済は必要ですか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>防犯カメラは必要ですか？</div>
+      <div class="check-card highlight"><span class="check-icon">✓</span>照明をLEDに替えたい、電気代を見直したいですか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>ホームページやLINEは使いたいですか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>チラシやQRコードは使いますか？</div>
+      <div class="check-card"><span class="check-icon">✓</span>まだ決まっていないことはありますか？</div>
+    </div>
   </div>
-  <div style="text-align:right;">
-    <a href="../">資料一覧へ戻る</a>　|　
-    <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener">LINEで相談</a>
+</section>
+
+<section class="docs-section">
+  <div class="container">
+    <div class="section-heading center">
+      <h2>BASEが一緒に整理すること</h2>
+    </div>
+    
+    <div class="step-grid">
+      <div class="step-card">
+        <span class="step-badge">STEP 01</span>
+        <div class="step-title">まず必要そうなものを出す</div>
+      </div>
+      <div class="step-card">
+        <span class="step-badge">STEP 02</span>
+        <div class="step-title">急ぐものと後でいいものを分ける</div>
+      </div>
+      <div class="step-card">
+        <span class="step-badge">STEP 03</span>
+        <div class="step-title">専門業者に聞くべきことを整理する</div>
+      </div>
+      <div class="step-card">
+        <span class="step-badge">STEP 04</span>
+        <div class="step-title">見積や相談の順番を決める</div>
+      </div>
+    </div>
+
+    <div class="led-promo-card">
+      <h3>照明・LED化、電気代の見直しも相談できます</h3>
+      <p>店舗や事務所の古い照明をLEDに替えたい、電気代を見直したい、どこに相談すればよいか分からない。そんな場合も、BASEが確認することを整理し、必要に応じて電気工事業者などの専門先へつなぎます。</p>
+    </div>
+  </div>
+</section>
+
+<section class="docs-section bg-white">
+  <div class="container">
+    <div class="section-heading center">
+      <h2>よくある相談例</h2>
+    </div>
+    
+    <div class="faq-grid">
+      <div class="faq-card"><span class="faq-icon">Q</span>電話を引くべきか、スマホで足りるか分からない</div>
+      <div class="faq-card"><span class="faq-icon">Q</span>Wi-Fiをどう準備すればいいか分からない</div>
+      <div class="faq-card"><span class="faq-icon">Q</span>レジや決済を何にすればいいか分からない</div>
+      <div class="faq-card"><span class="faq-icon">Q</span>防犯カメラが必要か分からない</div>
+      <div class="faq-card" style="border: 1px solid var(--cyan);"><span class="faq-icon">Q</span>店舗の古い照明をどう見直せばいいか相談したい</div>
+      <div class="faq-card"><span class="faq-icon">Q</span>ホームページ、LINE、チラシをどうつなげるか分からない</div>
+      <div class="faq-card"><span class="faq-icon">Q</span>誰に何を相談すればいいか分からない</div>
+    </div>
+  </div>
+</section>
+
+<section class="docs-section">
+  <div class="container">
+    <div class="docs-cta">
+      <h3>決まっていなくても大丈夫です。</h3>
+      <p>分かるところだけ教えてください。<br>足りない部分は、BASEが一緒に整理します。</p>
+      <a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="btn primary">
+        LINEで相談する
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="about" style="padding: 60px 0; background: var(--bg); color: #c5dbec; text-align: center; border-top: 1px solid rgba(255,255,255,.05);">
+  <div class="container">
+    <strong style="color:#fff;">株式会社BASE</strong><br>
+    <span style="font-size:14px;">山口県岩国市｜事業支援・通信・IT・セキュリティ・店舗・Web・販促</span>
+    <div style="margin-top: 20px;">
+      <a href="../" style="color:var(--cyan); text-decoration:none; font-size:14px;">資料一覧へ戻る</a>
+    </div>
   </div>
 </footer>
 
-<script src="../../script.js?v=8"></script>
+<script src="../../script.js?v=hp8"></script>
 </body>
 </html>
