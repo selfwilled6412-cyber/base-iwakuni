@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
+
 Sitemap: https://selfwilled6412-cyber.github.io/base-iwakuni/sitemap.xml
