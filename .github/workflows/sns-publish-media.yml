@@ -1,0 +1,69 @@
+name: BASE SNS Publish Media (Gated)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_public_media:
+        description: 'Type YES to publish generated MP4 to a public GitHub raw URL'
+        required: true
+        default: 'NO'
+      create_buffer_drafts:
+        description: 'Create Buffer drafts after media publishing'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish-media:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: buffer-connection-test
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install -r automation/sns/requirements.txt
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Render 30-second vertical preview
+        run: python automation/sns/render_video.py
+
+      - name: Publish MP4 to dedicated public media branch
+        env:
+          CONFIRM_PUBLIC_MEDIA: ${{ inputs.confirm_public_media }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash automation/sns/publish_media.sh
+
+      - name: Validate public media URL exists
+        if: ${{ inputs.confirm_public_media == 'YES' }}
+        run: |
+          test -s automation/sns/output/public_media_url.txt
+          cat automation/sns/output/public_media_url.txt
+
+      - name: Create Buffer drafts for 3 SNS channels
+        if: ${{ inputs.confirm_public_media == 'YES' && inputs.create_buffer_drafts }}
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+          BUFFER_CREATE_DRAFTS: 'true'
+        run: |
+          export BUFFER_MEDIA_URL="$(cat automation/sns/output/public_media_url.txt)"
+          python automation/sns/buffer_draft_video.py
+
+      - name: Save result artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sns-publish-media-result
+          path: automation/sns/output/
+          retention-days: 7
