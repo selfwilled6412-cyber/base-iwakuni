@@ -5,7 +5,7 @@
 1. Generate SNS content.
    - Uses OpenAI when `OPENAI_API_KEY` exists.
    - Falls back to a no-cost local editorial rotation when no API key is configured.
-2. Render a 1080x1920, ~30 second MP4 with ffmpeg.
+2. Render a 1080x1920, ~30 second MP4 with ffmpeg and Japanese Noto CJK fonts.
 3. Confirm Buffer API connectivity and discover Instagram / YouTube / TikTok targets.
 4. Validate Buffer draft creation in dry-run mode.
 5. Save approval-ready outputs as GitHub Actions artifacts.
