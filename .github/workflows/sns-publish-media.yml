@@ -38,11 +38,12 @@ jobs:
         if: ${{ inputs.confirm_public_media == 'YES' }}
         run: pip install -r automation/sns/requirements.txt
 
-      - name: Install ffmpeg
+      - name: Install rendering dependencies
         if: ${{ inputs.confirm_public_media == 'YES' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg fonts-noto-cjk
+          fc-match 'Noto Sans CJK JP'
 
       - name: Generate SNS content
         if: ${{ inputs.confirm_public_media == 'YES' }}
