@@ -28,21 +28,32 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Refuse public publishing without exact approval
+        if: ${{ inputs.confirm_public_media != 'YES' }}
+        run: |
+          echo 'Public media publishing remains locked. Re-run with confirm_public_media=YES only after approval.'
+          exit 1
+
       - name: Install Python dependencies
+        if: ${{ inputs.confirm_public_media == 'YES' }}
         run: pip install -r automation/sns/requirements.txt
 
       - name: Install ffmpeg
+        if: ${{ inputs.confirm_public_media == 'YES' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
       - name: Generate SNS content
+        if: ${{ inputs.confirm_public_media == 'YES' }}
         run: python automation/sns/generate_content.py
 
       - name: Render 30-second vertical preview
+        if: ${{ inputs.confirm_public_media == 'YES' }}
         run: python automation/sns/render_video.py
 
       - name: Publish MP4 to dedicated public media branch
+        if: ${{ inputs.confirm_public_media == 'YES' }}
         env:
           CONFIRM_PUBLIC_MEDIA: ${{ inputs.confirm_public_media }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
