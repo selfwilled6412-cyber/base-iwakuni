@@ -35,6 +35,9 @@ jobs:
           BUFFER_CREATE_DRAFTS: 'false'
         run: python automation/sns/buffer_draft_video.py
 
+      - name: Render 30-second vertical preview
+        run: python automation/sns/render_video.py
+
       - name: Save Buffer test result
         if: always()
         uses: actions/upload-artifact@v4
