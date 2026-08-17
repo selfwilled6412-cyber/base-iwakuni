@@ -1,0 +1,32 @@
+{
+  "primary_offer": {
+    "name": "業務自動化ミニパック",
+    "price_from_jpy": 33000,
+    "positioning": "毎日の繰り返しPC作業を1つ選び、小さく自動化を始める入口商品",
+    "ideal_customers": [
+      "小規模事業者",
+      "店舗",
+      "福祉・教育事業所",
+      "事務作業が多い会社"
+    ],
+    "examples": [
+      "定型文・日報・記録の文章化補助",
+      "問い合わせ内容の整理",
+      "転記・集計・一覧化",
+      "SNS投稿準備の下書き自動化",
+      "Googleフォーム・スプレッドシートを使った簡易業務フロー"
+    ],
+    "scope_note": "内容・難易度・外部サービス費用により見積り。33,000円は入口価格であり一律価格ではない。",
+    "cta": {
+      "label": "LINEで相談",
+      "url": "https://lin.ee/z5T92Yn",
+      "message_hint": "『自動化相談』と送ってください"
+    }
+  },
+  "conversion_goal": "SNSやWebからLINE相談を獲得し、課題整理→提案→見積りへつなぐ",
+  "safety": {
+    "no_unverified_savings_claims": true,
+    "no_guaranteed_results": true,
+    "human_approval_before_external_sales_contact": true
+  }
+}
