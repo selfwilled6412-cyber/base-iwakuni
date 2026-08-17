@@ -27,6 +27,9 @@ jobs:
       - name: Generate SNS content
         run: python automation/sns/generate_content.py
 
+      - name: Add sales conversion CTA
+        run: python automation/sns/enrich_sales_cta.py
+
       - name: Render 30-second vertical preview
         run: python automation/sns/render_video.py
 
