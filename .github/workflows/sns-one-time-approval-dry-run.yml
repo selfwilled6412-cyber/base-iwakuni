@@ -1,0 +1,31 @@
+name: BASE SNS One-Time Approval Dry Run
+
+on:
+  push:
+    branches:
+      - buffer-connection-test
+
+permissions:
+  contents: read
+
+jobs:
+  approval-dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: buffer-connection-test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r automation/sns/requirements.txt
+      - name: Validate current three drafts with approval gate locked
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+          BUFFER_APPROVED_DRAFT_IDS: '6a83854633ec6735e90d6a39,6a838546521d595791536a2b,6a838547a6afcff0dbbde887'
+          CONFIRM_BUFFER_QUEUE: 'NO'
+        run: python automation/sns/buffer_approve_queue.py
+      - name: Verify no scheduling occurred
+        run: |
+          test -s automation/sns/output/buffer_approval_plan.json
+          test ! -e automation/sns/output/buffer_approval_results.json
