@@ -35,7 +35,8 @@ SNSでは価格だけを強く押し出さず、「毎日の繰り返し作業�
 - `../sns/enrich_sales_cta.py`: 生成済みSNS投稿にLINE相談導線を自動追加
 - `lead_qualifier.py`: 問い合わせ文章をA/B/C優先度に整理し、確認質問を下書き
 - `../sns/buffer_approve_queue.py`: 人が承認した3媒体の下書きだけをBuffer Queueへ移すゲート
-- `sns-daily-preview.yml`: 月・水・金の承認待ち動画に営業CTAを組み込む準備
+- `.github/workflows/sns-daily-preview.yml`: 月・水・金の承認待ち動画に営業CTAを組み込む準備
+- 顧客相談の実データは `automation/sales/output/` に保存し、Git管理対象外にする
 
 ## 次の接続先
 
@@ -49,3 +50,4 @@ LINEで届いた相談を自動取得する部分はまだ接続していない�
 - 個別企業への営業メール・DMは人の承認なしに送信しない
 - 契約・値引き・支出は自動実行しない
 - 削減時間・売上増など未検証数値を断定しない
+- 顧客相談の本文や個人情報はGitHubへコミットしない
