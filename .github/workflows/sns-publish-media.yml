@@ -36,6 +36,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
+      - name: Generate SNS content
+        run: python automation/sns/generate_content.py
+
       - name: Render 30-second vertical preview
         run: python automation/sns/render_video.py
 
@@ -58,6 +61,8 @@ jobs:
           BUFFER_CREATE_DRAFTS: 'true'
         run: |
           export BUFFER_MEDIA_URL="$(cat automation/sns/output/public_media_url.txt)"
+          export BUFFER_DRAFT_TITLE="$(python -c 'import json; print(json.load(open("automation/sns/output/content.json"))["title"])')"
+          export BUFFER_DRAFT_TEXT="$(python -c 'import json; d=json.load(open("automation/sns/output/content.json")); print(d["caption"]+" "+" ".join(d["hashtags"]))')"
           python automation/sns/buffer_draft_video.py
 
       - name: Save result artifact
