@@ -53,6 +53,7 @@ jobs:
         run: |
           bash automation/sns/publish_media.sh
           test ! -e automation/sns/output/public_media_url.txt
+          echo 'NEXT_GATE=explicit approval required before public media URL or Buffer draft creation' > automation/sns/output/approval_gate.txt
 
       - name: Save Buffer test result
         if: always()
