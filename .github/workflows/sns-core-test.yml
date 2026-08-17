@@ -24,6 +24,11 @@ jobs:
           BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
         run: python automation/sns/buffer_client.py
 
+      - name: Discover Buffer channels
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+        run: python automation/sns/buffer_channels.py
+
       - name: Save Buffer test result
         if: always()
         uses: actions/upload-artifact@v4
