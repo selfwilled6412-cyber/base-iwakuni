@@ -24,9 +24,17 @@
     }
   },
   "conversion_goal": "SNSやWebからLINE相談を獲得し、課題整理→提案→見積りへつなぐ",
+  "kpi": [
+    "SNSからLINE相談への遷移",
+    "『自動化相談』キーワードの相談件数",
+    "A/B/Cの見込み客件数",
+    "見積り化件数",
+    "成約件数"
+  ],
   "safety": {
     "no_unverified_savings_claims": true,
     "no_guaranteed_results": true,
-    "human_approval_before_external_sales_contact": true
+    "human_approval_before_external_sales_contact": true,
+    "human_approval_before_contract_or_price_commitment": true
   }
 }
