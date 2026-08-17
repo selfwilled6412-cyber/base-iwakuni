@@ -24,6 +24,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
+      - name: Generate SNS content
+        run: python automation/sns/generate_content.py
+
       - name: Check Buffer connection
         env:
           BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
