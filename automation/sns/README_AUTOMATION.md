@@ -23,6 +23,10 @@ Public media publishing is intentionally separated into `BASE SNS Publish Media 
 - The default is locked and does not expose a public media URL.
 - SNS publication is not performed by this workflow; it only prepares Buffer drafts when explicitly enabled.
 
+## Japanese font validation
+
+The renderer now requires a Japanese-capable Noto CJK font and the workflows install `fonts-noto-cjk` explicitly. A replacement run verified Japanese text in the generated frame and recreated all three Buffer drafts after removing the broken-font drafts.
+
 ## Current targets
 
 - Instagram: `base_iwakuni`
