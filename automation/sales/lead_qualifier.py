@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
+OUTPUT_DIR = ROOT / "output"
 
 KEYWORDS = {
     "urgency": ["急ぎ", "至急", "今月", "すぐ", "困って", "止まって"],
@@ -71,7 +72,8 @@ def main():
     if not text:
         raise SystemExit("lead text is required")
     result = qualify(text)
-    out = ROOT / "lead_qualification_latest.json"
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    out = OUTPUT_DIR / "lead_qualification_latest.json"
     out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
