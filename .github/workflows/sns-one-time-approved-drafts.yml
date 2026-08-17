@@ -1,0 +1,74 @@
+name: BASE SNS One-Time Approved Drafts
+
+on:
+  push:
+    branches:
+      - buffer-connection-test
+
+permissions:
+  contents: write
+
+concurrency:
+  group: base-sns-one-time-drafts
+  cancel-in-progress: false
+
+jobs:
+  create-approved-drafts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: buffer-connection-test
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install -r automation/sns/requirements.txt
+
+      - name: Install ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Generate approval content
+        run: python automation/sns/generate_content.py
+
+      - name: Render vertical MP4
+        run: python automation/sns/render_video.py
+
+      - name: Publish MP4 to dedicated public media branch
+        env:
+          CONFIRM_PUBLIC_MEDIA: 'YES'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash automation/sns/publish_media.sh
+
+      - name: Create Buffer drafts only
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+          BUFFER_CREATE_DRAFTS: 'true'
+        run: |
+          export BUFFER_MEDIA_URL="$(cat automation/sns/output/public_media_url.txt)"
+          export BUFFER_DRAFT_TITLE="$(python -c 'import json; print(json.load(open("automation/sns/output/content.json"))["title"])')"
+          export BUFFER_DRAFT_TEXT="$(python -c 'import json; d=json.load(open("automation/sns/output/content.json")); print(d["caption"]+" "+" ".join(d["hashtags"]))')"
+          python automation/sns/buffer_draft_video.py
+
+      - name: Verify three draft results were returned
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('automation/sns/output/buffer_draft_results.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          assert len(data) == 3, f'expected 3 results, got {len(data)}'
+          print('draft_results=3')
+          PY
+
+      - name: Save approval artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sns-one-time-approved-drafts
+          path: automation/sns/output/
+          retention-days: 7
