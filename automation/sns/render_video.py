@@ -39,13 +39,16 @@ def find_font() -> str:
     candidates = [
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/opentype/noto/NotoSansCJKjp-Bold.otf",
+        "/usr/share/fonts/opentype/noto/NotoSansCJKjp-Regular.otf",
         "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     ]
     for candidate in candidates:
         if Path(candidate).exists():
             return candidate
-    raise RuntimeError("No usable font found")
+    raise RuntimeError(
+        "Japanese Noto CJK font is required. Install fonts-noto-cjk before rendering."
+    )
 
 
 def fit_text(draw: ImageDraw.ImageDraw, text: str, font_path: str, max_width: int, start_size: int = 94):
@@ -61,7 +64,6 @@ def make_frame(text: str, index: int, total: int, font_path: str, path: Path) ->
     image = Image.new("RGB", (WIDTH, HEIGHT), (16, 20, 28))
     draw = ImageDraw.Draw(image)
 
-    # simple premium gradient-like bands without external assets
     draw.rectangle((0, 0, WIDTH, 260), fill=(24, 34, 50))
     draw.rectangle((0, HEIGHT - 260, WIDTH, HEIGHT), fill=(24, 34, 50))
     draw.rounded_rectangle((80, 430, WIDTH - 80, 1450), radius=54, fill=(245, 247, 250))
@@ -128,6 +130,7 @@ def main() -> None:
         slides.append(DEFAULT_CONTENT["slides"][len(slides)])
 
     font_path = find_font()
+    print(f"font={font_path}")
     frame_paths = []
     for index, text in enumerate(slides, start=1):
         path = FRAMES / f"slide_{index}.png"
