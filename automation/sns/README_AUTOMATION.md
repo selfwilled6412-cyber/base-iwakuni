@@ -25,7 +25,7 @@ Public media publishing is intentionally separated into `BASE SNS Publish Media 
 
 ## Japanese font validation
 
-The renderer now requires a Japanese-capable Noto CJK font and the workflows install `fonts-noto-cjk` explicitly. A replacement run verified Japanese text in the generated frame and recreated all three Buffer drafts after removing the broken-font drafts.
+The renderer requires a Japanese-capable Noto CJK font and the workflows install `fonts-noto-cjk` explicitly. A replacement run verified readable Japanese text in the generated frame, deleted the three broken-font drafts, and recreated three corrected Buffer drafts.
 
 ## Current targets
 
