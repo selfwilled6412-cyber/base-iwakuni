@@ -29,6 +29,12 @@ jobs:
           BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
         run: python automation/sns/buffer_channels.py
 
+      - name: Validate Buffer draft plan without creating drafts
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+          BUFFER_CREATE_DRAFTS: 'false'
+        run: python automation/sns/buffer_draft_video.py
+
       - name: Save Buffer test result
         if: always()
         uses: actions/upload-artifact@v4
