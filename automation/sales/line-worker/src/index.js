@@ -34,18 +34,17 @@ function normalizeTextEvents(payload) {
 
 async function forwardToPrivateSink(records, env) {
   if (!env.PRIVATE_SINK_URL || !env.PRIVATE_SINK_SHARED_SECRET) {
-    // Safe default: validate successfully but do not persist until private sink is configured.
     return { forwarded: 0, sink_configured: false };
   }
   let forwarded = 0;
   for (const record of records) {
     const res = await fetch(env.PRIVATE_SINK_URL, {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-base-shared-secret": env.PRIVATE_SINK_SHARED_SECRET,
-      },
-      body: JSON.stringify(record),
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        shared_secret: env.PRIVATE_SINK_SHARED_SECRET,
+        record,
+      }),
     });
     if (!res.ok) throw new Error(`private sink failed: ${res.status}`);
     forwarded += 1;
@@ -72,7 +71,6 @@ export default {
     const records = normalizeTextEvents(payload);
     const result = await forwardToPrivateSink(records, env);
 
-    // LINE only needs a fast 2xx acknowledgment. No reply API call is made here.
     return Response.json({ ok: true, accepted: records.length, ...result });
   },
 };
