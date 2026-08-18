@@ -21,8 +21,6 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: automation/sales/line-worker/package-lock.json
       - run: npm install --package-lock-only
       - run: npm ci
       - run: npm test
