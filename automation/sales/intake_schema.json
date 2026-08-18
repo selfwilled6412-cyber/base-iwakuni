@@ -1,0 +1,23 @@
+{
+  "required_for_first_review": [
+    "company_name",
+    "lead_text"
+  ],
+  "recommended_fields": [
+    "contact_name",
+    "channel",
+    "problem",
+    "current_flow",
+    "frequency",
+    "time_per_run",
+    "tools",
+    "timing",
+    "budget",
+    "personal_data_involved"
+  ],
+  "statuses": {
+    "lead": ["新規", "要確認", "提案準備", "見積提出", "保留", "成約", "失注"],
+    "priority": ["A", "B", "C"]
+  },
+  "rule": "実相談本文・個人情報はGitHubへ保存しない。運用データはGit管理外またはGoogle Workspace等の非公開領域に保存する。"
+}
