@@ -1,0 +1,24 @@
+name: BASE AI Sales Engine Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'automation/sales/**'
+      - '.github/workflows/sales-engine-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run sales engine tests
+        working-directory: automation/sales
+        run: python -m unittest -v test_line_webhook_receiver.py test_pipeline.py
