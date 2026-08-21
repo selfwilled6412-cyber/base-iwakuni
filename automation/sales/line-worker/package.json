@@ -1,0 +1,12 @@
+{
+  "name": "base-line-webhook",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "wrangler deploy --dry-run --outdir dist"
+  },
+  "devDependencies": {
+    "wrangler": "^4.102.0"
+  }
+}

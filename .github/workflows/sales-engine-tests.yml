@@ -1,0 +1,46 @@
+name: BASE AI Sales Engine Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'automation/sales/**'
+      - 'automation/index.html'
+      - '.github/workflows/sales-engine-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run sales engine tests
+        working-directory: automation/sales
+        run: python -m unittest -v test_line_webhook_receiver.py test_pipeline.py
+      - name: Validate automation landing page
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html = Path('automation/index.html').read_text(encoding='utf-8')
+          required = [
+              '業務自動化ミニパック',
+              '33,000円〜',
+              'https://lin.ee/z5T92Yn',
+              '自動化相談',
+              '個別見積り',
+          ]
+          missing = [text for text in required if text not in html]
+          if missing:
+              raise SystemExit(f'missing required landing-page text: {missing}')
+          forbidden = ['必ず売上', '絶対に', '確実に削減', '成果保証']
+          found = [text for text in forbidden if text in html]
+          if found:
+              raise SystemExit(f'forbidden claim found: {found}')
+          print('landing page checks passed')
+          PY

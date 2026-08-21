@@ -1,0 +1,28 @@
+name: BASE LINE Worker Safe Tests
+
+on:
+  pull_request:
+    paths:
+      - 'automation/sales/line-worker/**'
+      - '.github/workflows/line-worker-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-dry-run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation/sales/line-worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: npm install --package-lock-only
+      - run: npm ci
+      - run: npm test
+      - name: Compile Worker without deploying
+        run: npm run check
