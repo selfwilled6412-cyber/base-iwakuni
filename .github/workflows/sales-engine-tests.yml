@@ -22,7 +22,7 @@ jobs:
           python-version: '3.12'
       - name: Run sales engine tests
         working-directory: automation/sales
-        run: python -m unittest -v test_line_webhook_receiver.py test_pipeline.py
+        run: python -m unittest -v test_line_webhook_receiver.py test_pipeline.py test_conversion_feedback.py
       - name: Validate automation landing page
         run: |
           python - <<'PY'
