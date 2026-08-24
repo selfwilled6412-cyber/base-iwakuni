@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'automation/sales/**'
+      - 'automation/sns/**'
       - 'automation/index.html'
       - '.github/workflows/sales-engine-tests.yml'
   workflow_dispatch:
@@ -23,6 +24,8 @@ jobs:
       - name: Run sales engine tests
         working-directory: automation/sales
         run: python -m unittest -v test_line_webhook_receiver.py test_pipeline.py test_conversion_feedback.py
+      - name: Scan sales and SNS code for committed secrets
+        run: python automation/sales/safety_scan.py
       - name: Validate automation landing page
         run: |
           python - <<'PY'
