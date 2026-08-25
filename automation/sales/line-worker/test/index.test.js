@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeTextEvents, verifyLineSignature } from '../src/index.js';
+import {
+  MAX_WEBHOOK_BYTES,
+  normalizeTextEvents,
+  readTextWithLimit,
+  verifyLineSignature,
+} from '../src/index.js';
 
 async function makeSignature(body, secret) {
   const key = await crypto.subtle.importKey(
@@ -20,6 +25,7 @@ test('verifies LINE HMAC-SHA256 signature against raw body', async () => {
   const signature = await makeSignature(body, secret);
   assert.equal(await verifyLineSignature(body, signature, secret), true);
   assert.equal(await verifyLineSignature(body, 'invalid', secret), false);
+  assert.equal(await verifyLineSignature(body, '%%%not-base64%%%', secret), false);
 });
 
 test('normalizes text events only', () => {
@@ -40,4 +46,23 @@ test('normalizes text events only', () => {
   assert.equal(records.length, 1);
   assert.equal(records[0].message_text, '自動化相談');
   assert.equal(records[0].event_id, 'evt1');
+});
+
+test('reads normal webhook body within size limit', async () => {
+  const request = new Request('https://example.test/webhook', {
+    method: 'POST',
+    body: '{"events":[]}',
+  });
+  assert.equal(await readTextWithLimit(request), '{"events":[]}');
+});
+
+test('rejects webhook body larger than configured maximum', async () => {
+  const request = new Request('https://example.test/webhook', {
+    method: 'POST',
+    body: 'x'.repeat(MAX_WEBHOOK_BYTES + 1),
+  });
+  await assert.rejects(
+    () => readTextWithLimit(request),
+    (error) => error instanceof Response && error.status === 413
+  );
 });
