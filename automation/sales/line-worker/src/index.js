@@ -1,22 +1,67 @@
 const encoder = new TextEncoder();
+const MAX_WEBHOOK_BYTES = 1024 * 1024;
 
-function bytesToBase64(bytes) {
-  let binary = "";
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary);
+function base64ToBytes(value) {
+  try {
+    const binary = atob(value);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  } catch {
+    return null;
+  }
 }
 
 async function verifyLineSignature(bodyText, signature, channelSecret) {
   if (!signature || !channelSecret) return false;
+  const receivedMac = base64ToBytes(signature);
+  if (!receivedMac) return false;
+
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(channelSecret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["sign"]
+    ["verify"]
   );
-  const digest = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyText));
-  return bytesToBase64(new Uint8Array(digest)) === signature;
+
+  return crypto.subtle.verify(
+    "HMAC",
+    key,
+    receivedMac,
+    encoder.encode(bodyText)
+  );
+}
+
+async function readTextWithLimit(request, maxBytes = MAX_WEBHOOK_BYTES) {
+  const declaredLength = Number(request.headers.get("content-length") || 0);
+  if (declaredLength > maxBytes) {
+    throw new Response("Payload too large", { status: 413 });
+  }
+
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new Response("Payload too large", { status: 413 });
+    }
+    chunks.push(value);
+  }
+
+  const combined = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(combined);
 }
 
 function normalizeTextEvents(payload) {
@@ -62,17 +107,35 @@ export default {
       return new Response("Not found", { status: 404 });
     }
 
-    const bodyText = await request.text();
+    let bodyText;
+    try {
+      bodyText = await readTextWithLimit(request);
+    } catch (error) {
+      if (error instanceof Response) return error;
+      console.error(JSON.stringify({ message: "webhook body read failed" }));
+      return new Response("Bad request", { status: 400 });
+    }
+
     const signature = request.headers.get("x-line-signature") || "";
     const valid = await verifyLineSignature(bodyText, signature, env.LINE_CHANNEL_SECRET || "");
     if (!valid) return new Response("Invalid signature", { status: 401 });
 
-    const payload = JSON.parse(bodyText || "{}");
-    const records = normalizeTextEvents(payload);
-    const result = await forwardToPrivateSink(records, env);
+    let payload;
+    try {
+      payload = JSON.parse(bodyText || "{}");
+    } catch {
+      return new Response("Invalid JSON", { status: 400 });
+    }
 
-    return Response.json({ ok: true, accepted: records.length, ...result });
+    const records = normalizeTextEvents(payload);
+    try {
+      const result = await forwardToPrivateSink(records, env);
+      return Response.json({ ok: true, accepted: records.length, ...result });
+    } catch {
+      console.error(JSON.stringify({ message: "private sink forwarding failed" }));
+      return new Response("Temporary failure", { status: 502 });
+    }
   },
 };
 
-export { verifyLineSignature, normalizeTextEvents };
+export { MAX_WEBHOOK_BYTES, normalizeTextEvents, readTextWithLimit, verifyLineSignature };
