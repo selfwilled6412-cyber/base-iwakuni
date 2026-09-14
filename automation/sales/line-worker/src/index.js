@@ -1,0 +1,141 @@
+const encoder = new TextEncoder();
+const MAX_WEBHOOK_BYTES = 1024 * 1024;
+
+function base64ToBytes(value) {
+  try {
+    const binary = atob(value);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+async function verifyLineSignature(bodyText, signature, channelSecret) {
+  if (!signature || !channelSecret) return false;
+  const receivedMac = base64ToBytes(signature);
+  if (!receivedMac) return false;
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(channelSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  );
+
+  return crypto.subtle.verify(
+    "HMAC",
+    key,
+    receivedMac,
+    encoder.encode(bodyText)
+  );
+}
+
+async function readTextWithLimit(request, maxBytes = MAX_WEBHOOK_BYTES) {
+  const declaredLength = Number(request.headers.get("content-length") || 0);
+  if (declaredLength > maxBytes) {
+    throw new Response("Payload too large", { status: 413 });
+  }
+
+  if (!request.body) return "";
+  const reader = request.body.getReader();
+  const chunks = [];
+  let total = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new Response("Payload too large", { status: 413 });
+    }
+    chunks.push(value);
+  }
+
+  const combined = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(combined);
+}
+
+function normalizeTextEvents(payload) {
+  return (payload.events || [])
+    .filter((event) => event?.type === "message" && event?.message?.type === "text")
+    .map((event) => ({
+      source: "line",
+      event_id: String(event.webhookEventId || event.message.id || ""),
+      user_id: String(event.source?.userId || ""),
+      message_text: String(event.message?.text || "").trim(),
+      timestamp: Number(event.timestamp || 0),
+    }))
+    .filter((event) => event.message_text.length > 0);
+}
+
+async function forwardToPrivateSink(records, env) {
+  if (!env.PRIVATE_SINK_URL || !env.PRIVATE_SINK_SHARED_SECRET) {
+    return { forwarded: 0, sink_configured: false };
+  }
+  let forwarded = 0;
+  for (const record of records) {
+    const res = await fetch(env.PRIVATE_SINK_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        shared_secret: env.PRIVATE_SINK_SHARED_SECRET,
+        record,
+      }),
+    });
+    if (!res.ok) throw new Error(`private sink failed: ${res.status}`);
+    forwarded += 1;
+  }
+  return { forwarded, sink_configured: true };
+}
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname === "/health") {
+      return Response.json({ ok: true, service: "base-line-webhook", sends_messages: false });
+    }
+    if (request.method !== "POST" || url.pathname !== "/webhook") {
+      return new Response("Not found", { status: 404 });
+    }
+
+    let bodyText;
+    try {
+      bodyText = await readTextWithLimit(request);
+    } catch (error) {
+      if (error instanceof Response) return error;
+      console.error(JSON.stringify({ message: "webhook body read failed" }));
+      return new Response("Bad request", { status: 400 });
+    }
+
+    const signature = request.headers.get("x-line-signature") || "";
+    const valid = await verifyLineSignature(bodyText, signature, env.LINE_CHANNEL_SECRET || "");
+    if (!valid) return new Response("Invalid signature", { status: 401 });
+
+    let payload;
+    try {
+      payload = JSON.parse(bodyText || "{}");
+    } catch {
+      return new Response("Invalid JSON", { status: 400 });
+    }
+
+    const records = normalizeTextEvents(payload);
+    try {
+      const result = await forwardToPrivateSink(records, env);
+      return Response.json({ ok: true, accepted: records.length, ...result });
+    } catch {
+      console.error(JSON.stringify({ message: "private sink forwarding failed" }));
+      return new Response("Temporary failure", { status: 502 });
+    }
+  },
+};
+
+export { MAX_WEBHOOK_BYTES, normalizeTextEvents, readTextWithLimit, verifyLineSignature };

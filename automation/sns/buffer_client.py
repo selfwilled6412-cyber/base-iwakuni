@@ -23,6 +23,7 @@ def call_buffer(query):
 
 
 def main():
+    OUT.mkdir(parents=True, exist_ok=True)
     account = call_buffer("query { account { organizations { id name } } }")
     (OUT / "buffer_account.json").write_text(json.dumps(account, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(account, ensure_ascii=False, indent=2))

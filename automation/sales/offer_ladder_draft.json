@@ -1,0 +1,57 @@
+{
+  "status": "draft_only",
+  "publish_allowed": false,
+  "purpose": "LINE相談から単発成約だけで終わらせず、課題の大きさに応じて次の提案へつなげるための未公開商品設計",
+  "offers": [
+    {
+      "stage": "entry",
+      "name": "業務自動化ミニパック",
+      "price": "33,000円〜（既存設定）",
+      "goal": "繰り返しPC作業を1つ選び、小さく自動化を始める",
+      "next_offer_condition": "同種の手作業が複数残る、または関連作業まで一体化した方が効果的な場合"
+    },
+    {
+      "stage": "expand",
+      "name": "業務フローまとめて改善",
+      "price": "個別見積り・未確定",
+      "goal": "フォーム、スプレッドシート、通知、文章生成など複数工程をつないで手戻りを減らす",
+      "examples": [
+        "問い合わせ受付→整理→一覧化",
+        "日報入力→集計→確認用一覧",
+        "SNS企画→下書き→承認待ち"
+      ],
+      "next_offer_condition": "継続的な改善や月次の見直しが必要な場合"
+    },
+    {
+      "stage": "recurring",
+      "name": "AI業務改善サポート",
+      "price": "未設定・本人承認前に提示禁止",
+      "goal": "導入済み自動化の改善、追加業務の整理、運用トラブルの見直しを継続支援する",
+      "billing_model": "未確定",
+      "sales_note": "契約形態・価格・提供範囲は本人承認後に確定する"
+    }
+  ],
+  "qualification_rules": {
+    "do_not_upsell_when": [
+      "顧客課題が1業務の小規模自動化で十分解決できる",
+      "費用対効果を説明できない",
+      "本人確認前の提案下書き段階"
+    ],
+    "consider_expand_when": [
+      "複数の転記・集計・確認作業が連続している",
+      "同じ情報を複数ツールへ入力している",
+      "単発改善後も関連手作業が明確に残る"
+    ],
+    "consider_recurring_when": [
+      "運用変更が多い",
+      "複数部門・複数業務へ横展開したい",
+      "月次で改善候補が継続的に出る"
+    ]
+  },
+  "safety": {
+    "external_publish_requires_human_approval": true,
+    "price_commitment_requires_human_approval": true,
+    "contract_requires_human_approval": true,
+    "no_guaranteed_results": true
+  }
+}
