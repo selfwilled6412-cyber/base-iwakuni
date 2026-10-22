@@ -1,0 +1,36 @@
+/* BASE homepage addition: reuse the existing palette and effects, scoped to this section. */
+.base-guide{padding:var(--pad) 0;scroll-margin-top:90px;background:radial-gradient(ellipse at 10% 25%,#063b6044,transparent 55%),var(--bg-2)}
+.base-guide .base-guide-layout{position:relative;z-index:1;display:grid;grid-template-columns:.8fr 1.2fr;gap:clamp(28px,5vw,72px);align-items:center}
+.base-guide-portrait{position:relative;isolation:isolate;align-self:start;margin-top:50px}
+.base-guide-portrait::before,.base-guide-portrait::after{content:"";position:absolute;inset:7%;border:1px solid #72ecff70;border-radius:50%;z-index:-1;box-shadow:0 0 55px #00a8ff25;transform:rotateX(12deg);animation:baseGuideHalo 8s ease-in-out infinite}
+.base-guide-portrait::after{inset:0;opacity:.45;animation-delay:-4s}
+.base-guide-portrait img{position:relative;width:100%;filter:drop-shadow(0 18px 35px #72ecff28);animation:baseGuideFloat 7s ease-in-out infinite}
+.base-guide-identity{position:relative;margin-top:-12px;text-align:center;letter-spacing:.14em;color:var(--cyan);font-size:11px;font-weight:700}
+.base-guide-identity strong{display:block;color:var(--white);font-size:38px;line-height:1.4;letter-spacing:.18em}
+.base-guide-identity span{font-size:13px;letter-spacing:.05em}
+.base-guide h2{font-size:clamp(30px,4vw,51px);line-height:1.4;letter-spacing:-.04em;margin:0 0 18px}
+.base-guide-lead{color:var(--text-light);font-size:15px;margin:0 0 26px}
+.base-guide-form{padding:clamp(20px,3vw,32px);border:1px solid var(--line);border-radius:var(--r-md);background:linear-gradient(145deg,#0b2841cc,#061528e8);box-shadow:0 20px 65px #0004,inset 0 1px #ffffff0d}
+.base-guide-form label{display:block;font-size:13px;font-weight:700;margin:0 0 8px;color:#d7effb}
+.base-guide-form select,.base-guide-form textarea{font:inherit;width:100%;min-width:0;color:#f2faff;background:#04101f;border:1px solid #72ecff50;border-radius:12px;padding:13px 14px;line-height:1.7}
+.base-guide-form select{margin-bottom:20px}
+.base-guide-form textarea{min-height:100px;resize:vertical}
+.base-guide-form select:focus-visible,.base-guide-form textarea:focus-visible,.base-guide button:focus-visible,.base-guide a:focus-visible{outline:3px solid var(--cyan);outline-offset:4px}
+.base-guide-fields{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.base-guide-form .btn{margin-top:7px;white-space:normal;text-align:center;width:100%}
+.base-guide-note{color:#99b7cd;font-size:11px;line-height:1.8;margin:14px 0 0}
+.base-guide-result{margin-top:23px;padding-top:23px;border-top:1px solid var(--line)}
+.base-guide-result[hidden],.base-guide [hidden]{display:none!important}
+.base-guide-result h3{font-size:21px;color:#fff;line-height:1.55;margin:0 0 9px}
+.base-guide-result p{color:var(--text-light);font-size:13px}
+.base-guide-detail{display:inline-block;color:var(--cyan);font-size:13px;border-bottom:1px solid #72ecff70;margin-bottom:15px;padding:4px 0}
+.base-guide-actions{display:flex;gap:12px;margin-top:17px;flex-wrap:wrap}
+.base-guide-actions .btn{width:auto;flex:1;min-width:160px;font-size:13px;padding:12px 17px;margin:0}
+.base-guide-status{min-height:24px;margin:12px 0 0!important;color:var(--cyan)!important;font-size:12px!important}
+.base-guide-copy{margin-top:10px;font-size:12px!important}
+.base-guide-shortcut{color:var(--cyan);text-underline-offset:4px;text-decoration:underline;font-weight:700}
+@keyframes baseGuideFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes baseGuideHalo{0%,100%{opacity:.4;transform:scale(.98)}50%{opacity:.8;transform:scale(1.04)}}
+@media(max-width:850px){.base-guide{padding:var(--pad-sm) 0}.base-guide .base-guide-layout{grid-template-columns:1fr;gap:28px}.base-guide-portrait{max-width:310px;margin:0 auto;width:100%}.base-guide-identity strong{font-size:28px}.base-guide-content>.eyebrow,.base-guide-content>h2,.base-guide-lead{text-align:center}.base-guide h2{font-size:33px}.base-guide-lead{font-size:14px}}
+@media(max-width:480px){.base-guide-fields{grid-template-columns:1fr;gap:0}.base-guide-form{padding:20px}.base-guide-actions{flex-direction:column}.base-guide-actions .btn{width:100%}.base-guide-portrait{max-width:260px}.base-guide h2{font-size:29px}}
+@media(prefers-reduced-motion:reduce){.base-guide-portrait img,.base-guide-portrait::before,.base-guide-portrait::after{animation:none!important}.base-guide .btn{transition:none!important}.base-guide .btn:hover{transform:none!important}}
