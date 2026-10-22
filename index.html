@@ -16,6 +16,7 @@
 <meta property="og:image"       content="https://selfwilled6412-cyber.github.io/base-iwakuni/assets/base-network.png">
 <meta name="twitter:card"       content="summary_large_image">
 <link rel="stylesheet" href="styles.css?v=hp1">
+<link rel="stylesheet" href="assets/lumi-guide.css?v=20261023">
 <script type="application/ld+json">{
   "@context":"https://schema.org",
   "@type":"ProfessionalService",
@@ -100,7 +101,7 @@
         <a class="btn primary btn-xl" href="https://lin.ee/z5T92Yn" data-lead="general" target="_blank" id="heroCTA" rel="noopener">LINEで相談する</a>
         <a class="btn ghost btn-xl" href="#services" id="heroLearn">相談できる内容を見る</a>
       </div>
-      <p class="mini-note">相談内容がまだ整理できていなくても大丈夫です。</p>
+      <p class="mini-note">相談内容がまだ整理できていなくても大丈夫です。 <a class="base-guide-shortcut" href="#lumi-guide">ルミと相談の入口を整理する →</a></p>
     </div>
 
     <div class="hero-orbit" aria-hidden="true">
@@ -154,6 +155,38 @@
       </div>
     </div>
   </div>
+</section>
+
+<!-- BASE LUMI: native homepage consultation guide -->
+<section class="base-guide dark" id="lumi-guide" aria-labelledby="base-guide-heading">
+ <div class="grid-bg" aria-hidden="true"></div>
+ <div class="container base-guide-layout">
+  <div class="base-guide-portrait">
+   <img src="assets/lumi-approved.webp" width="900" height="900" loading="lazy" decoding="async" alt="BASEの案内役ルミ。短い黒髪と紺色のスーツの女性キャラクター">
+   <p class="base-guide-identity">BASE BUSINESS NAVIGATOR<strong>LUMI <span>ルミ</span></strong></p>
+  </div>
+  <div class="base-guide-content">
+   <p class="eyebrow">FROM YOUR NEXT QUESTION</p>
+   <h2 id="base-guide-heading">気になったことを、<br><span class="gradient-text">あなたの会社の相談へ。</span></h2>
+   <p class="base-guide-lead">SNSで見たことも、日々の困りごとも。<br>ルミのガイドで、まず相談の入口を整理しましょう。</p>
+   <form class="base-guide-form" id="base-guide-form">
+    <label for="base-guide-service">相談したいこと</label>
+    <select id="base-guide-service" name="service">
+     <option value="pbx">電話・クラウドPBX</option><option value="scs">SCS評価制度・情報セキュリティ</option><option value="camera">防犯カメラ</option><option value="network">Wi-Fi・ネットワーク</option><option value="web">Web・LINE・販促</option><option value="ai">AI・アプリ・業務改善</option><option value="opening">開業・設備・POS・OA</option>
+    </select>
+    <div class="base-guide-fields"><div><label for="base-guide-stage">今の状況</label><select id="base-guide-stage"><option>まず情報を知りたい</option><option>今の環境を見直したい</option><option>導入・見積もりを相談したい</option></select></div><div><label for="base-guide-timing">希望する時期</label><select id="base-guide-timing"><option>相談して決めたい</option><option>できるだけ早く</option><option>1〜3か月以内</option><option>それ以降・未定</option></select></div></div>
+    <label for="base-guide-issue">困っていること（任意）</label><textarea id="base-guide-issue" maxlength="500" placeholder="例：外出中に会社の電話を受けたい"></textarea>
+    <button type="submit" class="btn primary">相談の入口を見る →</button>
+    <p class="base-guide-note">あらかじめ用意した回答で整理する選択式ガイドです。AIによる自動診断ではありません。入力内容は保存・自動送信されません。個人情報や顧客情報は入力せず、業務の概要だけをお知らせください。</p>
+    <div class="base-guide-result" id="base-guide-result" hidden aria-live="polite">
+     <h3 id="base-guide-title"></h3><p id="base-guide-description"></p><a class="base-guide-detail" id="base-guide-detail" href="services/phone/">サービスの詳細を見る →</a>
+     <div class="base-guide-actions"><button class="btn ghost" type="button" id="base-guide-copy-button">相談文をコピー</button><a class="btn primary" id="base-guide-line" href="https://lin.ee/z5T92Yn" data-lead="pbx" target="_blank" rel="noopener">公式LINEを開く ↗</a></div>
+     <p class="base-guide-status" id="base-guide-status" role="status"></p><textarea class="base-guide-copy" id="base-guide-copy" aria-label="コピー用の相談文" readonly hidden></textarea>
+     <p class="base-guide-note">コピーした文をLINEへ貼り付け、ご自身で送信してください。</p>
+    </div>
+   </form>
+  </div>
+ </div>
 </section>
 
 <!-- ── Existing Users (困りごと別の入口) ─────────────── -->
@@ -371,5 +404,6 @@
 
 <script src="script.js?v=hp1"></script>
 <script defer src="analytics.js"></script>
+<script defer src="assets/lumi-guide.js?v=20261023"></script>
 </body>
 </html>
