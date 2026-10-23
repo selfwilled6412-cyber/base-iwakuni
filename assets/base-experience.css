@@ -61,3 +61,40 @@ body.bx-detail main>section:not(.hero){padding-top:60px;padding-bottom:60px}
  body:not(.bx-detail) .company-footer{padding:28px 24px 22px}
  body.bx-detail main>section:not(.hero){padding-top:40px;padding-bottom:40px}
 }
+/* More light, depth and motion, without adding scroll distance. */
+body:not(.bx-detail) .story{--scene-rgb:83,225,255}
+body:not(.bx-detail) .story[data-scene="1"]{--scene-rgb:169,130,255}
+body:not(.bx-detail) .story[data-scene="2"]{--scene-rgb:71,245,210}
+body:not(.bx-detail) .story-stage:before{content:"";position:absolute;inset:-15%;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 82% 25%,rgba(var(--scene-rgb),.30),transparent 37%),conic-gradient(from 25deg at 68% 42%,transparent 0deg,rgba(var(--scene-rgb),.11) 34deg,transparent 70deg,transparent 165deg,rgba(var(--scene-rgb),.15) 210deg,transparent 260deg);mix-blend-mode:screen;animation:bx-aurora 14s ease-in-out infinite alternate}
+body:not(.bx-detail) .stage-light{background:radial-gradient(ellipse at 73% 36%,rgba(var(--scene-rgb),.34),transparent 57%);opacity:1}
+body:not(.bx-detail) .stage-lines{opacity:1;background:repeating-linear-gradient(0deg,transparent 0 79px,#79dfff12 80px),repeating-linear-gradient(90deg,transparent 0 79px,#79dfff12 80px)}
+body:not(.bx-detail) .stage-sweep{height:2px;background:linear-gradient(90deg,transparent 20%,rgba(var(--scene-rgb),.45) 40%,#dbfbff 50%,rgba(var(--scene-rgb),.45) 60%,transparent 80%);box-shadow:0 0 16px 2px rgba(var(--scene-rgb),.75),0 0 65px 12px rgba(var(--scene-rgb),.25)}
+body:not(.bx-detail) .stage-word{color:rgba(var(--scene-rgb),.035);-webkit-text-stroke:1px rgba(var(--scene-rgb),.58);text-shadow:0 0 35px rgba(var(--scene-rgb),.22);letter-spacing:-.075em}
+body:not(.bx-detail) .chapter-number{color:rgb(var(--scene-rgb));text-shadow:0 0 16px rgba(var(--scene-rgb),.45)}
+body:not(.bx-detail) .chapter h2{color:#f5fcff;text-shadow:0 0 38px #50b7ed30,0 4px 18px #000b}
+body:not(.bx-detail) .chapter h2 span{color:#a8f3ff;background:linear-gradient(105deg,#f2fdff 0%,#8feaff 45%,#b7aaff 85%,#e0fdff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 18px rgba(var(--scene-rgb),.38))}
+body:not(.bx-detail) .chapter .description{color:#c1d8e6;text-shadow:0 2px 9px #020610}
+body:not(.bx-detail) .capabilities li{border-color:rgba(var(--scene-rgb),.45);background:linear-gradient(120deg,rgba(var(--scene-rgb),.13),#07182be6);box-shadow:inset 0 0 14px rgba(var(--scene-rgb),.07),0 0 18px rgba(var(--scene-rgb),.08);color:#e0faff}
+body:not(.bx-detail) .chapter-links a{border-bottom-color:rgba(var(--scene-rgb),.65);text-shadow:0 0 18px rgba(var(--scene-rgb),.25)}
+body:not(.bx-detail) .bridge{background:radial-gradient(ellipse at 50% 50%,#094d7959,transparent 65%),#020610}
+body:not(.bx-detail) .bridge h2 em{filter:drop-shadow(0 0 24px #55cfff70)}
+body:not(.bx-detail) .cinematic-seam:before{height:2px;box-shadow:0 0 18px 4px #57dfff65,0 0 65px 14px #3479ff35}
+body:not(.bx-detail) .switchboard:before{background:radial-gradient(ellipse at 26% 45%,rgba(var(--switch-rgb),.22),transparent 65%)}
+body:not(.bx-detail) .switch-stage{border-color:rgba(var(--switch-rgb),.38);box-shadow:0 0 45px rgba(var(--switch-rgb),.07),inset 0 1px rgba(var(--switch-rgb),.18)}
+body:not(.bx-detail) .service-directory{background:radial-gradient(ellipse at 90% 20%,#0e4e7c55,transparent 65%),radial-gradient(ellipse at 8% 80%,#31236140,transparent 55%),#030914}
+body:not(.bx-detail) .section-top h2,body:not(.bx-detail) .process-head h2{text-shadow:0 0 40px #70dfff24}
+body:not(.bx-detail) .directory a{border-color:#6acfff45;background:radial-gradient(300px circle at var(--mx,80%) var(--my,0%),#14618e65,transparent 90%),linear-gradient(125deg,#0b233a,#040d1d);box-shadow:inset 0 1px #b5efff13,0 10px 28px #0003}
+body:not(.bx-detail) .directory a:nth-child(3n+2){border-color:#b6a1ff45;background:radial-gradient(ellipse at 100% 0,#5940a447,transparent 75%),linear-gradient(125deg,#101f37,#060d1d)}
+body:not(.bx-detail) .directory a[data-domain="AI"]{background:radial-gradient(ellipse at 100% 0,#18655a47,transparent 75%),linear-gradient(125deg,#092b33,#040e1c);border-color:#77eac04a}
+body:not(.bx-detail) .directory a:after{color:#a4eaff0f;font-size:clamp(44px,5vw,65px)}
+body:not(.bx-detail) .directory .arr{color:#a9f3ff;text-shadow:0 0 16px #51cfff99}
+body:not(.bx-detail) .consultation{background:radial-gradient(ellipse at 80% 35%,#135c7c66,transparent 58%),radial-gradient(ellipse at 10% 100%,#37255b44,transparent 60%),#020914}
+.bx-detail .hero{box-shadow:inset 0 -1px #5fcfff36}.bx-detail .bx-orb{filter:drop-shadow(0 0 28px #45bfff35)}
+@keyframes bx-aurora{from{transform:translate3d(-2%,1%,0) rotate(-7deg);opacity:.65}to{transform:translate3d(2%,-1%,0) rotate(7deg);opacity:1}}
+@media(max-width:700px){body:not(.bx-detail) .story-stage:before{inset:-5%;animation-duration:18s}body:not(.bx-detail) .stage-word{-webkit-text-stroke:1px rgba(var(--scene-rgb),.43)}body:not(.bx-detail) .stage-light{background:radial-gradient(ellipse at 75% 24%,rgba(var(--scene-rgb),.34),transparent 58%)}body:not(.bx-detail) .chapter .description{color:#bed4e2}body:not(.bx-detail) .directory a:after{font-size:48px}}
+@media(prefers-reduced-motion:reduce){body:not(.bx-detail) .story-stage:before{animation:none}}
+body:not(.bx-detail) .stage-lines:before,body:not(.bx-detail) .stage-lines:after{content:"";position:absolute;left:38%;top:5%;width:82%;height:62%;border:2px solid rgba(var(--scene-rgb),.4);border-radius:50%;box-shadow:0 0 15px rgba(var(--scene-rgb),.35),inset 0 0 20px rgba(var(--scene-rgb),.12);transform:rotate(-28deg);animation:bx-light-orbit 16s ease-in-out infinite alternate}
+body:not(.bx-detail) .stage-lines:after{left:44%;top:9%;width:66%;height:56%;border-width:1px;border-color:#b6a3ff65;transform:rotate(30deg);animation-direction:alternate-reverse;animation-duration:21s}
+@keyframes bx-light-orbit{to{transform:rotate(24deg) scale(1.06)}}
+@media(max-width:700px){body:not(.bx-detail) .stage-lines:before{left:35%;top:1%;width:110%;height:60%}body:not(.bx-detail) .stage-lines:after{left:30%;width:100%;height:54%}}
+@media(prefers-reduced-motion:reduce){body:not(.bx-detail) .stage-lines:before,body:not(.bx-detail) .stage-lines:after{animation:none}}
