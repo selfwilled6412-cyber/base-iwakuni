@@ -66,7 +66,7 @@ body:has(.hero.reduce) .stage-sweep{animation-play-state:paused}body:has(.hero.r
 @media(max-width:700px){.switchboard{padding:75px 22px}.switch-head{display:block;margin-bottom:30px}.switch-head h2{font-size:30px}.switch-head>p{font-size:12px;max-width:none;margin-top:20px}.switch-tabs{grid-template-columns:1fr 1fr}.switch-tabs button{padding:17px 15px;min-height:75px}.switch-tabs button b{font-size:13px}.switch-tabs button span{font-size:8px}.switch-stage{grid-template-columns:1fr;min-height:0}.switch-art{min-height:290px}.switch-word{font-size:84px;top:47%}.switch-word small{font-size:7px;letter-spacing:.3em;margin-top:16px}.switch-coordinate{top:18px;left:18px;font-size:7px}.switch-touch{bottom:16px;font-size:8px}.switch-detail{padding:18px 22px 30px;align-self:stretch;min-height:360px}.switch-detail:before{left:22px;right:22px;top:0;bottom:auto;height:1px;width:auto;background:linear-gradient(90deg,transparent,rgba(var(--switch-rgb),.4),transparent)}.switch-domain{font-size:9px;margin:9px 0 17px}.switch-detail h3{font-size:26px}.switch-description{font-size:12px}.switch-tags{gap:9px;margin-bottom:22px}.switch-tags li{font-size:9px}.switch-actions{gap:17px}.switch-consult{font-size:10px;padding:13px 15px;gap:20px}.switch-actions>a{font-size:10px}.switch-feedback{margin-top:14px}.switch-help{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.switch-word{animation:none!important}.switch-flare{display:none}}
 @media(max-width:700px){header nav{gap:14px;font-size:10px;letter-spacing:0}header .brand{font-size:11px;gap:7px}.top-link{padding:12px 10px}.grain{display:none}.node{min-height:44px}.enquiry-options button{min-height:46px}.copy-enquiry{min-height:48px}.story-photo{will-change:auto}}@media(max-width:380px){header nav>a:first-child{display:none}}
-</style><link rel="stylesheet" href="assets/base-experience.css?v=20261024-impact">
+</style><link rel="stylesheet" href="assets/base-experience.css?v=20261024-extreme">
 </head><body>
 <header><a href="#top" class="brand"><span class="mark">B</span>株式会社BASE</a><nav><a href="#services">事業領域</a><a class="top-link" href="https://lin.ee/z5T92Yn" data-lead="general" target="_blank" rel="noopener">LINEで相談 ↗</a></nav></header>
 <main id="top"><section class="hero reboot" id="hero" aria-label="BASEが起動し、8つの事業領域が光でつながる"><canvas id="universe" aria-hidden="true"></canvas><div class="vignette"></div><div class="grain"></div><div class="flash"></div>
@@ -149,31 +149,6 @@ const options=[...document.querySelectorAll('.enquiry-options button')],out=docu
 })();
 
 (()=>{'use strict';
-const story=document.querySelector('.story'),stage=document.querySelector('.story-stage'),canvas=document.getElementById('chapterUniverse'),ctx=canvas.getContext('2d'),chapters=[...document.querySelectorAll('.chapter')],seam=document.querySelector('.cinematic-seam');
-if(!ctx)return;let w=1,h=1,t=0,last=0,visible=false,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,dirty=true,scene=0,mix=0,previous=0,frame=0;
-const colors=['105,230,255','166,145,255','88,235,219'];
-function resize(){const r=stage.getBoundingClientRect();w=r.width;h=r.height;const d=Math.min(devicePixelRatio||1,w<700?1.25:1.5);canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0);dirty=true}new ResizeObserver(resize).observe(stage);resize();
-new IntersectionObserver(es=>{visible=es[0].isIntersecting;last=0;dirty=true},{rootMargin:'100px'}).observe(story);
-const points=Array.from({length:180},(_,i)=>{const a=i*2.39996323,y=1-2*(i+.5)/180,r=Math.sqrt(1-y*y);return {x:Math.cos(a)*r,y,z:Math.sin(a)*r,a,i}});
-function target(p,mode){if(mode===0){const a=p.a+t*.13,r=.25+(p.i%9)*.075;return{x:Math.cos(a)*r,y:p.y*.82,z:Math.sin(a)*r}}if(mode===1)return{x:p.x*.88,y:p.y*.98,z:p.z*.88};const a=p.a+t*.08,r=.3+(p.i%7)*.095;return{x:Math.cos(a)*r,y:Math.sin(a)*r*.7,z:Math.sin(p.a*2+t*.18)*.5}}
-function stroke(a,b,alpha,width=1){ctx.strokeStyle=`rgba(${colors[scene]},${alpha})`;ctx.lineWidth=width;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}
-let lastPaint=0;function render(now){frame=requestAnimationFrame(render);if(w<700&&now-lastPaint<32)return;lastPaint=now;if(document.hidden||!visible){last=0;return}if(paused&&!dirty)return;const dt=last?Math.min((now-last)/1000,.04):0;last=now;if(!paused)t+=dt;mix=Math.min(1,mix+dt*.8);dirty=false;ctx.clearRect(0,0,w,h);const mobile=w<700,cx=w*(mobile?.52:.74),cy=h*(mobile?.28:.47),size=Math.min(w*(mobile?.50:.32),h*.40),rot=t*.12;
-const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,size*1.65);glow.addColorStop(0,`rgba(${colors[scene]},.24)`);glow.addColorStop(1,`rgba(${colors[scene]},0)`);ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
-const e=mix*mix*(3-2*mix),mapped=points.map(p=>{const a=target(p,previous),b=target(p,scene),x=a.x+(b.x-a.x)*e,y=a.y+(b.y-a.y)*e,z=a.z+(b.z-a.z)*e;const rx=x*Math.cos(rot)-z*Math.sin(rot),rz=x*Math.sin(rot)+z*Math.cos(rot),pers=2.8/(2.8+rz);return{x:cx+rx*size*pers,y:cy+y*size*pers,z:rz,i:p.i}});
-ctx.globalCompositeOperation='screen';for(let i=0;i<mapped.length;i++){const a=mapped[i];for(let j=i+1;j<Math.min(i+14,mapped.length);j++){const b=mapped[j],d=Math.hypot(a.x-b.x,a.y-b.y);if(d<size*.32)stroke(a,b,(1-d/(size*.32))*.42,.8)}ctx.fillStyle=`rgba(${colors[scene]},${.3+(1-a.z)*.28})`;ctx.beginPath();ctx.arc(a.x,a.y,a.i%13===0?2.2:1.1,0,Math.PI*2);ctx.fill()}
-// Broad orbital arcs and long exposure particles give the sculpture depth.
-for(let k=0;k<3;k++){ctx.beginPath();ctx.strokeStyle=`rgba(${colors[scene]},${.25+k*.08})`;ctx.lineWidth=k===1?1.4:.7;ctx.ellipse(cx,cy,size*(1.15+k*.12),size*(.3+k*.12),-.5+k*.65,0,Math.PI*2);ctx.stroke();for(let q=0;q<22;q++){const a=t*(.2+k*.08)+q*.012+k*2,r=size*(1.15+k*.12),ry=size*(.3+k*.12),x=Math.cos(a)*r,y=Math.sin(a)*ry,rr=-.5+k*.65;ctx.fillStyle=`rgba(${colors[scene]},${(1-q/22)*.85})`;ctx.beginPath();ctx.arc(cx+x*Math.cos(rr)-y*Math.sin(rr),cy+x*Math.sin(rr)+y*Math.cos(rr),q===0?2.8:1.3,0,7);ctx.fill()}}
-// A gentle scanner remains behind the copy.
-const sy=cy+Math.sin(t*.5)*size;stroke({x:cx-size*1.3,y:sy},{x:cx+size*1.3,y:sy},.15,.8);ctx.globalCompositeOperation='source-over';}
-frame=requestAnimationFrame(render);
-function update(){let next=0;chapters.forEach((c,i)=>{if(c.getBoundingClientRect().top<innerHeight*.35)next=i;c.classList.toggle('is-current',c.getBoundingClientRect().top<innerHeight*.35&&c.getBoundingClientRect().bottom>innerHeight*.35)});if(next!==scene){previous=scene;scene=next;mix=paused?1:0;dirty=true}const r=story.getBoundingClientRect();story.style.setProperty('--chapter-progress',String(Math.max(0,Math.min(1,-r.top/(r.height-innerHeight)))));const sr=seam.getBoundingClientRect();seam.style.setProperty('--seam-progress',String(Math.max(0,Math.min(1,1-sr.top/innerHeight))))}
-let queued=false;addEventListener('scroll',()=>{if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;update()})}},{passive:true});addEventListener('resize',update);update();
-document.addEventListener('base-motion',e=>{paused=e.detail.paused;dirty=true;last=0});document.addEventListener('visibilitychange',()=>{last=0;dirty=true});
-document.querySelectorAll('.directory a').forEach(a=>a.addEventListener('pointermove',e=>{const r=a.getBoundingClientRect();a.style.setProperty('--mx',`${e.clientX-r.left}px`);a.style.setProperty('--my',`${e.clientY-r.top}px`)},{passive:true}));
-})();
-
-
-(()=>{'use strict';
 const board=document.getElementById('base-switch');if(!board)return;const tabs=[...board.querySelectorAll('[role="tab"]')],panel=document.getElementById('switch-panel'),word=document.getElementById('switchWord'),sub=document.getElementById('switchSub'),domain=document.getElementById('switchDomain'),title=document.getElementById('switchTitle'),description=document.getElementById('switchDescription'),tags=document.getElementById('switchTags'),service=document.getElementById('switchService'),feedback=document.getElementById('switchFeedback');
 const modes=[
 {word:'PHONE',sub:'WORK FROM ANYWHERE',rgb:'92,225,255',hue:190,domain:'01 / PHONE & CLOUD PBX',lines:['会社の電話に、','新しい自由を。'],description:'会社番号をスマホ・PCでも使いたい。外出先でも会社の電話を受けたい。働き方に合う電話環境を、クラウドPBX「INNOVERA」でご相談いただけます。',tags:['クラウドPBX','INNOVERA正式取扱い','電話環境の見直し'],path:'services/phone/',enquiry:'電話・PBX'},
@@ -195,6 +170,6 @@ const flare=ctx.createLinearGradient(cx-size,cy,cx+size,cy);flare.addColorStop(0
 requestAnimationFrame(draw);document.addEventListener('base-motion',e=>{paused=e.detail.paused;board.classList.toggle('motion-off',paused);dirty=true;last=0});document.addEventListener('visibilitychange',()=>{last=0;dirty=true});board.classList.toggle('motion-off',paused);
 })();
 
-</script><script defer src="analytics.js"></script><script defer src="assets/base-experience.js?v=20261024-business"></script></body></html>
+</script><script defer src="analytics.js"></script><script defer src="assets/base-spectacle.js?v=20261024-extreme"></script><script defer src="assets/base-experience.js?v=20261024-business"></script></body></html>
 
 
