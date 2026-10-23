@@ -6,3 +6,58 @@
 .bx-detail .visual:before,.bx-detail .visual:after{display:none}.bx-detail .visual-inner{background:transparent}.bx-detail .visual{height:auto;min-height:400px}.bx-detail .visual>.bx-orb{position:absolute;inset:0;height:100%;z-index:-1}.bx-detail .hero-visual{max-width:none!important}.bx-detail .bx-motion-toggle{position:absolute;right:18px;bottom:18px;z-index:4;min-height:44px;padding:10px 15px;border:1px solid #7deaff55;border-radius:30px;background:#071629df;color:#beeaff;cursor:pointer;font-size:11px}.bx-detail .hero .eyebrow{position:static!important}.bx-detail .hero-copy>*{opacity:1;transform:none}.bx-guide .bx-kicker{font-size:9px}.bx-handoff{font-family:inherit;font-size:13px;font-weight:700}.bx-detail .bx-orb{z-index:1}.bx-detail .visual>.bx-orb{z-index:0}.bx-detail .visual-inner{z-index:2}
 @media(max-width:700px){.bx-detail .visual{min-height:290px}.bx-detail .visual>.bx-orb{height:100%}.bx-detail .hero-visual{max-width:100%!important;margin:10px auto 0!important}.bx-detail .hero .hero-visual .bx-orb{max-width:350px}.bx-detail .hero .hero-copy .eyebrow{font-size:11px;letter-spacing:.12em}.bx-detail .bx-motion-toggle{bottom:6px}}
 .bx-detail :is(.strip,.muted,.system,.star,.four,.quote,.panel,.price-card,.doc-card,.guide-card){background:linear-gradient(130deg,#0c2035,#07101d)!important;color:#eaf8ff!important;border-color:#8ecfff28!important}.bx-detail :is(.numbered,.problems article,.price-card,.doc-card,.guide-card){border-color:#8ecfff28!important}.bx-detail :is(.textlink,.photo-note,.crumb){color:#9ac8dd}.bx-detail .cta{color:#c8f8ff;border-color:#81eaff88;background:#10324d}.bx-detail .hero-photo{border:1px solid #8aeaff40;box-shadow:0 0 60px #219dff15}.bx-detail .hero-photo img{filter:saturate(.65) brightness(.75)}
+
+/* Tighter page rhythm: keep the opening spectacle, shorten the gaps below it. */
+body:not(.bx-detail) .bridge{min-height:0;padding:64px 6% 56px}
+body:not(.bx-detail) .bridge:before{height:36px}
+body:not(.bx-detail) .bridge h2{margin-bottom:18px}
+body:not(.bx-detail) .story-stage{min-height:0}
+body:not(.bx-detail) .chapter{min-height:70svh;padding:64px 8%;align-items:center}
+body:not(.bx-detail) .chapter-number{margin-bottom:16px}
+body:not(.bx-detail) .chapter h2{margin-bottom:18px}
+body:not(.bx-detail) .chapter .description{margin-bottom:18px}
+body:not(.bx-detail) .cinematic-seam{height:88px;min-height:0}
+body:not(.bx-detail) .switchboard{padding:60px 6%}
+body:not(.bx-detail) .switch-head{margin-bottom:26px}
+body:not(.bx-detail) .bx-showroom{padding:60px 5%}
+body:not(.bx-detail) .bx-show-head{margin-bottom:28px}
+body:not(.bx-detail) .service-directory{padding:60px 7%}
+body:not(.bx-detail) .directory{gap:10px}
+body:not(.bx-detail) .directory a{min-height:100px;padding:20px 22px}
+body:not(.bx-detail) .process{padding:50px 7% 60px}
+body:not(.bx-detail) .process-head{margin-bottom:30px}
+body:not(.bx-detail) .steps{gap:20px}
+body:not(.bx-detail) .step{padding:24px 20px 20px}
+body:not(.bx-detail) .consultation{padding:60px 7%}
+body:not(.bx-detail) .consultation .contact-lead{margin-bottom:24px}
+body:not(.bx-detail) .final-links{margin-top:26px}
+body:not(.bx-detail) .company-footer{padding-top:32px;padding-bottom:24px}
+body.bx-detail main>section:not(.hero){padding-top:60px;padding-bottom:60px}
+@media(max-width:700px){
+ body:not(.bx-detail) .bridge{padding:44px 24px 40px}
+ body:not(.bx-detail) .chapter{min-height:0;padding:110px 24px 42px;align-items:flex-end}
+ body:not(.bx-detail) .chapter-number{margin-bottom:12px}
+ body:not(.bx-detail) .chapter h2{margin-bottom:16px}
+ body:not(.bx-detail) .chapter .description{margin-bottom:16px}
+ body:not(.bx-detail) .chapter-support{margin-top:12px!important}
+ body:not(.bx-detail) .cinematic-seam{height:64px;min-height:0}
+ body:not(.bx-detail) .switchboard{padding:44px 22px}
+ body:not(.bx-detail) .switch-head{margin-bottom:22px}
+ body:not(.bx-detail) .switch-head>p{margin-top:12px}
+ body:not(.bx-detail) .switch-art{min-height:250px}
+ body:not(.bx-detail) .bx-showroom{padding:44px 20px}
+ body:not(.bx-detail) .bx-show-head{margin-bottom:22px}
+ body:not(.bx-detail) .bx-show-head p:last-child{margin-top:14px}
+ body:not(.bx-detail) .bx-app-grid{gap:14px}
+ body:not(.bx-detail) .service-directory{padding:44px 24px}
+ body:not(.bx-detail) .directory a{min-height:90px;padding:18px}
+ body:not(.bx-detail) .process{padding:32px 24px 44px}
+ body:not(.bx-detail) .process-head{margin-bottom:24px}
+ body:not(.bx-detail) .steps{gap:14px}
+ body:not(.bx-detail) .step{padding:22px 20px 18px}
+ body:not(.bx-detail) .consultation{padding:44px 24px}
+ body:not(.bx-detail) .consultation h2{margin-bottom:18px}
+ body:not(.bx-detail) .final-links{gap:16px;margin-top:22px}
+ body:not(.bx-detail) .company-footer{padding:28px 24px 22px}
+ body.bx-detail main>section:not(.hero){padding-top:40px;padding-bottom:40px}
+}
