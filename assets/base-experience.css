@@ -130,3 +130,12 @@ body:not(.bx-detail) .enquiry-box{border-top-color:#8ceaff99;box-shadow:0 -18px 
 @media(prefers-reduced-motion:reduce){body:not(.bx-detail) .directory a:before{animation:none}}
 body:not(.bx-detail) .chapter-content{max-width:700px}
 @media(max-width:700px){body:not(.bx-detail) .chapter-content{max-width:100%}}
+
+/* Final interaction pass: stop every decorative layer and keep enquiries reachable. */
+html.motion-frozen{scroll-behavior:auto!important}
+.motion-frozen *, .motion-frozen *::before, .motion-frozen *::after{animation-play-state:paused!important}
+.motion-frozen .reveal-section{opacity:1!important;transform:none!important;filter:none!important}
+.bx-guide{max-height:calc(100dvh - 24px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain}
+.bx-launch{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+.company-footer{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
+@media(max-width:700px){.bx-launch{bottom:calc(16px + env(safe-area-inset-bottom,0px))}.bx-detail .bx-launch{bottom:calc(78px + env(safe-area-inset-bottom,0px))}.bx-guide{bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
