@@ -1,0 +1,49 @@
+name: Build captioned BASE LUMI media
+on:
+  push:
+    branches: [media/lumi-pbx-20261027]
+    paths: ['sns-media/brand_lumi_video.py', 'sns-media/pbx.srt', '.github/workflows/build-lumi-media.yml']
+permissions:
+  contents: write
+concurrency:
+  group: base-lumi-media-build
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install free video and font tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-droid-fallback
+      - name: Retrieve the existing BASE source video
+        run: |
+          mkdir -p /tmp/base-lumi media/pbx
+          python3 - <<'PY'
+          import urllib.request,hashlib
+          from pathlib import Path
+          url='https://buffer-media-uploads.s3.amazonaws.com/6a76b7cbd0c42ac0c2f5e7e0/6adeff92690f214687357e4d'
+          with urllib.request.urlopen(url,timeout=45) as response: data=response.read(20000000)
+          assert hashlib.sha256(data).hexdigest()=='b050ed6073ae4bc9895b11f93431d795f2c8b9bc8865692799e0e4f2b05777a2'
+          Path('/tmp/base-lumi/source.mp4').write_bytes(data)
+          PY
+      - name: Add headings and timed captions; preserve original audio and watermark
+        run: python3 sns-media/brand_lumi_video.py --video /tmp/base-lumi/source.mp4 --srt sns-media/pbx.srt --fonts-dir /usr/share/fonts/truetype/droid --output media/pbx/BASE_LUMI_PBX_captioned.mp4
+      - name: Verify preserved audio
+        run: |
+          python3 - <<'PY'
+          import subprocess,hashlib
+          def audio(path):
+            return hashlib.sha256(subprocess.check_output(['ffmpeg','-v','error','-i',path,'-map','0:a:0','-c:a','copy','-f','adts','-'])).hexdigest()
+          assert audio('/tmp/base-lumi/source.mp4')==audio('media/pbx/BASE_LUMI_PBX_captioned.mp4')
+          PY
+      - name: Commit SNS media only on this isolated media branch
+        run: |
+          git config user.name 'BASE media automation'
+          git config user.email 'media-automation@users.noreply.github.com'
+          git add media/pbx/BASE_LUMI_PBX_captioned.mp4 media/pbx/BASE_LUMI_PBX_captioned.json
+          git diff --cached --quiet && exit 0
+          git commit -m 'Render captioned LUMI PBX media with original voice'
+          git push origin HEAD:media/lumi-pbx-20261027
