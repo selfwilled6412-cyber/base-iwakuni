@@ -1,0 +1,13 @@
+{
+  "sourceSha256": "b050ed6073ae4bc9895b11f93431d795f2c8b9bc8865692799e0e4f2b05777a2",
+  "outputSha256": "dfed57f97ffab1d28ad0a6d7ac5a11a3b7526c70fbb51043badb1ddeeb616c12",
+  "subtitleSource": "existing HeyGen video subtitleUrl; cue times preserved",
+  "captionSpellingNormalization": [
+    "ベース → BASE",
+    "るみ → ルミ"
+  ],
+  "audio": "stream_copy",
+  "sourceWatermark": "preserved",
+  "qualityReviewed": false,
+  "published": false
+}
