@@ -97,7 +97,7 @@ function variedOrder(items){
   if(!eligible.length)eligible=unused;
   const max=Math.max(...eligible.map(q=>count.get(q.family)));
   // Pick from the most common remaining families, randomly breaking ties.
-  // This leaves fewer awkward repetitions at the end of a 30-question deck.
+  // This leaves fewer awkward repetitions at the end of a 50-question deck.
   const candidates=eligible.filter(q=>count.get(q.family)>=max-1);
   const chosen=candidates[randomInt(candidates.length)];
   order.push(chosen.key);unused.splice(unused.indexOf(chosen),1);
@@ -117,7 +117,7 @@ function stats(){for(let x of [2,3,5])$('progress'+x).textContent=session.decks[
 function goHome(){stopSpeech();level=null;$('playScreen').classList.remove('visible');$('startScreen').classList.remove('hidden');stats();window.scrollTo({top:0,behavior:'instant'})}
 function getCurrent(){const d=session.decks[String(level)];if(d.pos>=50)return null;return decks[level].find(q=>q.key===d.order[d.pos])}
 function start(lvl){stopSpeech();level=lvl;$('startScreen').classList.add('hidden');$('playScreen').classList.add('visible');render();window.scrollTo({top:0,behavior:'instant'})}
-function render(){stopSpeech();visible=false;if(puzzleTemplate&&!document.getElementById('title'))$('puzzleApp').innerHTML=puzzleTemplate;const d=session.decks[String(level)];const p=getCurrent();let label=level===2?'初級編':level===3?'中級編':'上級編';$('progressLine').textContent=label+'｜出題済み '+(p?d.pos+1:30)+' / 50';$('reveal').innerHTML='';$('revealBtn').textContent='🎉 正解発表';$('status').textContent=storageAvailable?'':'⚠️ 端末の保存制限により、このタブを閉じると履歴が消える場合があります。';$('revealBtn').disabled=!p;
+function render(){stopSpeech();visible=false;if(puzzleTemplate&&!document.getElementById('title'))$('puzzleApp').innerHTML=puzzleTemplate;const d=session.decks[String(level)];const p=getCurrent();let label=level===2?'初級編':level===3?'中級編':'上級編';$('progressLine').textContent=label+'｜出題済み '+(p?d.pos+1:50)+' / 50';$('reveal').innerHTML='';$('revealBtn').textContent='🎉 正解発表';$('status').textContent=storageAvailable?'':'⚠️ 端末の保存制限により、このタブを閉じると履歴が消える場合があります。';$('revealBtn').disabled=!p;
 if(!p){$('puzzleApp').innerHTML='<div class="finished"><h2>🎉 50問コンプリート！</h2><p>おめでとう！このコースの50問を全部出題しました。</p><p>新しい利用者さんが始める場合はリセットしてください。</p><button id="finishReset">🔄 このコースをリセット</button><button id="finishHome">難易度選択に戻る</button></div>';$('next').disabled=true;$('speak').disabled=true;$('stop').disabled=true;$('finishReset').onclick=resetThis;$('finishHome').onclick=goHome;return;}
 $('counter').textContent='⭐ '+label+'・'+(d.pos+1)+'/50　【問題ID：'+p.key+'】';$('tag').textContent='★'.repeat(level)+'　'+p.unit;$('category').textContent=p.category;$('title').textContent=p.title;$('subtitle').textContent=p.subtitle;$('stage').innerHTML=p.stage;$('lumiLine').textContent='ルミ：ひとりで考えて、スタッフに答えを教えてね！';$('next').disabled=false;$('speak').disabled=false;$('stop').disabled=false;}
 function next(){if(level===null)return;const d=session.decks[String(level)];d.pos=Math.min(50,d.pos+1);save();if(d.pos===50){render();return}render();window.scrollTo({top:0,behavior:'instant'})}
