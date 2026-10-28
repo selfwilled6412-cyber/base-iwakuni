@@ -12,8 +12,30 @@
 @media(max-width:1150px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.heroArt img{width:190px;height:190px}.playingCard{height:132px;width:93px}}
 @media(max-width:670px){.grid{grid-template-columns:1fr}.gameCard{min-height:245px}.gameArt{height:120px}.preview{width:63px;height:91px;font-size:30px}.preview b{font-size:20px}.topIn{padding:11px}.logo{max-width:89px;max-height:53px}.brand strong{font-size:20px}.brand small{font-size:10px}.back{font-size:12px;padding:8px}.wrap{padding:11px 9px 70px}.hero{grid-template-columns:1fr;padding:20px}.heroArt{min-height:140px}.heroArt img{width:120px;height:120px}.floatCard{height:75px;width:52px;font-size:30px}.hero h1{font-size:33px}.hero p{font-size:15px}.gameHeader{padding:13px}.gameMain{padding:10px}.felt{padding:13px 8px}.felt h3{font-size:18px}.playingCard{height:105px;width:73px}.playingCard .center{font-size:39px}.playingCard .corner{font-size:15px}.playingCard .watermark{display:none}.playingCard.small,.felt .playingCard.small,.hand .playingCard.small{width:clamp(37px,11vw,59px);height:clamp(57px,16vw,85px)}.playingCard.small .center{font-size:clamp(22px,6vw,38px)}.playingCard.small .corner{font-size:11px}.hand{gap:4px}.hand .cardButton{min-width:0}.memoryGrid{gap:6px}.suitTag{width:22px;font-size:21px}.slots{gap:2px}.slot{border-radius:3px;font-size:9px;border-width:1px}.slot.on{font-size:12px}.gameFoot .act{font-size:14px}.info{padding:10px;font-size:14px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
-.srOnly{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.cardButton .playingCard{animation:dealIn .3s ease both}@keyframes dealIn{from{opacity:.15;transform:translateY(13px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}.cardButton:disabled .playingCard{cursor:default}.cardButton:not(:disabled):focus-visible{border-radius:15px}@media(prefers-reduced-motion:reduce){.cardButton .playingCard{animation:none}}</style></head><body>
-<header class="top"><div class="topIn"><img class="logo" alt="サイ校プロジェクトのロゴ" src="https://storage.googleapis.com/studio-design-asset-files/projects/V5a73rv7aR/s-1901x504_v-frms_webp_cf16287b-a688-4d6f-afad-af48e43834df_small.webp" onerror="this.hidden=true"><div class="brand"><small>SAIKO PROJECT IWAKUNI</small><strong>🃏 カードゲームパーク</strong></div><a class="back" href="../saiko-apps/">⌂ アプリ一覧</a></div></header>
+.srOnly{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.cardButton .playingCard{animation:dealIn .3s ease both}@keyframes dealIn{from{opacity:.15;transform:translateY(13px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}.cardButton:disabled .playingCard{cursor:default}.cardButton:not(:disabled):focus-visible{border-radius:15px}@media(prefers-reduced-motion:reduce){.cardButton .playingCard{animation:none}}
+/* Optional high-contrast, child-friendly bright theme */
+.themeBtn{background:#ffffff22;border:2px solid #fff9c7a1;color:white;padding:10px 15px;min-height:48px;border-radius:14px;white-space:nowrap;font-weight:900;font-size:14px}
+.themeBtn:hover{background:#ffffff3a}
+body[data-theme="sunshine"]{color:#1b345e;background:radial-gradient(ellipse at 0 0,#d8edff 0,transparent 40%),radial-gradient(ellipse at 100% 80%,#ffe1b9 0,transparent 35%),#f7faff}
+body[data-theme="sunshine"] .top{background:linear-gradient(105deg,#214a9e,#3866bd 56%,#1b8f96)}
+body[data-theme="sunshine"] .hero{background:linear-gradient(125deg,#576ebf,#546fca 52%,#279caa);border-color:#a8dfff;box-shadow:0 13px 40px #3062a43b}
+body[data-theme="sunshine"] .gameCard{background:linear-gradient(140deg,#fff,#f9f6ff);border-color:#c4c8f2;box-shadow:0 8px 25px #3e66a329;color:#1d3765}
+body[data-theme="sunshine"] .gameCard p{color:#4b6689}
+body[data-theme="sunshine"] .chip{color:#6c45a8}
+body[data-theme="sunshine"] .sectionHead p{color:#566b88}
+body[data-theme="sunshine"] .game{background:linear-gradient(145deg,#fff,#eef6ff);border-color:#a4bbec;color:#213e70;box-shadow:0 15px 35px #4862a532}
+body[data-theme="sunshine"] .gameHeader{border-bottom-color:#b9d2ed}
+body[data-theme="sunshine"] .tool{background:#eaf4ff;color:#21548e;border-color:#9bbfea}
+body[data-theme="sunshine"] .tool.primary{background:#ffe3a5;color:#613e5f;border-color:#e8bf6e}
+body[data-theme="sunshine"] .info{background:#eaf5ff;border-color:#afd1eb;color:#214b73}
+body[data-theme="sunshine"] .feedback{color:#177a60}
+body[data-theme="sunshine"] .wrap>p{color:#526b89!important}
+body[data-theme="sunshine"] .scoreItem{color:#254e79;border-color:#aacbe8;background:#edf7ff}
+body[data-theme="sunshine"] .felt{color:#fff}
+body[data-theme="sunshine"] .winner{color:#fff}
+@media(max-width:670px){.themeBtn{font-size:11px;padding:8px;min-height:42px}.back{font-size:11px}}
+</style></head><body>
+<header class="top"><div class="topIn"><img class="logo" alt="サイ校プロジェクトのロゴ" src="https://storage.googleapis.com/studio-design-asset-files/projects/V5a73rv7aR/s-1901x504_v-frms_webp_cf16287b-a688-4d6f-afad-af48e43834df_small.webp" onerror="this.hidden=true"><div class="brand"><small>SAIKO PROJECT IWAKUNI</small><strong>🃏 カードゲームパーク</strong></div><button type="button" class="themeBtn" id="themeToggle" aria-pressed="false">☀️ やさしい色</button><a class="back" href="../saiko-apps/">⌂ アプリ一覧</a></div></header>
 <main class="wrap">
 <section id="home"><div class="hero"><div><span class="eyebrow">✨ THE NEW CARD GAME EXPERIENCE</span><h1>めくって、考えて、<br><span>ルミに挑戦！</span></h1><p>神経衰弱、ハイ＆ロー、ババ抜き、七並べ。<br>ひとりでも本格的に遊べるカードゲームが登場！</p><div class="stats"><span class="pill">🃏 4種類のゲーム</span><span class="pill">📱 スマホ対応</span><span class="pill">🧠 記憶・推理・判断力</span></div></div><div class="heroArt"><div class="floatCard c1">♥</div><img src="../assets/lumi-approved.webp" alt="ゲームの案内役・ルミ"><div class="floatCard c2">♠</div></div></div>
 <div class="sectionHead"><h2>🎲 ゲームを選ぼう</h2><p>全部無料・ログイン不要</p></div>
