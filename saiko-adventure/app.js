@@ -264,7 +264,8 @@ function finishStage(){
  updateInfo();
  $('winStars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
  $('winTitle').textContent=stage===TOTAL-1?'🎉 コース完走！':'🎉 ステージクリア！';
- $('winMessage').textContent='宝石'+maze.gems.length+'個を集めて、'+moves+'歩でゴール！'+(stage===TOTAL-1?' 10ステージ、おめでとう！':' 次の部屋へ進めるよ。');
+ $('winMessage').textContent='宝石'+maze.gems.length+'個を集めて、'+moves+'歩でゴール！ '+(stage===TOTAL-1?'👑 '+WORLDS[level].name+'を冒険しきったよ！':'✨ '+CHAPTERS[stage][0]+'を突破！ 次の冒険へ進もう。');
+ confettiBurst();
  $('nextBtn').textContent=stage===TOTAL-1?'🏠 コース選択へ':'次のステージへ ▶';
  $('win').hidden=false;
  $('nextBtn').focus();
