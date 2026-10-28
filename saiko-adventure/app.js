@@ -186,11 +186,16 @@ function draw(){
 }
 function updateInfo(){
  $('stageTitle').textContent='🗺️ ステージ '+(stage+1)+' / '+TOTAL;
+ const chapter=CHAPTERS[stage],world=WORLDS[level];
+ $('storyTitle').textContent=world.name+'｜'+chapter[0];
+ $('storyText').textContent=chapter[1];
  $('levelLabel').textContent=LABEL[level];
  $('gemCount').textContent='💎 '+collected.size+' / '+maze.gems.length+' 個';
  $('moveCount').textContent='👣 '+moves+' 歩';
  $('goalState').textContent=collected.size===maze.gems.length?'🟢 扉が開いた！ ゴールへ！':'🔒 宝石を全部集めよう';
  $('achievement').textContent='このコースの星：'+progress[level].bests.reduce((a,b)=>a+b,0)+' / 30 ⭐';
+ const totalStars=Object.values(progress).reduce((sum,p)=>sum+p.bests.reduce((a,b)=>a+b,0),0);
+ $('rank').textContent=rankFor(totalStars)+'｜合計 '+totalStars+' / 90 ⭐';
  const root=$('stageList');root.replaceChildren();
  for(let i=0;i<TOTAL;i++){
   const b=document.createElement('button');b.type='button';b.className='stageBtn'+(progress[level].bests[i]?' done':'')+(stage===i?' current':'');
@@ -212,7 +217,7 @@ function startStage(lvl,index,useSaved){
   player=[...run.player];collected=new Set(run.collected);moves=run.moves;
  }
  $('home').hidden=true;$('play').hidden=false;$('win').hidden=true;$('hint').hidden=true;
- setStatus('💎 宝石を探しに出かけよう！');
+ setStatus('💎 '+CHAPTERS[stage][0]+'！ '+WORLDS[level].intro);
  updateInfo();persist();
  window.scrollTo?.({top:0,behavior:'smooth'});
 }
