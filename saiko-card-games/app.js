@@ -60,7 +60,7 @@ function startMemory(level=0){
 }
 function renderMemory(){
  const s=st,cols=s.pairs===6?4:s.pairs===10?5:6;
- info('ペア '+s.matched.size+' / '+s.pairs+'　｜　めくった回数 '+s.turns+'　｜　'+(s.started?'チャレンジ中！':'2枚ずつめくってペアを探そう！')+
+ info('ペア '+Math.floor(s.matched.size/2)+' / '+s.pairs+'　｜　めくった回数 '+s.turns+'　｜　'+(s.started?'チャレンジ中！':'2枚ずつめくってペアを探そう！')+
  (records['memory'+s.difficulty]?'　｜　ベスト '+records['memory'+s.difficulty]+'回':''));
  board('<div class="felt"><h3>✦ 同じカードを2枚見つけよう ✦</h3><div class="memoryGrid" style="--cols:'+cols+'">'+s.cards.map((c,i)=>buttonCard(c,i,{back:!s.matched.has(i)&&!s.flipped.includes(i),matched:s.matched.has(i),disabled:s.matched.has(i)||s.locked,aria:s.matched.has(i)?'ペア成立・'+(i+1):s.flipped.includes(i)?'公開中・'+(i+1):'カード '+(i+1)+'をめくる'})).join('')+'</div></div>');
  for(const b of $('board').querySelectorAll('[data-index]'))b.onclick=()=>tapMemory(Number(b.dataset.index));
