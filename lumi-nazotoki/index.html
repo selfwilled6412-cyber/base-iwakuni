@@ -86,8 +86,27 @@ let session={},level=null,visible=false,lastSpokenKey=null,storageAvailable=true
 const $=id=>document.getElementById(id);
 function randomInt(max){if(window.crypto&&window.crypto.getRandomValues){const buf=new Uint32Array(1);const limit=2**32-(2**32%max);let x;do{window.crypto.getRandomValues(buf);x=buf[0]}while(x>=limit);return x%max}return Math.floor(Math.random()*max)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){let j=randomInt(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+// Balanced randomization: keep each question once, and avoid repeated puzzle formats.
+function variedOrder(items){
+ const unused=items.map(q=>({key:q.key,family:q.title.replace(/\s*\d+$/,'').trim()})),order=[];
+ let last='',before='';
+ while(unused.length){
+  const count=new Map();for(const q of unused)count.set(q.family,(count.get(q.family)||0)+1);
+  let eligible=unused.filter(q=>q.family!==last&&q.family!==before);
+  if(!eligible.length)eligible=unused.filter(q=>q.family!==last);
+  if(!eligible.length)eligible=unused;
+  const max=Math.max(...eligible.map(q=>count.get(q.family)));
+  // Pick from the most common remaining families, randomly breaking ties.
+  // This leaves fewer awkward repetitions at the end of a 30-question deck.
+  const candidates=eligible.filter(q=>count.get(q.family)>=max-1);
+  const chosen=candidates[randomInt(candidates.length)];
+  order.push(chosen.key);unused.splice(unused.indexOf(chosen),1);
+  before=last;last=chosen.family;
+ }
+ return order;
+}
 function defaultState(){return {decks:{'2':{order:[],pos:0},'3':{order:[],pos:0},'5':{order:[],pos:0}}}}
-function load(){let saved=null;try{saved=JSON.parse(localStorage.getItem(STORE)||'null')}catch(e){storageAvailable=false}if(!saved){try{if(window.name.startsWith('LUMI90:'))saved=JSON.parse(window.name.slice(7))}catch(e){}}session=saved&&saved.decks?saved:defaultState();for(const x of ['2','3','5']){const d=session.decks[x],legal=new Set(decks[Number(x)].map(q=>q.key));if(!d||!Array.isArray(d.order)||d.order.length!==30||new Set(d.order).size!==30||!d.order.every(k=>legal.has(k))||!Number.isInteger(d.pos)||d.pos<0||d.pos>30){session.decks[x]={order:shuffle([...legal]),pos:0}}}save()}
+function load(){let saved=null;try{saved=JSON.parse(localStorage.getItem(STORE)||'null')}catch(e){storageAvailable=false}if(!saved){try{if(window.name.startsWith('LUMI90:'))saved=JSON.parse(window.name.slice(7))}catch(e){}}session=saved&&saved.decks?saved:defaultState();for(const x of ['2','3','5']){const d=session.decks[x],legal=new Set(decks[Number(x)].map(q=>q.key));if(!d||!Array.isArray(d.order)||d.order.length!==30||new Set(d.order).size!==30||!d.order.every(k=>legal.has(k))||!Number.isInteger(d.pos)||d.pos<0||d.pos>30){session.decks[x]={order:variedOrder(decks[Number(x)]),pos:0}}}save()}
 function save(){try{window.name='LUMI90:'+JSON.stringify(session)}catch(e){}try{localStorage.setItem(STORE,JSON.stringify(session));storageAvailable=true}catch(e){storageAvailable=false}}
 function stopSpeech(){if('speechSynthesis'in window)speechSynthesis.cancel()}
 function stats(){for(let x of [2,3,5])$('progress'+x).textContent=session.decks[x].pos+' / 30 出題済み'}
@@ -99,7 +118,7 @@ if(!p){$('puzzleApp').innerHTML='<div class="finished"><h2>🎉 30問コンプ�
 $('counter').textContent='⭐ '+label+'・'+(d.pos+1)+'/30　【問題ID：'+p.key+'】';$('tag').textContent='★'.repeat(level)+'　'+p.unit;$('category').textContent=p.category;$('title').textContent=p.title;$('subtitle').textContent=p.subtitle;$('stage').innerHTML=p.stage;$('lumiLine').textContent='ルミ：ひとりで考えて、スタッフに答えを教えてね！';$('next').disabled=false;$('speak').disabled=false;$('stop').disabled=false;}
 function next(){if(level===null)return;const d=session.decks[String(level)];d.pos=Math.min(30,d.pos+1);save();if(d.pos===30){render();return}render();window.scrollTo({top:0,behavior:'instant'})}
 function reveal(){const p=getCurrent();if(!p)return;visible=!visible;$('reveal').innerHTML=visible?'<div class="revealBox"><div>🎉 正解発表！</div><strong>'+p.answer+'</strong><p>'+p.explain+'</p></div>':'';$('revealBtn').textContent=visible?'🙈 正解を隠す':'🎉 正解発表';$('lumiLine').textContent=visible?'ルミ：お見事！ ひらめき大成功！':'ルミ：ひとりで考えて、スタッフに答えを教えてね！'}
-function resetThis(){if(level===null)return;const label=level===2?'初級':level===3?'中級':'上級';if(!confirm(label+'編の出題履歴を消して、30問をシャッフルし直します。\nほかの難易度の進捗はそのままです。\n新しい利用者さんを始めますか？'))return;session.decks[String(level)]={order:shuffle(decks[level].map(q=>q.key)),pos:0};save();render();stats();}
+function resetThis(){if(level===null)return;const label=level===2?'初級':level===3?'中級':'上級';if(!confirm(label+'編の出題履歴を消して、30問をシャッフルし直します。\nほかの難易度の進捗はそのままです。\n新しい利用者さんを始めますか？'))return;session.decks[String(level)]={order:variedOrder(decks[level]),pos:0};save();render();stats();}
 function speak(){const p=getCurrent();if(!p)return;stopSpeech();if(!('speechSynthesis'in window)){$('status').textContent='この端末は音声読み上げ非対応です';return}const u=new SpeechSynthesisUtterance('第'+(session.decks[String(level)].pos+1)+'問！ '+p.speech);u.lang='ja-JP';u.rate=.84;u.pitch=1.1;const voices=speechSynthesis.getVoices().filter(x=>x.lang.toLowerCase().startsWith('ja'));const v=voices.find(x=>/nanami|haruka|kyoko|sayaka|female/i.test(x.name))||voices[0];if(v)u.voice=v;u.onerror=()=>{$('status').textContent='読み上げできません。端末の日本語音声設定を確認してください'};u.onend=()=>{$('status').textContent=''};speechSynthesis.speak(u);$('status').textContent='🔊 問題を読み上げています';}
 document.querySelectorAll('[data-level]').forEach(el=>el.onclick=()=>start(Number(el.dataset.level)));
 $('backToStart').onclick=goHome;$('resetLevel').onclick=resetThis;$('speak').onclick=speak;$('stop').onclick=stopSpeech;$('revealBtn').onclick=reveal;$('next').onclick=next;
@@ -130,7 +149,7 @@ resetThis=function(){
  if(level===null)return;
  const label=level===2?'初級':level===3?'中級':'上級';
  if(!confirm(label+'編の出題履歴を消して、30問をシャッフルします。\\n新しい利用者さんを最初から始めますか？'))return;
- session.decks[String(level)]={order:shuffle(decks[level].map(q=>q.key)),pos:0};save();activityStart=0;activityEnd=false;render();stats();
+ session.decks[String(level)]={order:variedOrder(decks[level]),pos:0};save();activityStart=0;activityEnd=false;render();stats();
 };
 $('resetLevel').onclick=resetThis;
 const _originalNext=next;next=function(){if(activityEnd)return;_originalNext()};$('next').onclick=next;
