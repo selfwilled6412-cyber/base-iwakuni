@@ -101,9 +101,18 @@ const appHub=read('saiko-apps/index.html');
 for(const href of ['../lumi-nazotoki/','../lumi-escape/','../lumi-escape-2/','../saiko-adventure/','../saiko-kids/','../saiko-draw/','guide.html']){
  assert(appHub.includes('href="'+href+'"'),'Missing hub link '+href);
 }
+const playCards=(appHub.match(/<article class="card"[^>]*data-play="(group|solo)"/g)||[]);
+const allCards=(appHub.match(/<article class="card"/g)||[]);
+assert.equal(playCards.length,allCards.length,'Every app card needs group or solo mode');
+assert(playCards.some(x=>x.includes('group'))&&playCards.some(x=>x.includes('solo')));
+assert(appHub.includes('data-play-filter="group"')&&appHub.includes('data-play-filter="solo"')&&appHub.includes('data-play-filter="all"'));
+assert(appHub.includes("const matchPlay="),'Group/solo selection not wired to card filter');
+const hubJS=appHub.match(/<script>([\s\S]*?)<\/script>/)?.[1];assert(hubJS,'App hub script missing');
+new vm.Script(hubJS,{filename:'saiko-apps/index.html'});
 for(const target of ['saiko-adventure/index.html','saiko-adventure/app.js','saiko-kids/index.html','saiko-kids/app.js','saiko-draw/index.html','saiko-draw/app.js','saiko-apps/guide.html']){
  assert(fs.existsSync(path.join(root,target)),'Missing public file '+target);
 }
 console.log('PASS: 30/30 adventure maps solved ('+steps+' movements), gems and stars valid');
 console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids puzzles');
 console.log('PASS: 90 unique hosted puzzles, corrected placeholders, required portal links');
+console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
