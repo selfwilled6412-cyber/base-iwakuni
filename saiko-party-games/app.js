@@ -12,9 +12,9 @@ function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){
 function stop(){clearInterval(timer);clearTimeout(timer);timer=null}
 function show(t){$('status').textContent=t}function panel(h){$('board').innerHTML=h}
 function actions(arr){$('actions').innerHTML=arr.map(([id,v])=>'<button id="a_'+id+'" type="button">'+v+'</button>').join('')}
-function scores(){if(mode==='bingo'||mode==='two'){$('scores').replaceChildren();return}if(mode==='teamMemory'){$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵 青':'🔴 赤')+'チーム '+n+'組</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
+function scores(){if(mode==='bingo'||mode==='two'){$('scores').replaceChildren();return}if(mode==='teamMemory'||mode==='teamHighLow'){if(!state||state.phase==='setup'){$('scores').replaceChildren();return}$('scores').innerHTML=teams.map((n,i)=>'<div class="teamStanding'+(mode==='teamMemory'&&state.turn===i?' current':'')+'">'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+' '+(n||0)+(mode==='teamMemory'?'組':'点')+'</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
 function back(){stop();mode=null;state=null;$('home').hidden=false;$('game').hidden=true}
-function start(m){stop();mode=m;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 チーム神経衰弱',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
+function start(m){stop();mode=m;state=null;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 みんなで神経衰弱',teamHighLow:'🃏 みんなでハイ＆ロー',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='teamHighLow')startTeamHighLow();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
 document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>start(b.dataset.game));$('back').onclick=back;$('restart').onclick=()=>{if(!mode||!confirm('最初からやり直す？'))return;if(mode==='bingo'){delete saved.bingo;persist()}start(mode)};
 $('full').onclick=()=>document.fullscreenElement?document.exitFullscreen?.():document.documentElement.requestFullscreen?.().catch(()=>{});
 function bingo(){let d=saved.bingo;state=d&&Array.isArray(d.numbers)&&d.numbers.length===75&&new Set(d.numbers).size===75&&d.pos>=0&&d.pos<=75?d:{numbers:shuffle(Array.from({length:75},(_,i)=>i+1)),pos:0};saved.bingo=state;persist();bingoShow()}
@@ -85,48 +85,154 @@ function oxShow(){if(state.pos>=50){show('50問完走！');panel('<div class="an
  actions(state.answer?[['next','➡ 次の問題']]:[['reveal','🎉 正解を発表']]);if($('a_reveal'))$('a_reveal').onclick=()=>{state.answer=true;oxShow()};if($('a_next'))$('a_next').onclick=()=>{state.pos++;state.answer=false;oxShow()}
 }
 
-/* みんなで神経衰弱・2チーム対戦 */
+
+/* 大型モニター用カードゲーム：2〜6人／チーム。手札の秘密が必要ない種目を採用 */
+const TEAM_BADGES=['🔴','🔵','🟡','🟢','🟣','🟠'];
+const TEAM_COLORS=['赤','青','黄','緑','紫','オレンジ'];
 const MEMORY_ICONS=['🍎','🌈','🐱','🐼','⭐','🎸','🚀','💎','🎂','🍀','🐬','👑','⚽','🌷','🎮','🍮'];
+function memberSelect(value,id){
+ return '<label class="partySelectLabel" for="'+id+'">参加する人数・チーム数</label><select id="'+id+'" class="partySelect">'+
+ [2,3,4,5,6].map(n=>'<option value="'+n+'" '+(value===n?'selected':'')+'>'+n+'人／'+n+'チーム</option>').join('')+'</select>';
+}
+function teamSetupView(title,summary,extra,id,launch){
+ const n=state.members;
+ panel('<div class="teamSetup"><div class="setupEmoji">🃏✨</div><h3>'+title+'</h3><p>'+summary+'</p><div class="teamSetupFields">'+memberSelect(n,id)+extra+'</div><div class="teamPreview">'+TEAM_BADGES.slice(0,n).map((v,i)=>'<div>'+v+' '+TEAM_COLORS[i]+'</div>').join('')+'</div><button id="'+launch+'" class="setupLaunch" type="button">🎉 '+n+'人でスタート！</button></div>');
+ actions([['home','← ほかのゲーム']]);$('a_home').onclick=back;
+}
 function startTeamMemory(){
- const values=shuffle(MEMORY_ICONS).slice(0,6);
- state={faces:shuffle(values.flatMap(v=>[v,v])),flipped:[],matched:new Set(),turn:0,locked:false,round:0,completed:false};
- teams=[0,0];scores();show('🔴 赤チームの番！ 2枚めくってペアを探そう。');teamMemoryShow();
+ state={phase:'setup',members:4,pairs:10};
+ teamMemorySetup();
+}
+function teamMemorySetup(){
+ const s=state;teams=Array(s.members).fill(0);scores();
+ const select='<label class="partySelectLabel" for="memoryPairs">カードの枚数（難しさ）</label>'+
+ '<select id="memoryPairs" class="partySelect">'+[[6,'🌱 12枚・かんたん'],[10,'🌟 20枚・ふつう'],[15,'👑 30枚・むずかしい']].map(([p,label])=>'<option value="'+p+'" '+(s.pairs===p?'selected':'')+'>'+label+'</option>').join('')+'</select>';
+ teamSetupView('みんなで神経衰弱','ペアを当てた人／チームに1点！ 当てたら続けて挑戦、はずれたら次の人へ。',select,'memoryMembers','memoryLaunch');
+ $('memoryMembers').onchange=()=>{s.members=Number($('memoryMembers').value);teamMemorySetup()};
+ $('memoryPairs').onchange=()=>{s.pairs=Number($('memoryPairs').value);teamMemorySetup()};
+ $('memoryLaunch').onclick=()=>beginTeamMemory(s.members,s.pairs);
+}
+function beginTeamMemory(members=4,pairs=10){
+ if(mode!=='teamMemory')return;
+ if(!Number.isInteger(members)||members<2||members>6||![6,10,15].includes(pairs))return;
+ stop();const icons=shuffle(MEMORY_ICONS).slice(0,pairs);
+ teams=Array(members).fill(0);
+ state={phase:'play',members,pairs,faces:shuffle(icons.flatMap(v=>[v,v])),flipped:[],matched:new Set(),turn:0,locked:false,round:0,completed:false};
+ show(TEAM_BADGES[0]+' '+TEAM_COLORS[0]+'の番！ カードを2枚めくってね。');
+ teamMemoryShow();
 }
 function teamMemoryShow(){
- const s=state;
- panel('<div class="teamMemoryBoard">'+s.faces.map((v,i)=>{
-  const open=s.flipped.includes(i)||s.matched.has(i),matched=s.matched.has(i);
-  return '<button type="button" class="memTile" data-mem="'+i+'" '+(s.locked||matched||s.completed?'disabled':'')+' aria-label="カード '+(i+1)+(open?'：'+v+' 表向き':'：裏向き')+'"><span class="face'+(open?' open':'')+(matched?' matched':'')+'">'+(open?v:'')+'</span></button>';
+ const s=state;if(!s||s.phase!=='play')return;
+ scores();const columns=s.pairs===6?4:s.pairs===10?5:6;
+ panel('<div class="turnBanner">'+TEAM_BADGES[s.turn]+' '+TEAM_COLORS[s.turn]+' の番 <span>✨ 当てたらもう一回！</span></div><div class="teamMemoryBoard" style="--memory-cols:'+columns+'">'+s.faces.map((v,i)=>{
+ const opened=s.flipped.includes(i)||s.matched.has(i),matched=s.matched.has(i);
+ return '<button type="button" class="memTile" data-mem="'+i+'" '+(s.locked||matched||s.completed?'disabled':'')+' aria-label="カード '+(i+1)+(opened?'：'+v:'：裏向き')+'"><span class="face'+(opened?' open':'')+(matched?' matched':'')+'">'+(opened?v:'')+'</span></button>';
  }).join('')+'</div>');
  for(const b of $('board').querySelectorAll('[data-mem]'))b.onclick=()=>tapTeamMemory(Number(b.dataset.mem));
- if(s.completed){const winner=teams[0]===teams[1]?'引き分け！':teams[0]>teams[1]?'🔴 赤チームの勝ち！':'🔵 青チームの勝ち！';
- show('🎉 全6ペア完成！ '+winner+'　赤'+teams[0]+'組・青'+teams[1]+'組');
- actions([['again','✨ もう一度対戦する']]);$('a_again').onclick=startTeamMemory;
+ if(s.completed){
+ const highest=Math.max(...teams),winners=teams.map((v,i)=>v===highest?TEAM_BADGES[i]+' '+TEAM_COLORS[i]:null).filter(Boolean);
+ show('🏆 '+(winners.length===teams.length?'全員同点！':winners.join('・')+' の勝ち！')+'　全'+s.pairs+'組完成！');
+ actions([['again','🔄 同じ人数で再戦'],['setup','⚙️ 人数・難易度を変更']]);
+ $('a_again').onclick=()=>beginTeamMemory(s.members,s.pairs);
+ $('a_setup').onclick=()=>{state={phase:'setup',members:s.members,pairs:s.pairs};teamMemorySetup();};
  }else{
-  actions([['new','↻ カードを最初から並べ直す']]);$('a_new').onclick=()=>{if(confirm('カードを新しく並べ直す？'))startTeamMemory()};
+ actions([['setup','⚙️ 人数・難易度を変更']]);
+ $('a_setup').onclick=()=>{if(!confirm('対戦を中断して設定に戻る？'))return;stop();state={phase:'setup',members:s.members,pairs:s.pairs};teamMemorySetup();};
  }
 }
 function tapTeamMemory(i){
- const s=state;if(mode!=='teamMemory'||s.completed||s.locked||s.flipped.includes(i)||s.matched.has(i)||!s.faces[i])return;
+ const s=state;
+ if(mode!=='teamMemory'||!s||s.phase!=='play'||s.completed||s.locked||s.flipped.includes(i)||s.matched.has(i)||!Number.isInteger(i)||i<0||i>=s.faces.length)return;
  s.flipped.push(i);
  if(s.flipped.length===2){
-  s.round++;
-  const[a,b]=s.flipped;
-  if(s.faces[a]===s.faces[b]){
-   s.matched.add(a);s.matched.add(b);s.flipped=[];
-   teams[s.turn]++;scores();
-   if(s.matched.size===s.faces.length){s.completed=true;teamMemoryShow();return}
-   show('🌟 ペア成立！ '+(s.turn?'🔵 青':'🔴 赤')+'チームに1点！ もう1回どうぞ。');
-  }else{
-   s.locked=true;
-   show('おしい！ カードの位置を覚えよう。次は'+(s.turn?'🔴 赤':'🔵 青')+'チーム！');
-   timer=setTimeout(()=>{if(mode!=='teamMemory'||state!==s)return;s.flipped=[];s.locked=false;s.turn=1-s.turn;show((s.turn?'🔵 青':'🔴 赤')+'チームの番！');teamMemoryShow()},1200);
-  }
+ s.round++;const[a,b]=s.flipped;
+ if(s.faces[a]===s.faces[b]){
+  s.matched.add(a);s.matched.add(b);s.flipped=[];teams[s.turn]++;
+  if(s.matched.size===s.faces.length){s.completed=true;teamMemoryShow();return}
+  show('🌟 ペア成立！ '+TEAM_BADGES[s.turn]+' '+TEAM_COLORS[s.turn]+'に1点！ 続けてもう1回！');
+ }else{
+  s.locked=true;const next=(s.turn+1)%s.members;
+  show('おしい！ 場所を覚えてね。次は '+TEAM_BADGES[next]+' '+TEAM_COLORS[next]+'！');
+  timer=setTimeout(()=>{if(mode!=='teamMemory'||state!==s)return;s.flipped=[];s.locked=false;s.turn=next;show(TEAM_BADGES[next]+' '+TEAM_COLORS[next]+'の番！');teamMemoryShow()},1300);
+ }
  }
  teamMemoryShow();
 }
-
-
+/* みんなでハイ＆ロー：全員の予想を大画面で受け付けて同時判定 */
+const SUIT_SIGNS=['♠','♥','♦','♣'];
+const RANK_NAME=['','A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function groupDeck(){return shuffle(SUIT_SIGNS.flatMap(suit=>Array.from({length:13},(_,r)=>({rank:r+1,suit}))));}
+function startTeamHighLow(){
+ state={phase:'setup',members:4,roundLimit:15};highLowSetup();
+}
+function highLowSetup(){
+ const s=state;teams=Array(s.members).fill(0);scores();
+ teamSetupView('みんなでハイ＆ロー','今のカードを見て、次の数字が「上がる」か「下がる」か予想！ みんなの予想を入力して一斉発表。', '', 'highLowMembers','highLowLaunch');
+ $('highLowMembers').onchange=()=>{s.members=Number($('highLowMembers').value);highLowSetup()};
+ $('highLowLaunch').onclick=()=>beginTeamHighLow(s.members);
+}
+function beginTeamHighLow(members=4){
+ if(mode!=='teamHighLow'||!Number.isInteger(members)||members<2||members>6)return;
+ stop();const cards=groupDeck();teams=Array(members).fill(0);
+ state={phase:'vote',members,roundLimit:15,cards,current:cards.shift(),next:null,round:0,predictions:Array(members).fill(null),outcome:0};
+ highLowShow();
+}
+function highLowCard(c,hidden=false){
+ if(hidden)return '<div class="hlCard cardBack" aria-label="裏向きのカード"><span>✦</span></div>';
+ const red=c.suit==='♥'||c.suit==='♦';
+ return '<div class="hlCard'+(red?' heart':'')+'" aria-label="'+c.suit+'の'+RANK_NAME[c.rank]+'"><span class="cornerMark">'+RANK_NAME[c.rank]+'<br>'+c.suit+'</span><strong>'+c.suit+'</strong><span class="cornerMark bottom">'+RANK_NAME[c.rank]+'<br>'+c.suit+'</span></div>';
+}
+function highLowShow(){
+ const s=state;if(!s||!['vote','reveal'].includes(s.phase))return;
+ scores();
+ const currentCard=highLowCard(s.current),nextCard=highLowCard(s.next,s.phase==='vote');
+ const voteRows=TEAM_BADGES.slice(0,s.members).map((emoji,i)=>{
+  const v=s.predictions[i],out=s.phase==='reveal'?(s.outcome===0?'引き分け':v===s.outcome?'✅ 正解':'—'):'';
+  return '<div class="voteTeamRow"><span class="voteTeamName">'+emoji+' '+TEAM_COLORS[i]+'</span><button type="button" class="votePick'+(v===1?' picked':'')+'" id="hi_'+i+'" '+(s.phase==='reveal'?'disabled':'')+'>⬆ 大きい</button><button type="button" class="votePick'+(v===-1?' picked':'')+'" id="lo_'+i+'" '+(s.phase==='reveal'?'disabled':'')+'>⬇ 小さい</button><span class="voteResult">'+out+'</span></div>';
+ }).join('');
+ panel('<div class="hlRound">第 '+(s.round+1)+' / '+s.roundLimit+' 問　<span>同じ数字なら引き分け・得点なし</span></div><div class="hlArena">'+currentCard+'<div class="hlArrow">➜</div>'+nextCard+'</div><div class="voteLegend">'+(s.phase==='vote'?'みんなの予想を選ぼう！ 早く押してもカードは開かないよ。':s.outcome===0?'🤝 同じ数字！ 全員引き分け':s.outcome===1?'⬆ 正解は「大きい」！':'⬇ 正解は「小さい」！')+'</div><div class="voteTeamGrid">'+voteRows+'</div>');
+ if(s.phase==='vote')for(let i=0;i<s.members;i++){
+  $('hi_'+i).onclick=()=>setHighLowVote(i,1);
+  $('lo_'+i).onclick=()=>setHighLowVote(i,-1);
+ }
+ if(s.phase==='vote'){
+ const filled=s.predictions.filter(v=>v!==null).length;
+ show('予想済み '+filled+' / '+s.members+' 人（未選択の人は0点で発表も可能）');
+ actions([['reveal','🎉 カードを開いて正解発表'],['setup','⚙️ 人数を変更']]);
+ $('a_reveal').onclick=revealHighLow;
+ $('a_setup').onclick=()=>{if(!confirm('対戦を中断して設定に戻る？'))return;state={phase:'setup',members:s.members,roundLimit:15};highLowSetup()};
+ }else{
+ show('結果発表！ 今のカードは '+RANK_NAME[s.current.rank]+'、次は '+RANK_NAME[s.next.rank]+'。 得点を更新したよ。');
+ actions([['next',s.round+1===s.roundLimit?'🏆 最終結果へ':'➡ 次のカードへ']]);
+ $('a_next').onclick=nextHighLowRound;
+ }
+}
+function setHighLowVote(index,guess){
+ const s=state;if(mode!=='teamHighLow'||s.phase!=='vote'||!Number.isInteger(index)||index<0||index>=s.members||![1,-1].includes(guess))return;
+ s.predictions[index]=guess;highLowShow();
+}
+function revealHighLow(){
+ const s=state;if(mode!=='teamHighLow'||s.phase!=='vote')return;
+ s.next=s.cards.shift();s.outcome=Math.sign(s.next.rank-s.current.rank);s.phase='reveal';
+ if(s.outcome!==0)s.predictions.forEach((v,i)=>{if(v===s.outcome)teams[i]++});
+ highLowShow();
+}
+function nextHighLowRound(){
+ const s=state;if(mode!=='teamHighLow'||s.phase!=='reveal')return;
+ s.round++;
+ if(s.round>=s.roundLimit){highLowFinish();return}
+ s.current=s.next;s.next=null;s.predictions=Array(s.members).fill(null);s.outcome=0;s.phase='vote';highLowShow();
+}
+function highLowFinish(){
+ const s=state;s.phase='finished';const top=Math.max(...teams);
+ const winners=teams.map((score,i)=>score===top?TEAM_BADGES[i]+' '+TEAM_COLORS[i]:null).filter(Boolean);
+ const title=winners.length===teams.length?'みんな同点！':winners.join('・')+' 優勝！';
+ panel('<div class="hlWin"><div class="hlTrophy">🏆🎉✨</div><h3>'+title+'</h3><p>15問のハイ＆ロー、おつかれさま！</p><div class="hlFinalScores">'+teams.map((score,i)=>'<div>'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+'　<strong>'+score+'点</strong></div>').join('')+'</div></div>');
+ show('🎉 15ラウンド終了！');
+ actions([['again','🔄 同じ人数でもう一度'],['setup','⚙️ 人数を選び直す']]);
+ $('a_again').onclick=()=>beginTeamHighLow(s.members);
+ $('a_setup').onclick=()=>{state={phase:'setup',members:s.members,roundLimit:15};highLowSetup()};
+}
 /* 究極の二択：正解なし、スタッフが投票をカウント */
 function startTwo(){state={items:shuffle(TWO_CHOICES),pos:0,votes:[0,0],showVotes:false};twoShow();}
 function twoShow(){
