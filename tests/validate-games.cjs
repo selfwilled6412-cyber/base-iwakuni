@@ -229,7 +229,7 @@ assert.equal(cardPark.qa.get().laid.size,4);
 assert([...cardPark.qa.get().user,...cardPark.qa.get().ai].some(c=>cardPark.qa.legalSevens(c,cardPark.qa.get().laid)));
 for(const file of ['saiko-card-games/index.html','saiko-card-games/app.js'])assert(fs.existsSync(path.join(root,file)));
 assert(read('saiko-apps/index.html').includes('href="../saiko-card-games/"'));
-const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,gestures:GESTURES,clues:CLUES,funny:FUNNY_CLUES,chaos:CHAOS_CLUES,facts:FACTS,two:TWO_CHOICES,tsuk:TSUKKOMI};})();');
+const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,getTeams:()=>teams,beginTeam21,stay21,hit21,beginSymbolSpeed,awardSymbol,commonSymbol,speedDeck:SPEED_DECK,gestures:GESTURES,clues:CLUES,funny:FUNNY_CLUES,chaos:CHAOS_CLUES,facts:FACTS,two:TWO_CHOICES,tsuk:TSUKKOMI};})();');
 party.qa.start('teamMemory');
 assert.equal(party.qa.getState().phase,'setup');
 party.get('memoryLaunch').onclick();
@@ -252,6 +252,44 @@ for(let round=0;round<15;round++){
  party.get('a_next').onclick();
 }
 assert.equal(party.qa.getState().phase,'finished');
+
+assert.equal(party.qa.speedDeck.length,13);
+for(let i=0;i<13;i++){
+ assert.equal(party.qa.speedDeck[i].length,4);
+ for(let j=i+1;j<13;j++){
+  assert.notEqual(party.qa.commonSymbol(i,j),null,'Every symbol card pair must share one image');
+  assert.equal(party.qa.speedDeck[i].filter(x=>party.qa.speedDeck[j].includes(x)).length,1);
+ }
+}
+for(let members=2;members<=6;members++){
+ party.qa.start('team21');assert.equal(party.qa.getState().phase,'setup');
+ party.qa.beginTeam21(members);
+ const s=party.qa.getState();assert.equal(s.hands.length,members);
+ for(let r=0;r<3;r++){
+  let guard=0;
+  while(s.phase==='playing'&&guard++<55)party.qa.stay21();
+  assert(guard<=55,'21 should end each round');
+  assert.equal(s.phase,'roundResult');
+  party.get('a_next').onclick();
+ }
+ assert.equal(s.phase,'finished');
+ assert.equal(party.qa.getTeams().length,members);
+ party.qa.start('symbolSpeed');party.qa.beginSymbolSpeed(members);
+ const symbols=party.qa.getState();
+ assert.equal(new Set(symbols.pairs.map(p=>p.join('-'))).size,15);
+ for(let r=0;r<15;r++){
+  assert.equal(symbols.phase,'question');
+  party.get('a_reveal').onclick();
+  assert.equal(symbols.phase,'reveal');
+  if(r%3!==0){
+   party.qa.awardSymbol(r%members);
+   party.qa.awardSymbol((r+1)%members); // double awards must be ignored
+  }
+  party.get('a_next').onclick();
+ }
+ assert.equal(symbols.phase,'finished');
+ assert.equal(party.qa.getTeams().reduce((a,b)=>a+b,0),10);
+}
 party.qa.start('bingo');assert.equal(party.qa.getState().numbers.length,75);
 assert.equal(new Set(party.qa.getState().numbers).size,75);
 party.qa.start('gesture');assert.equal(party.qa.gestures.length,80);
@@ -277,7 +315,7 @@ console.log('PASS: 30/30 adventure maps solved ('+steps+' movements), gems and s
 console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids puzzles');
 console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, corrected placeholders, portal links');
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
-console.log('PASS: 10 solo games, 8 group games, 110 mixed associations + 80 comic voting/tsukkomi prompts');
-console.log('PASS: configurable group memory and 15-round High-Low vote/reveal/score flow');
+console.log('PASS: 10 solo games, 10 group games, 110 mixed associations + 80 comic voting/tsukkomi prompts');
+console.log('PASS: configurable group memory, 15-round High-Low, 2–6 player 21-card challenge and 15-round symbol-speed scoring');
 console.log('PASS: Both escape series play through all 50 stages and allow all chapter jumps');
 console.log('PASS: polished card park, 3 memory difficulties, 25 high-low rounds and two Lumi card opponents');
