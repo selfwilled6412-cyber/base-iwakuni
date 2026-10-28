@@ -14,7 +14,7 @@ for(const f of jsFiles){
  assert(source.length>1000,'Empty or truncated '+f);
 }
 function fakeNode(id){
- const e={id,hidden:false,textContent:'',innerHTML:'',className:'',dataset:{},children:[],style:{setProperty(){}},disabled:false,
+ const e={id,hidden:false,textContent:'',innerHTML:'',className:'',dataset:{},children:[],style:{setProperty(){}},parentElement:{prepend(){}},disabled:false,
   classList:{add(){},remove(){},toggle(){}},setAttribute(){},append(...v){this.children.push(...v)},replaceChildren(){this.children=[]},
   addEventListener(name,fn){this['on'+name]=fn},focus(){},click(){this.onclick?.()}};
  return e;
