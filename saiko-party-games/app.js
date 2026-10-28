@@ -35,7 +35,12 @@ function countdown(){stop();timer=setInterval(()=>{if(mode!=='gesture'||state.ph
 function beginAssociation(kind='all'){
  const pools={all:[...CLUES,...FUNNY_CLUES,...CHAOS_CLUES],normal:CLUES,funny:FUNNY_CLUES,chaos:CHAOS_CLUES};
  const pool=pools[kind]||pools.all;
- state={items:shuffle(pool),pos:0,hint:0,answer:false,category:kind};
+ let items=shuffle(pool);
+ if(kind==='all'){
+  const normal=shuffle(CLUES),funny=shuffle(FUNNY_CLUES),chaos=shuffle(CHAOS_CLUES);
+  items=[];while(normal.length||funny.length||chaos.length){if(funny.length)items.push(funny.pop());if(normal.length)items.push(normal.pop());if(chaos.length)items.push(chaos.pop());}
+ }
+ state={items,pos:0,hint:0,answer:false,category:kind};
  clueShow();
 }
 const ASSOC_MODES=[['all','🎲 ごちゃまぜ'],['funny','😂 爆笑'],['chaos','🌀 カオス'],['normal','🌱 ふつう']];
