@@ -12,9 +12,9 @@ function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){
 function stop(){clearInterval(timer);clearTimeout(timer);timer=null}
 function show(t){$('status').textContent=t}function panel(h){$('board').innerHTML=h}
 function actions(arr){$('actions').innerHTML=arr.map(([id,v])=>'<button id="a_'+id+'" type="button">'+v+'</button>').join('')}
-function scores(){if(mode==='bingo'||mode==='two'){$('scores').replaceChildren();return}if(mode==='teamMemory'||mode==='teamHighLow'){if(!state||state.phase==='setup'){$('scores').replaceChildren();return}$('scores').innerHTML=teams.map((n,i)=>'<div class="teamStanding'+(mode==='teamMemory'&&state.turn===i?' current':'')+'">'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+' '+(n||0)+(mode==='teamMemory'?'組':'点')+'</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
+function scores(){if(mode==='bingo'||mode==='two'){$('scores').replaceChildren();return}if(['teamMemory','teamHighLow','team21','symbolSpeed'].includes(mode)){if(!state||state.phase==='setup'){$('scores').replaceChildren();return}$('scores').innerHTML=teams.map((n,i)=>'<div class="teamStanding'+((mode==='teamMemory'||mode==='team21')&&state.turn===i?' current':'')+'">'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+' '+(n||0)+(mode==='teamMemory'?'組':'点')+'</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
 function back(){stop();mode=null;state=null;$('home').hidden=false;$('game').hidden=true}
-function start(m){stop();mode=m;state=null;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 みんなで神経衰弱',teamHighLow:'🃏 みんなでハイ＆ロー',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='teamHighLow')startTeamHighLow();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
+function start(m){stop();mode=m;state=null;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 みんなで神経衰弱',teamHighLow:'🃏 みんなでハイ＆ロー',team21:'🎯 ぴったり21カード',symbolSpeed:'⚡ 同じ絵スピード',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='teamHighLow')startTeamHighLow();else if(m==='team21')startTeam21();else if(m==='symbolSpeed')startSymbolSpeed();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
 document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>start(b.dataset.game));$('back').onclick=back;$('restart').onclick=()=>{if(!mode||!confirm('最初からやり直す？'))return;if(mode==='bingo'){delete saved.bingo;persist()}start(mode)};
 $('full').onclick=()=>document.fullscreenElement?document.exitFullscreen?.():document.documentElement.requestFullscreen?.().catch(()=>{});
 function bingo(){let d=saved.bingo;state=d&&Array.isArray(d.numbers)&&d.numbers.length===75&&new Set(d.numbers).size===75&&d.pos>=0&&d.pos<=75?d:{numbers:shuffle(Array.from({length:75},(_,i)=>i+1)),pos:0};saved.bingo=state;persist();bingoShow()}
@@ -260,6 +260,182 @@ function tsukShow(){
  if($('a_reveal'))$('a_reveal').onclick=()=>{s.revealed=true;tsukShow()};
  if($('a_skip'))$('a_skip').onclick=()=>{s.pos++;s.revealed=false;tsukShow()};
  if($('a_next'))$('a_next').onclick=()=>{s.pos++;s.revealed=false;tsukShow()};
+}
+
+
+/* 2〜6 人で21を目指すノーベット・カード大会。手札は全て大画面に公開。 */
+const TWENTY_ONE_SUITS=['♠','♥','♦','♣'],TWENTY_ONE_RANKS=['','A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function deck21(){
+ return shuffle(TWENTY_ONE_SUITS.flatMap(suit=>Array.from({length:13},(_,k)=>({
+  suit,rank:k+1,value:Math.min(k+1,10)
+ }))));
+}
+function startTeam21(){state={phase:'setup',members:4,totalRounds:3};setupTeam21()}
+function setupTeam21(){
+ const s=state;teams=Array(s.members).fill(0);scores();
+ teamSetupView('ぴったり21カード','手持ちの数字の合計を21に近づけよう！ 21を超えたら失敗。お金や賭けは一切なし。みんなのカードは全員に見えるよ。','','team21Members','team21Launch');
+ $('team21Members').onchange=()=>{s.members=Number($('team21Members').value);setupTeam21()};
+ $('team21Launch').onclick=()=>beginTeam21(s.members);
+}
+function beginTeam21(members=4){
+ if(mode!=='team21'||!Number.isInteger(members)||members<2||members>6)return;
+ stop();teams=Array(members).fill(0);
+ state={phase:'playing',members,round:0,totalRounds:3,turn:0,deck:[],hands:[],roundWinners:[]};
+ deal21();
+}
+function deal21(){
+ const s=state;if(!s||mode!=='team21')return;
+ const deck=deck21();s.deck=deck;s.turn=0;s.phase='playing';
+ s.hands=Array.from({length:s.members},()=>({cards:[deck.shift(),deck.shift()],stopped:false,bust:false}));
+ // Ace counts as 1; face cards count as 10.
+ show21();
+}
+function sum21(cards){return cards.reduce((total,c)=>total+c.value,0)}
+function card21Visual(c){
+ const red=c.suit==='♥'||c.suit==='♦';
+ return '<div class="twentyCard'+(red?' red':'')+'"><span>'+TWENTY_ONE_RANKS[c.rank]+'<small>'+c.suit+'</small></span><strong>'+c.suit+'</strong></div>';
+}
+function show21(){
+ const s=state;if(!s||!['playing','roundResult','finished'].includes(s.phase))return;
+ scores();
+ const hands=s.hands.map((hand,i)=>{
+  const sum=sum21(hand.cards),active=s.phase==='playing'&&s.turn===i;
+  return '<div class="twentyHand'+(active?' active':'')+(hand.bust?' busted':'')+'"><div class="twentyHead">'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+'　<strong>'+sum+' / 21</strong></div><div class="twentyCards">'+hand.cards.map(card21Visual).join('')+'</div><div class="twentyState">'+(hand.bust?'💥 21を超えた！':hand.stopped?'✅ ここでストップ':active?'🎯 いま挑戦中！':'⏳ 順番を待とう')+'</div></div>';
+ }).join('');
+ const lead='<div class="twentyTitle">第 '+(s.round+1)+' / '+s.totalRounds+' ラウンド　<span>🅰️ A＝1、J・Q・K＝10</span></div>';
+ panel('<div class="twentyShow">'+lead+'<div class="twentyHands">'+hands+'</div></div>');
+ if(s.phase==='playing'){
+  const hand=s.hands[s.turn],sum=sum21(hand.cards);
+  show(TEAM_BADGES[s.turn]+' '+TEAM_COLORS[s.turn]+'の番！ 21まであと '+Math.max(0,21-sum)+'。カードを引く？ 止める？');
+  actions([['hit','🃏 もう1枚引く'],['stay','✋ ここで止める'],['setup','⚙️ 人数変更']]);
+  $('a_hit').disabled=hand.cards.length>=7||sum>=21;
+  $('a_hit').onclick=hit21;
+  $('a_stay').onclick=stay21;
+  $('a_setup').onclick=()=>{if(!confirm('現在の大会を終了して人数選択に戻る？'))return;state={phase:'setup',members:s.members,totalRounds:3};setupTeam21()};
+ }else if(s.phase==='roundResult'){
+  const names=s.roundWinners.map(i=>TEAM_BADGES[i]+' '+TEAM_COLORS[i]).join('・');
+  show('🏆 第'+(s.round+1)+'ラウンド結果：'+(names||'全員21超え！')+'　各チーム合計 '+teams.join(' / ')+' 点');
+  actions([['next',s.round+1===s.totalRounds?'🏆 最終結果を見る':'➡ 次のラウンド']]);
+  $('a_next').onclick=next21;
+ }
+}
+function hit21(){
+ const s=state;if(mode!=='team21'||s.phase!=='playing')return;
+ const h=s.hands[s.turn];if(h.stopped||h.bust||h.cards.length>=7||!s.deck.length)return;
+ h.cards.push(s.deck.shift());
+ const sum=sum21(h.cards);
+ if(sum>21)h.bust=true;
+ if(sum>=21||h.cards.length>=7)h.stopped=true;
+ if(h.stopped||h.bust)advance21();else show21();
+}
+function stay21(){
+ const s=state;if(mode!=='team21'||s.phase!=='playing')return;
+ s.hands[s.turn].stopped=true;advance21();
+}
+function advance21(){
+ const s=state;if(!s||s.phase!=='playing')return;
+ for(let i=s.turn+1;i<s.members;i++){
+  if(!s.hands[i].stopped&&!s.hands[i].bust){s.turn=i;show21();return}
+ }
+ finish21Round();
+}
+function finish21Round(){
+ const s=state;if(!s||s.phase!=='playing')return;
+ const valid=s.hands.map((h,i)=>({i,value:sum21(h.cards)})).filter(x=>x.value<=21);
+ const top=valid.length?Math.max(...valid.map(x=>x.value)):0;
+ s.roundWinners=valid.filter(x=>x.value===top).map(x=>x.i);
+ for(const i of s.roundWinners)teams[i]+=top===21?2:1;
+ s.phase='roundResult';show21();
+}
+function next21(){
+ const s=state;if(mode!=='team21'||s.phase!=='roundResult')return;
+ s.round++;
+ if(s.round===s.totalRounds){finish21();return}
+ deal21();
+}
+function finish21(){
+ const s=state;if(!s)return;s.phase='finished';
+ const max=Math.max(...teams),winners=teams.map((v,i)=>v===max?TEAM_BADGES[i]+' '+TEAM_COLORS[i]:null).filter(Boolean);
+ const title=winners.length===teams.length?'全員同点！':winners.join('・')+' が優勝！';
+ panel('<div class="hlWin"><div class="hlTrophy">🏆🎉✨</div><h3>'+title+'</h3><p>3ラウンドの数字カード大会終了！</p><div class="hlFinalScores">'+teams.map((v,i)=>'<div>'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+'　<strong>'+v+'点</strong></div>').join('')+'</div></div>');
+ show('21ぴったりは2点、それ以外は最高得点者に1点。得点の高い人が優勝！');
+ actions([['again','🔄 同じ人数で再戦'],['setup','⚙️ 人数を変更']]);
+ $('a_again').onclick=()=>beginTeam21(s.members);
+ $('a_setup').onclick=()=>{state={phase:'setup',members:s.members,totalRounds:3};setupTeam21()};
+}
+/* Exactly-one-common-symbol puzzle: projective plane of order three, 13 cards, 4 icons each */
+const SPEED_ICONS=['🍎','🐼','🎸','🚀','🌈','💎','🌻','⚽','🐸','🍰','🎲','🦄','🔑'];
+function buildSymbolDeck(){
+ const lines=[];
+ for(let slope=0;slope<3;slope++)for(let intercept=0;intercept<3;intercept++){
+  const l=Array.from({length:3},(_,x)=>x*3+(slope*x+intercept)%3);
+  l.push(9+slope);lines.push(l);
+ }
+ for(let x=0;x<3;x++)lines.push([x*3,x*3+1,x*3+2,12]);
+ lines.push([9,10,11,12]);
+ return lines;
+}
+const SPEED_DECK=buildSymbolDeck();
+function symbolPairPool(){
+ const pairs=[];for(let i=0;i<SPEED_DECK.length;i++)for(let j=i+1;j<SPEED_DECK.length;j++)pairs.push([i,j]);
+ return shuffle(pairs);
+}
+function commonSymbol(a,b){
+ const shared=SPEED_DECK[a].filter(n=>SPEED_DECK[b].includes(n));
+ return shared.length===1?shared[0]:null;
+}
+function startSymbolSpeed(){state={phase:'setup',members:4,total:15};symbolSetup()}
+function symbolSetup(){
+ const s=state;teams=Array(s.members).fill(0);scores();
+ teamSetupView('同じ絵スピード','2枚のカードに、まったく同じ絵が1つだけあるよ。いちばん先に見つけた人が1点！ 大きな画面で15問対決。','','speedMembers','speedLaunch');
+ $('speedMembers').onchange=()=>{s.members=Number($('speedMembers').value);symbolSetup()};
+ $('speedLaunch').onclick=()=>beginSymbolSpeed(s.members);
+}
+function beginSymbolSpeed(members=4){
+ if(mode!=='symbolSpeed'||!Number.isInteger(members)||members<2||members>6)return;
+ stop();teams=Array(members).fill(0);
+ state={phase:'question',members,round:0,total:15,pairs:symbolPairPool().slice(0,15),awarded:null};
+ showSymbolSpeed();
+}
+function showSymbolSpeed(){
+ const s=state;if(!s||!['question','reveal'].includes(s.phase))return;
+ scores();
+ const [a,b]=s.pairs[s.round],shared=commonSymbol(a,b),cardView=(index,title)=>
+ '<div class="symbolCard"><div class="symbolCardTitle">'+title+'</div><div class="symbolGrid">'+SPEED_DECK[index].map(id=>'<div class="symbolItem'+(s.phase==='reveal'&&id===shared?' highlighted':'')+'">'+SPEED_ICONS[id]+'</div>').join('')+'</div></div>';
+ panel('<div class="symbolSpeedWrap"><div class="symbolRound">第 '+(s.round+1)+' / '+s.total+' 問</div><div class="symbolDuel">'+cardView(a,'🅰️ カードA')+'<div class="symbolVs">VS</div>'+cardView(b,'🅱️ カードB')+'</div>'+
+ (s.phase==='reveal'?'<div class="symbolAnswer">正解：'+SPEED_ICONS[shared]+'　'+(s.awarded===null?'いちばん速かったのは誰？':'✨ '+TEAM_BADGES[s.awarded]+' '+TEAM_COLORS[s.awarded]+'に1点！')+'</div>':'<div class="symbolPrompt">👀 2枚に共通する絵を探そう！</div>')+'</div>');
+ if(s.phase==='question'){
+  show('最初に見つけた人が声で回答！ スタッフは「正解を公開」で確認してね。');
+  actions([['reveal','🔎 正解の絵を公開'],['setup','⚙️ 人数を変更']]);
+  $('a_reveal').onclick=()=>{s.phase='reveal';showSymbolSpeed()};
+  $('a_setup').onclick=()=>{if(!confirm('対戦を中断して人数選択に戻る？'))return;state={phase:'setup',members:s.members,total:15};symbolSetup()};
+ }else{
+  show('正解は '+SPEED_ICONS[shared]+'！ 最初の正解者のチームに1点をつけてね。');
+  const pts=s.awarded===null?TEAM_BADGES.slice(0,s.members).map((e,i)=>['award'+i,e+' '+TEAM_COLORS[i]+' ＋1点']):[];
+  actions([...pts,['next',s.round+1===s.total?'🏆 最終結果へ':'➡ 次のカード']]);
+  for(let i=0;i<s.members;i++)if($('a_award'+i))$('a_award'+i).onclick=()=>awardSymbol(i);
+  $('a_next').onclick=nextSymbolRound;
+ }
+}
+function awardSymbol(i){
+ const s=state;if(mode!=='symbolSpeed'||s.phase!=='reveal'||s.awarded!==null||!Number.isInteger(i)||i<0||i>=s.members)return;
+ s.awarded=i;teams[i]++;showSymbolSpeed();
+}
+function nextSymbolRound(){
+ const s=state;if(mode!=='symbolSpeed'||s.phase!=='reveal')return;
+ s.round++;
+ if(s.round===s.total){finishSymbolSpeed();return}
+ s.phase='question';s.awarded=null;showSymbolSpeed();
+}
+function finishSymbolSpeed(){
+ const s=state;s.phase='finished';const top=Math.max(...teams);
+ const winners=teams.map((v,i)=>v===top?TEAM_BADGES[i]+' '+TEAM_COLORS[i]:null).filter(Boolean);
+ const title=winners.length===teams.length?'全員同点！':winners.join('・')+' 優勝！';
+ panel('<div class="hlWin"><div class="hlTrophy">🏆✨⚡</div><h3>'+title+'</h3><p>15問のスピード絵合わせ大会終了！</p><div class="hlFinalScores">'+teams.map((v,i)=>'<div>'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+'　<strong>'+v+'点</strong></div>').join('')+'</div></div>');
+ show('15問終了！ 共通の絵を探すゲームだったよ。');
+ actions([['again','🔄 同じ人数で再戦'],['setup','⚙️ 人数を変更']]);
+ $('a_again').onclick=()=>beginSymbolSpeed(s.members);
+ $('a_setup').onclick=()=>{state={phase:'setup',members:s.members,total:15};symbolSetup()};
 }
 
 })();
