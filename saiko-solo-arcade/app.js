@@ -14,7 +14,7 @@ function record(key,value,lower=false){
  if(!Number.isFinite(old)||!records[key]||(lower?value<old:value>old)){records[key]=value;try{localStorage.setItem(STORE,JSON.stringify(records))}catch(e){}}
 }
 function home(){cleanup();mode=null;state=null;$('panel').hidden=true;$('home').hidden=false;show('');}
-function start(m){if(!NAMES[m])return;cleanup();mode=m;state={};$('home').hidden=true;$('panel').hidden=false;$('gameTitle').textContent=NAMES[m];show('');
+function start(m){if(!NAMES[m])return;cleanup();mode=m;state={};$('panel').dataset.mode=m;$('home').hidden=true;$('panel').hidden=false;$('gameTitle').textContent=NAMES[m];show('');
  ({reaction:initReaction,mole:initMole,simon:initSimon,order:initOrder,math:initMath,odd:initOdd,word:initWord,merge:initMerge})[m]();
  window.scrollTo?.({top:0,behavior:'smooth'});
 }
