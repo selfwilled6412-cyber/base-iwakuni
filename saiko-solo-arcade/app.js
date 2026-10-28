@@ -1,5 +1,5 @@
 (()=>{'use strict';
-const $=id=>document.getElementById(id),NAMES={reaction:'⚡ 反射神経チャレンジ',mole:'🐹 もぐらタッチ',simon:'🌈 カラー記憶ゲーム',order:'🔢 数字を順番に',math:'🧮 計算スピード対決',odd:'🔍 1つだけ違うもの',word:'🔤 ことば並べ替え',merge:'🧠 2048数字パズル'};
+const $=id=>document.getElementById(id),NAMES={reaction:'⚡ 反射神経チャレンジ',mole:'🐹 もぐらタッチ',simon:'🌈 カラー記憶ゲーム',order:'🔢 数字を順番に',math:'🧮 計算スピード対決',odd:'🔍 1つだけ違うもの',word:'🔤 ことば並べ替え',merge:'🧠 2048数字パズル',rps:'✊ じゃんけんバトル',slide:'🧩 スライドパズル'};
 const STORE='saiko-solo-games-v1';let records={};try{const d=JSON.parse(localStorage.getItem(STORE)||'{}');if(d&&typeof d==='object')records=d;}catch(e){}
 let mode=null,state=null,token=0,timeouts=[],intervals=[];
 const pick=a=>a[Math.floor(Math.random()*a.length)],shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -15,7 +15,7 @@ function record(key,value,lower=false){
 }
 function home(){cleanup();mode=null;state=null;$('panel').hidden=true;$('home').hidden=false;show('');}
 function start(m){if(!NAMES[m])return;cleanup();mode=m;state={};$('panel').dataset.mode=m;$('home').hidden=true;$('panel').hidden=false;$('gameTitle').textContent=NAMES[m];show('');
- ({reaction:initReaction,mole:initMole,simon:initSimon,order:initOrder,math:initMath,odd:initOdd,word:initWord,merge:initMerge})[m]();
+ ({reaction:initReaction,mole:initMole,simon:initSimon,order:initOrder,math:initMath,odd:initOdd,word:initWord,merge:initMerge,rps:initRps,slide:initSlide})[m]();
  window.scrollTo?.({top:0,behavior:'smooth'});
 }
 const done=(message,again='もう一度遊ぶ')=>{const m=mode;cleanup();info('🎉 チャレンジ終了！');board('<div class="gameDone"><div style="font-size:69px">🎉🏆✨</div><strong>おつかれさま！</strong><p>'+message+'</p><button id="again" class="action good" type="button">'+again+'</button></div>');$('again').onclick=()=>start(m);};
@@ -99,4 +99,75 @@ function drawMerge(){
 document.addEventListener('keydown',e=>{if(mode!=='merge'||['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;const d={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[e.key];if(d){e.preventDefault();moveMerge(d);}});
 let swipe=null;$('gameBoard').addEventListener('touchstart',e=>{if(mode!=='merge')return;const t=e.touches[0];swipe={x:t.clientX,y:t.clientY}},{passive:true});
 $('gameBoard').addEventListener('touchend',e=>{if(mode!=='merge'||!swipe)return;const t=e.changedTouches[0],dx=t.clientX-swipe.x,dy=t.clientY-swipe.y;swipe=null;if(Math.max(Math.abs(dx),Math.abs(dy))<25)return;moveMerge(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));},{passive:true});
+
+/* じゃんけんバトル: 10 rounds vs fair random CPU */
+const RPS=[['✊','グー'],['✌️','チョキ'],['✋','パー']];
+function initRps(){state={round:0,win:0,draw:0,lose:0,result:null};drawRps();}
+function drawRps(){
+ const s=state;
+ info('第'+Math.min(s.round+1,10)+' / 10回戦　｜　勝ち '+s.win+'　あいこ '+s.draw+'　負け '+s.lose+'　｜　最高記録 '+(records.rps||0)+'勝');
+ const result=s.result?'<div class="rpsDuel"><div class="rpsFighter"><span>あなた</span><strong>'+RPS[s.result.user][0]+'</strong></div><span class="rpsVs">VS</span><div class="rpsFighter"><span>ルミ</span><strong>'+RPS[s.result.cpu][0]+'</strong></div></div><div class="rpsResult">'+s.result.message+'</div>':'<div class="rpsIntro"><span>🎮</span><strong>じゃーんけーん…</strong><p>ルミと真剣勝負！</p></div>';
+ board(result);
+ if(s.result){
+  board(result+'<button id="rpsNext" type="button" class="action good">'+(s.round>=10?'結果を見る 🏆':'次の勝負へ ▶')+'</button>');
+  $('rpsNext').onclick=()=>{if(s.round>=10){record('rps',s.win);done('10回中'+s.win+'勝！　あいこ'+s.draw+'回　負け'+s.lose+'回。最高記録 '+(records.rps||0)+'勝');return}s.result=null;drawRps();};
+ }else{
+  board(result+'<div class="rpsChoices">'+RPS.map(([emoji,label],i)=>'<button type="button" class="rpsHand" data-hand="'+i+'" aria-label="'+label+'を出す"><span>'+emoji+'</span><strong>'+label+'</strong></button>').join('')+'</div>');
+  for(const b of $('gameBoard').querySelectorAll('[data-hand]'))b.onclick=()=>throwRps(Number(b.dataset.hand));
+ }
+}
+function throwRps(hand){
+ if(mode!=='rps'||state.result||hand<0||hand>2)return;
+ const cpu=Math.floor(Math.random()*3),diff=(hand-cpu+3)%3;
+ // 0=グー、1=チョキ、2=パー
+ const win=diff===2,draw=diff===0;state.round++;
+ if(win)state.win++;else if(draw)state.draw++;else state.lose++;
+ state.result={user:hand,cpu,message:draw?'🤝 あいこ！':win?'🌟 あなたの勝ち！':'😆 ルミの勝ち！'};
+ show(state.result.message,win||draw?'':'bad');drawRps();
+}
+/* スライドパズル: every layout is guaranteed solvable because it is scrambled via legal moves */
+function slideNeighbours(empty,n){
+ const y=Math.floor(empty/n),x=empty%n,positions=[];
+ if(x>0)positions.push(empty-1);if(x<n-1)positions.push(empty+1);
+ if(y>0)positions.push(empty-n);if(y<n-1)positions.push(empty+n);
+ return positions;
+}
+function initSlide(size=3){
+ const n=size===4?4:3,cells=Array.from({length:n*n},(_,i)=>(i+1)%(n*n));
+ let empty=cells.indexOf(0),previous=-1;
+ const steps=n===3?70:140;
+ for(let step=0;step<steps;step++){
+  let choices=slideNeighbours(empty,n).filter(x=>x!==previous);
+  if(!choices.length)choices=slideNeighbours(empty,n);
+  const index=pick(choices);
+  [cells[empty],cells[index]]=[cells[index],cells[empty]];
+  previous=empty;empty=index;
+ }
+ // Avoid presenting an already solved puzzle.
+ if(cells.every((value,i)=>value===(i+1)%(n*n)))return initSlide(n);
+ state={n,cells,moves:0,started:Date.now(),last:null};drawSlide();
+}
+function drawSlide(){
+ const s=state,n=s.n,empty=s.cells.indexOf(0);
+ const available=new Set(slideNeighbours(empty,n));
+ info('🧩 '+n+'×'+n+' スライドパズル　｜　移動 '+s.moves+' 回　｜　'+(records['slide'+n]?'最高記録 '+records['slide'+n]+'回':'初クリアを目指そう！'));
+ board('<div class="slideBoard" style="--n:'+n+'">'+s.cells.map((val,i)=>'<button type="button" class="slideTile'+(val===0?' empty':'')+(available.has(i)?' movable':'')+'" data-slide="'+i+'" '+(!val||!available.has(i)?'disabled':'')+' aria-label="'+(val?val+'を空きマスへ移動':'空きマス')+'">'+(val||'')+'</button>').join('')+'</div><p class="slideHelp">光っている数字をタップして空白に移動。左上から1,2,3…と並べてみよう！</p><div class="toolRow" style="justify-content:center"><button class="tool" id="slideHint">💡 動かせる数字</button><button class="tool" id="slideUndo" '+(s.last?'':'disabled')+'>↶ 1手戻す</button></div><div class="toolRow" style="justify-content:center"><button class="tool" id="size3">🌱 3×3</button><button class="tool" id="size4">👑 4×4</button></div>');
+ for(const b of $('gameBoard').querySelectorAll('[data-slide]'))b.onclick=()=>slideMove(Number(b.dataset.slide));
+ $('slideHint').onclick=()=>show('動かせる数字：'+[...available].map(i=>s.cells[i]).join('・')+'。近くの数字をタップしよう！');
+ $('slideUndo').onclick=()=>{if(!s.last)return;s.cells=s.last;s.last=null;s.moves=Math.max(0,s.moves-1);drawSlide()};
+ $('size3').onclick=()=>initSlide(3);$('size4').onclick=()=>initSlide(4);
+}
+function slideMove(index){
+ if(mode!=='slide'||!state||!Number.isInteger(index))return;
+ const s=state,n=s.n,empty=s.cells.indexOf(0);
+ if(!slideNeighbours(empty,n).includes(index))return;
+ s.last=s.cells.slice();
+ [s.cells[empty],s.cells[index]]=[s.cells[index],s.cells[empty]];
+ s.moves++;
+ if(s.cells.every((v,i)=>v===(i+1)%(n*n))){
+  record('slide'+n,s.moves,true);
+  done(n+'×'+n+'を '+s.moves+'手で完成！ ベスト：'+records['slide'+n]+'手　🎉');
+ }else drawSlide();
+}
+
 })();
