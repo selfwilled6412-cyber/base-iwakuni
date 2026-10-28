@@ -173,6 +173,36 @@ for(const game of ['reaction','mole','simon','order','math','odd','word','merge'
 solo.qa.start('merge');assert.equal(solo.qa.getState().cells.length,16);
 solo.qa.start('word');assert.equal(solo.qa.getState().questions.length,10);
 solo.qa.start('math');assert.equal(solo.qa.getState().question.options.length,4);
+
+const cardPark=suiteHarness('saiko-card-games/app.js',
+ 'window.__qa={start,get:()=>st,tapMemory,guessHighLow,playSevens,turnSevensAI,legalSevens,deck52,discardPairs};})();');
+assert.equal(cardPark.qa.deck52().length,52);
+assert.equal(new Set(cardPark.qa.deck52().map(c=>c.id)).size,52);
+for(let level=0;level<3;level++){
+ cardPark.qa.start('memory',level);
+ const state=cardPark.qa.get(),pairs=new Map();
+ state.cards.forEach((c,i)=>{const found=pairs.get(c.id)||[];found.push(i);pairs.set(c.id,found)});
+ assert.equal(pairs.size,[6,10,15][level]);
+ for(const ids of pairs.values()){assert.equal(ids.length,2);cardPark.qa.tapMemory(ids[0]);cardPark.qa.tapMemory(ids[1]);}
+ assert.equal(cardPark.get('info').textContent,'✨ ミッション達成！');
+}
+cardPark.qa.start('highlow');
+for(let i=0;i<25;i++){
+ const state=cardPark.qa.get(),diff=Math.sign(state.cards[0].rank-state.current.rank);
+ cardPark.qa.guessHighLow(diff===0?1:diff);
+ assert.equal(state.round,i+1);
+ cardPark.get('nextHighLow').onclick();
+}
+assert.equal(cardPark.get('info').textContent,'✨ ミッション達成！');
+cardPark.qa.start('oldmaid');
+assert(cardPark.qa.get().player.length>0&&cardPark.qa.get().ai.length>0);
+cardPark.qa.start('sevens');
+assert.equal(cardPark.qa.get().user.length,24);
+assert.equal(cardPark.qa.get().ai.length,24);
+assert.equal(cardPark.qa.get().laid.size,4);
+assert([...cardPark.qa.get().user,...cardPark.qa.get().ai].some(c=>cardPark.qa.legalSevens(c,cardPark.qa.get().laid)));
+for(const file of ['saiko-card-games/index.html','saiko-card-games/app.js'])assert(fs.existsSync(path.join(root,file)));
+assert(read('saiko-apps/index.html').includes('href="../saiko-card-games/"'));
 const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,gestures:GESTURES,clues:CLUES,facts:FACTS};})();');
 party.qa.start('bingo');assert.equal(party.qa.getState().numbers.length,75);
 assert.equal(new Set(party.qa.getState().numbers).size,75);
@@ -190,3 +220,4 @@ console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, cor
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
 console.log('PASS: 8 solo games and 4 group games with 75/80/50/50 banks');
 console.log('PASS: Both escape series play through all 50 stages and allow all chapter jumps');
+console.log('PASS: polished card park, 3 memory difficulties, 25 high-low rounds and two Lumi card opponents');
