@@ -4,6 +4,32 @@ const $=id=>document.getElementById(id);
 const SIZE={easy:9,normal:13,hard:17},GEMS={easy:1,normal:2,hard:3},LABEL={easy:'🌱 初級',normal:'🧭 中級',hard:'🐉 上級'};
 const TOTAL=10,KEY='saiko-treasure-adventure-v1',STAGE_SEED={easy:17,normal:31,hard:53};
 const DIRS=[{dx:0,dy:-1,label:'上 ↑'},{dx:1,dy:0,label:'右 →'},{dx:0,dy:1,label:'下 ↓'},{dx:-1,dy:0,label:'左 ←'}];
+
+const WORLDS={
+ easy:{name:'🌲 はじまりの森',intro:'ルミと一緒に森の宝石を探そう。'},
+ normal:{name:'🌊 ひみつの海底',intro:'海の迷宮に眠る2つの宝石を見つけよう。'},
+ hard:{name:'🌌 星の迷宮',intro:'宇宙に散らばった3つの宝石を集めよう。'}
+};
+const CHAPTERS=[
+ ['🗝️ はじめての宝箱','青い光を見つけたよ！ 迷路の奥にある宝石を探そう。'],
+ ['🌳 まよいの小道','曲がり角が増えてきたね。通った道を覚えて進もう。'],
+ ['🦋 ひかる羽のしるし','羽が道を教えてくれる。遠回りも冒険の一部！'],
+ ['🌉 かくされた橋','扉への道はひとつじゃないかも。宝石を先に探そう。'],
+ ['🎁 5つ目の宝箱','前半の最後！ 宝石を見つけよう。'],
+ ['🔎 ルミのひみつ地図','まだ知らない道があるよ。行き止まりも手がかり。'],
+ ['🐾 ふしぎな足あと','足あとを追うと宝石の場所がわかるかも。'],
+ ['🌠 流れ星の願い','キラキラ光る宝石を集めて出口を探そう。'],
+ ['🔒 最後の試練','あせらず落ち着いて考えてみよう。'],
+ ['👑 宝の王国・最終決戦','最後の部屋！ 全部の宝石を集めよう。']
+];
+function rankFor(total){
+ if(total>=80)return '👑 レジェンド探検王';
+ if(total>=60)return '🏆 宝石マスター';
+ if(total>=35)return '💎 ベテラン探検家';
+ if(total>=12)return '🧭 いっちょまえ探検家';
+ return '🎒 探検見習い';
+}
+
 const canvas=$('maze'),ctx=canvas.getContext('2d');
 const courseData=()=>({unlocked:0,bests:Array(TOTAL).fill(0),run:null});
 const fresh=()=>({easy:courseData(),normal:courseData(),hard:courseData()});
