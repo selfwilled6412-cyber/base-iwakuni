@@ -296,6 +296,45 @@ function resetCourse(){
  if(!level||!window.confirm(LABEL[level]+'の10ステージの記録を全部消す？ ほかの難易度の記録は消えないよ。'))return;
  progress[level]=courseData();startStage(level,0,false);
 }
+
+function exportProgress(){
+ const data={format:'saiko-adventure-stars',version:1,achievements:{}};
+ for(const lvl of Object.keys(SIZE))data.achievements[lvl]=[...progress[lvl].bests];
+ const text=JSON.stringify(data,null,2);
+ const blob=new Blob([text],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement('a');
+ link.href=url;link.download='サイ校_冒険の星記録.json';
+ document.body.append(link);link.click();link.remove();
+ window.setTimeout(()=>URL.revokeObjectURL(url),5000);
+ $('backupStatus').textContent='✅ 星の記録を保存したよ！';
+}
+async function importProgress(event){
+ const file=event.target.files?.[0];if(!file)return;
+ try{
+  if(file.size>50000)throw Error('データの容量が大きすぎます');
+  const raw=JSON.parse(await file.text());
+  if(raw.format!=='saiko-adventure-stars'||raw.version!==1||!raw.achievements)throw Error('このゲームの記録ではありません');
+  const staged={};
+  for(const lvl of Object.keys(SIZE)){
+   const arr=raw.achievements[lvl];
+   if(!Array.isArray(arr)||arr.length!==TOTAL||arr.some(n=>!Number.isInteger(n)||n<0||n>3))throw Error('星の記録が正しくありません');
+   staged[lvl]=arr;
+  }
+  for(const lvl of Object.keys(SIZE)){
+   const p=progress[lvl];
+   p.bests=p.bests.map((v,i)=>Math.max(v,staged[lvl][i]));
+   const completed=p.bests.reduce((m,v,i)=>v>0?Math.max(m,i+1):m,0);
+   p.unlocked=Math.max(p.unlocked,Math.min(TOTAL-1,completed));
+  }
+  try{localStorage.setItem(KEY,JSON.stringify(progress))}catch(e){}
+  showProgress();
+  $('backupStatus').textContent='✅ 記録を読み込んだよ。今の記録は消さず、良い方の星を残したよ！';
+ }catch(e){$('backupStatus').textContent='⚠️ '+(e?.message||'読み込みに失敗しました');}
+ finally{event.target.value=''}
+}
+$('exportProgress').onclick=exportProgress;
+$('importProgress').addEventListener('change',importProgress);
 restore();showProgress();
 document.querySelectorAll('[data-course]').forEach(b=>b.addEventListener('click',()=>openCourse(b.dataset.course)));
 $('homeBtn').onclick=goHome;$('winHomeBtn').onclick=goHome;
