@@ -168,11 +168,37 @@ function suiteHarness(file,expose){
  }),{timeout:10000});
  return {qa:w.__qa,get:$};
 }
-const solo=suiteHarness('saiko-solo-arcade/app.js','window.__qa={start,getState:()=>state};})();');
+const solo=suiteHarness('saiko-solo-arcade/app.js','window.__qa={start,getState:()=>state,throwRps,slideMove,slideNeighbours,initSlide};})();');
 for(const game of ['reaction','mole','simon','order','math','odd','word','merge'])solo.qa.start(game);
 solo.qa.start('merge');assert.equal(solo.qa.getState().cells.length,16);
 solo.qa.start('word');assert.equal(solo.qa.getState().questions.length,10);
 solo.qa.start('math');assert.equal(solo.qa.getState().question.options.length,4);
+
+solo.qa.start('rps');for(let i=0;i<10;i++){
+ solo.qa.throwRps(i%3);assert.equal(solo.qa.getState().round,i+1);
+ const next=solo.get('rpsNext').onclick;assert.equal(typeof next,'function');next();
+}
+assert.equal(solo.get('gameInfo').textContent,'🎉 チャレンジ終了！');
+function isSlideSolvable(cells,n){
+ let inv=0;for(let i=0;i<cells.length;i++)for(let j=i+1;j<cells.length;j++)
+  if(cells[i]&&cells[j]&&cells[i]>cells[j])inv++;
+ if(n%2===1)return inv%2===0;
+ const rowFromBottom=n-Math.floor(cells.indexOf(0)/n);
+ return (inv+rowFromBottom)%2===1;
+}
+solo.qa.start('slide');
+for(const n of [3,4])for(let i=0;i<30;i++){
+ solo.qa.initSlide(n);
+ const state=solo.qa.getState();
+ assert.equal(state.cells.length,n*n);
+ assert.equal(new Set(state.cells).size,n*n);
+ assert(isSlideSolvable(state.cells,n),'Impossible slide shuffle for '+n+'x'+n);
+ const zero=state.cells.indexOf(0),neighbours=solo.qa.slideNeighbours(zero,n);
+ const index=neighbours[0];solo.qa.slideMove(index);
+ assert.equal(state.moves,1);
+ assert.equal(state.cells[index],0);
+}
+
 
 const cardPark=suiteHarness('saiko-card-games/app.js',
  'window.__qa={start,get:()=>st,tapMemory,guessHighLow,playSevens,turnSevensAI,legalSevens,deck52,discardPairs};})();');
@@ -203,7 +229,7 @@ assert.equal(cardPark.qa.get().laid.size,4);
 assert([...cardPark.qa.get().user,...cardPark.qa.get().ai].some(c=>cardPark.qa.legalSevens(c,cardPark.qa.get().laid)));
 for(const file of ['saiko-card-games/index.html','saiko-card-games/app.js'])assert(fs.existsSync(path.join(root,file)));
 assert(read('saiko-apps/index.html').includes('href="../saiko-card-games/"'));
-const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,gestures:GESTURES,clues:CLUES,facts:FACTS};})();');
+const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,gestures:GESTURES,clues:CLUES,funny:FUNNY_CLUES,chaos:CHAOS_CLUES,facts:FACTS,two:TWO_CHOICES,tsuk:TSUKKOMI};})();');
 party.qa.start('teamMemory');
 assert.equal(party.qa.getState().faces.length,12);
 assert.equal(new Set(party.qa.getState().faces).size,6);
@@ -211,6 +237,17 @@ party.qa.start('bingo');assert.equal(party.qa.getState().numbers.length,75);
 assert.equal(new Set(party.qa.getState().numbers).size,75);
 party.qa.start('gesture');assert.equal(party.qa.gestures.length,80);
 party.qa.start('association');assert.equal(party.qa.clues.length,50);
+assert.equal(party.qa.funny.length,40);
+assert.equal(party.qa.chaos.length,20);
+assert.equal(party.qa.getState().items.length,110);
+assert(party.qa.funny.includes(party.qa.getState().items[0]),'Default mixed mode must start with funny puzzle');
+assert.equal(new Set(party.qa.getState().items.map(x=>x[0])).size,110,'Association answers must be unique');
+party.qa.start('two');assert.equal(party.qa.getState().items.length,40);
+assert.equal(party.qa.two.length,40);
+party.qa.start('tsukkomi');assert.equal(party.qa.getState().items.length,40);
+assert.equal(party.qa.tsuk.length,40);
+party.qa.start('association');
+
 party.qa.start('ox');assert.equal(party.qa.facts.length,50);
 assert.equal(party.qa.getState().items.length,50);
 for(const folder of ['saiko-solo-arcade','saiko-party-games']){
@@ -221,6 +258,6 @@ console.log('PASS: 30/30 adventure maps solved ('+steps+' movements), gems and s
 console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids puzzles');
 console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, corrected placeholders, portal links');
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
-console.log('PASS: 8 solo games and 5 group games with 75/80/50/50 banks');
+console.log('PASS: 10 solo games, 7 group games, 110 mixed associations + 80 comic voting/tsukkomi prompts');
 console.log('PASS: Both escape series play through all 50 stages and allow all chapter jumps');
 console.log('PASS: polished card park, 3 memory difficulties, 25 high-low rounds and two Lumi card opponents');
