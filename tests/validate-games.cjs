@@ -231,8 +231,27 @@ for(const file of ['saiko-card-games/index.html','saiko-card-games/app.js'])asse
 assert(read('saiko-apps/index.html').includes('href="../saiko-card-games/"'));
 const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,gestures:GESTURES,clues:CLUES,funny:FUNNY_CLUES,chaos:CHAOS_CLUES,facts:FACTS,two:TWO_CHOICES,tsuk:TSUKKOMI};})();');
 party.qa.start('teamMemory');
-assert.equal(party.qa.getState().faces.length,12);
-assert.equal(new Set(party.qa.getState().faces).size,6);
+assert.equal(party.qa.getState().phase,'setup');
+party.get('memoryLaunch').onclick();
+assert.equal(party.qa.getState().faces.length,20);
+assert.equal(new Set(party.qa.getState().faces).size,10);
+assert.equal(party.qa.getState().members,4);
+assert.equal(party.qa.getState().phase,'play');
+party.qa.start('teamHighLow');
+assert.equal(party.qa.getState().phase,'setup');
+party.get('highLowLaunch').onclick();
+assert.equal(party.qa.getState().members,4);
+assert.equal(party.qa.getState().roundLimit,15);
+for(let round=0;round<15;round++){
+ const current=party.qa.getState();
+ assert.equal(current.phase,'vote');
+ party.get('hi_0').onclick();
+ party.get('lo_1').onclick();
+ party.get('a_reveal').onclick();
+ assert.equal(current.phase,'reveal');
+ party.get('a_next').onclick();
+}
+assert.equal(party.qa.getState().phase,'finished');
 party.qa.start('bingo');assert.equal(party.qa.getState().numbers.length,75);
 assert.equal(new Set(party.qa.getState().numbers).size,75);
 party.qa.start('gesture');assert.equal(party.qa.gestures.length,80);
@@ -258,6 +277,7 @@ console.log('PASS: 30/30 adventure maps solved ('+steps+' movements), gems and s
 console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids puzzles');
 console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, corrected placeholders, portal links');
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
-console.log('PASS: 10 solo games, 7 group games, 110 mixed associations + 80 comic voting/tsukkomi prompts');
+console.log('PASS: 10 solo games, 8 group games, 110 mixed associations + 80 comic voting/tsukkomi prompts');
+console.log('PASS: configurable group memory and 15-round High-Low vote/reveal/score flow');
 console.log('PASS: Both escape series play through all 50 stages and allow all chapter jumps');
 console.log('PASS: polished card park, 3 memory difficulties, 25 high-low rounds and two Lumi card opponents');
