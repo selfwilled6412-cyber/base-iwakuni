@@ -22,6 +22,22 @@ const CHAPTERS=[
  ['🔒 最後の試練','あせらず落ち着いて考えてみよう。'],
  ['👑 宝の王国・最終決戦','最後の部屋！ 全部の宝石を集めよう。']
 ];
+
+function confettiBurst(){
+ const box=$('confetti');
+ if(!box)return;
+ box.replaceChildren();
+ const colors=['#ffca41','#47bce5','#fa7cae','#91df87','#d1a6fa'];
+ for(let i=0;i<30;i++){
+  const piece=document.createElement('i');
+  piece.style.setProperty('--confetti',colors[i%colors.length]);
+  piece.style.setProperty('--left',(i*37%100)+'%');
+  piece.style.setProperty('--turn',((i*71)%360)+'deg');
+  piece.style.setProperty('--delay',((i%9)*.09)+'s');
+  piece.style.setProperty('--duration',(1.4+(i%7)*.16)+'s');
+  box.append(piece);
+ }
+}
 function rankFor(total){
  if(total>=80)return '👑 レジェンド探検王';
  if(total>=60)return '🏆 宝石マスター';
