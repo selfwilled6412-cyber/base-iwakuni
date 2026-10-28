@@ -8,9 +8,9 @@ function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){
 function stop(){clearInterval(timer);clearTimeout(timer);timer=null}
 function show(t){$('status').textContent=t}function panel(h){$('board').innerHTML=h}
 function actions(arr){$('actions').innerHTML=arr.map(([id,v])=>'<button id="a_'+id+'" type="button">'+v+'</button>').join('')}
-function scores(){if(mode==='bingo'){$('scores').replaceChildren();return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
+function scores(){if(mode==='bingo'){$('scores').replaceChildren();return}if(mode==='teamMemory'){$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵 青':'🔴 赤')+'チーム '+n+'組</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
 function back(){stop();mode=null;state=null;$('home').hidden=false;$('game').hidden=true}
-function start(m){stop();mode=m;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会'}[m];$('printCards').replaceChildren();scores();if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){state={items:shuffle(CLUES),pos:0,hint:0,answer:false};clueShow()}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
+function start(m){stop();mode=m;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 チーム神経衰弱'}[m];$('printCards').replaceChildren();scores();if(m==='teamMemory')startTeamMemory();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){state={items:shuffle(CLUES),pos:0,hint:0,answer:false};clueShow()}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
 document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>start(b.dataset.game));$('back').onclick=back;$('restart').onclick=()=>{if(!mode||!confirm('最初からやり直す？'))return;if(mode==='bingo'){delete saved.bingo;persist()}start(mode)};
 $('full').onclick=()=>document.fullscreenElement?document.exitFullscreen?.():document.documentElement.requestFullscreen?.().catch(()=>{});
 function bingo(){let d=saved.bingo;state=d&&Array.isArray(d.numbers)&&d.numbers.length===75&&new Set(d.numbers).size===75&&d.pos>=0&&d.pos<=75?d:{numbers:shuffle(Array.from({length:75},(_,i)=>i+1)),pos:0};saved.bingo=state;persist();bingoShow()}
@@ -41,4 +41,46 @@ function oxShow(){if(state.pos>=50){show('50問完走！');panel('<div class="an
  panel('<div class="prompt">'+q+'</div>'+(state.answer?'<div class="answer">'+(correct?'⭕ 正しい':'❌ まちがい')+'</div><div class="hint">'+explanation+'</div>':'<div class="hint">みんなで○か×か考えよう</div>'));
  actions(state.answer?[['next','➡ 次の問題']]:[['reveal','🎉 正解を発表']]);if($('a_reveal'))$('a_reveal').onclick=()=>{state.answer=true;oxShow()};if($('a_next'))$('a_next').onclick=()=>{state.pos++;state.answer=false;oxShow()}
 }
+
+/* みんなで神経衰弱・2チーム対戦 */
+const MEMORY_ICONS=['🍎','🌈','🐱','🐼','⭐','🎸','🚀','💎','🎂','🍀','🐬','👑','⚽','🌷','🎮','🍮'];
+function startTeamMemory(){
+ const values=shuffle(MEMORY_ICONS).slice(0,6);
+ state={faces:shuffle(values.flatMap(v=>[v,v])),flipped:[],matched:new Set(),turn:0,locked:false,round:0,completed:false};
+ teams=[0,0];scores();show('🔴 赤チームの番！ 2枚めくってペアを探そう。');teamMemoryShow();
+}
+function teamMemoryShow(){
+ const s=state;
+ panel('<div class="teamMemoryBoard">'+s.faces.map((v,i)=>{
+  const open=s.flipped.includes(i)||s.matched.has(i),matched=s.matched.has(i);
+  return '<button type="button" class="memTile" data-mem="'+i+'" '+(s.locked||matched||s.completed?'disabled':'')+' aria-label="カード '+(i+1)+(open?'：'+v+' 表向き':'：裏向き')+'"><span class="face'+(open?' open':'')+(matched?' matched':'')+'">'+(open?v:'')+'</span></button>';
+ }).join('')+'</div>');
+ for(const b of $('board').querySelectorAll('[data-mem]'))b.onclick=()=>tapTeamMemory(Number(b.dataset.mem));
+ if(s.completed){const winner=teams[0]===teams[1]?'引き分け！':teams[0]>teams[1]?'🔴 赤チームの勝ち！':'🔵 青チームの勝ち！';
+ show('🎉 全6ペア完成！ '+winner+'　赤'+teams[0]+'組・青'+teams[1]+'組');
+ actions([['again','✨ もう一度対戦する']]);$('a_again').onclick=startTeamMemory;
+ }else{
+  actions([['new','↻ カードを最初から並べ直す']]);$('a_new').onclick=()=>{if(confirm('カードを新しく並べ直す？'))startTeamMemory()};
+ }
+}
+function tapTeamMemory(i){
+ const s=state;if(mode!=='teamMemory'||s.completed||s.locked||s.flipped.includes(i)||s.matched.has(i)||!s.faces[i])return;
+ s.flipped.push(i);
+ if(s.flipped.length===2){
+  s.round++;
+  const[a,b]=s.flipped;
+  if(s.faces[a]===s.faces[b]){
+   s.matched.add(a);s.matched.add(b);s.flipped=[];
+   teams[s.turn]++;scores();
+   if(s.matched.size===s.faces.length){s.completed=true;teamMemoryShow();return}
+   show('🌟 ペア成立！ '+(s.turn?'🔵 青':'🔴 赤')+'チームに1点！ もう1回どうぞ。');
+  }else{
+   s.locked=true;
+   show('おしい！ カードの位置を覚えよう。次は'+(s.turn?'🔴 赤':'🔵 青')+'チーム！');
+   timer=setTimeout(()=>{if(mode!=='teamMemory'||state!==s)return;s.flipped=[];s.locked=false;s.turn=1-s.turn;show((s.turn?'🔵 青':'🔴 赤')+'チームの番！');teamMemoryShow()},1200);
+  }
+ }
+ teamMemoryShow();
+}
+
 })();
