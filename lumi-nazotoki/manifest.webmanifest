@@ -1,1 +1,18 @@
-{"name":"ルミのAI謎解き工房","short_name":"ルミ謎解き","description":"サイ校プロジェクト岩国の謎解きレクリエーション","start_url":"./","scope":"./","display":"standalone","background_color":"#d4eeff","theme_color":"#115aa8","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "name": "サイ校プロジェクト岩国謎解きゲーム",
+  "short_name": "サイ校謎解き",
+  "description": "サイ校プロジェクト岩国の全90問の謎解きWebアプリ・3段階ヒント",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#d4eeff",
+  "theme_color": "#115aa8",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
