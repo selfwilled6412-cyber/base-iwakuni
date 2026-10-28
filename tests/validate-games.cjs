@@ -93,10 +93,26 @@ const main=read('lumi-nazotoki/index.html');
 const start=main.indexOf('const QUESTIONS=')+'const QUESTIONS='.length,end=main.indexOf('];',start)+1;
 assert(start>='const QUESTIONS='.length);
 const bank=JSON.parse(main.slice(start,end));
-assert.equal(bank.length,90);
-assert.equal(new Set(bank.map(q=>q.key)).size,90);
-for(const lvl of [2,3,5])assert.equal(bank.filter(q=>q.level===lvl).length,30);
+assert.equal(bank.length,150);
+assert.equal(new Set(bank.map(q=>q.key)).size,150);
+for(const lvl of [2,3,5])assert.equal(bank.filter(q=>q.level===lvl).length,50);
 assert(bank.every(q=>!q.stage.includes('{n//2+1}')&&!q.stage.includes('join(names)')));
+const staffHTML=read('lumi-nazotoki/staff.html');
+const staffStart=staffHTML.indexOf('const Q=')+'const Q='.length;
+const staffEnd=staffHTML.indexOf('];',staffStart)+1;
+const staffBank=JSON.parse(staffHTML.slice(staffStart,staffEnd));
+assert.equal(staffBank.length,150);
+assert.deepEqual(new Set(staffBank.map(q=>q.key)),new Set(bank.map(q=>q.key)));
+for(const q of staffBank)assert.equal(q.hints.length,3);
+for(const path of ['lumi-escape/index.html','lumi-escape-2/index.html']){
+ const raw=read(path),match=raw.match(/<script>([\s\S]*?)<\/script>/);
+ assert(match,'Missing escape script '+path);new vm.Script(match[1],{filename:path});
+ const a=raw.indexOf('const CASES=')+'const CASES='.length,b=raw.indexOf(';const K=',a);
+ const cases=JSON.parse(raw.slice(a,b));assert.equal(cases.length,50,path);
+ for(const p of cases){assert(p.answer,'Missing answer '+p.name);assert.equal(p.hints.length,3);}
+ const staff=read(path.replace('index.html','staff.html'));
+ assert.equal((staff.match(/<article class="case"/g)||[]).length,50,'Staff guide mismatch '+path);
+}
 const appHub=read('saiko-apps/index.html');
 for(const href of ['../lumi-nazotoki/','../lumi-escape/','../lumi-escape-2/','../saiko-adventure/','../saiko-kids/','../saiko-draw/','guide.html']){
  assert(appHub.includes('href="'+href+'"'),'Missing hub link '+href);
@@ -114,5 +130,5 @@ for(const target of ['saiko-adventure/index.html','saiko-adventure/app.js','saik
 }
 console.log('PASS: 30/30 adventure maps solved ('+steps+' movements), gems and stars valid');
 console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids puzzles');
-console.log('PASS: 90 unique hosted puzzles, corrected placeholders, required portal links');
+console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, corrected placeholders, portal links');
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
