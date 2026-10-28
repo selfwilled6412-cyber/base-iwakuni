@@ -204,6 +204,9 @@ assert([...cardPark.qa.get().user,...cardPark.qa.get().ai].some(c=>cardPark.qa.l
 for(const file of ['saiko-card-games/index.html','saiko-card-games/app.js'])assert(fs.existsSync(path.join(root,file)));
 assert(read('saiko-apps/index.html').includes('href="../saiko-card-games/"'));
 const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,gestures:GESTURES,clues:CLUES,facts:FACTS};})();');
+party.qa.start('teamMemory');
+assert.equal(party.qa.getState().faces.length,12);
+assert.equal(new Set(party.qa.getState().faces).size,6);
 party.qa.start('bingo');assert.equal(party.qa.getState().numbers.length,75);
 assert.equal(new Set(party.qa.getState().numbers).size,75);
 party.qa.start('gesture');assert.equal(party.qa.gestures.length,80);
@@ -218,6 +221,6 @@ console.log('PASS: 30/30 adventure maps solved ('+steps+' movements), gems and s
 console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids puzzles');
 console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, corrected placeholders, portal links');
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
-console.log('PASS: 8 solo games and 4 group games with 75/80/50/50 banks');
+console.log('PASS: 8 solo games and 5 group games with 75/80/50/50 banks');
 console.log('PASS: Both escape series play through all 50 stages and allow all chapter jumps');
 console.log('PASS: polished card park, 3 memory difficulties, 25 high-low rounds and two Lumi card opponents');
