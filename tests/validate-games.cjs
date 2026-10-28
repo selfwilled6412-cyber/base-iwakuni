@@ -128,7 +128,40 @@ new vm.Script(hubJS,{filename:'saiko-apps/index.html'});
 for(const target of ['saiko-adventure/index.html','saiko-adventure/app.js','saiko-kids/index.html','saiko-kids/app.js','saiko-draw/index.html','saiko-draw/app.js','saiko-apps/guide.html']){
  assert(fs.existsSync(path.join(root,target)),'Missing public file '+target);
 }
+function suiteHarness(file,expose){
+ const elements=new Map();
+ function node(id){return {id,hidden:false,innerHTML:'',textContent:'',style:{},children:[],value:'',dataset:{},disabled:false,
+  append(){},replaceChildren(){this.children=[]},addEventListener(){},setAttribute(){},querySelector(){return node('child')},querySelectorAll(){return []}};}
+ const $=id=>elements.get(id)||(elements.set(id,node(id)),elements.get(id));
+ const d={getElementById:$,querySelectorAll(){return []},querySelector(){return node('child')},addEventListener(){}};
+ const w={scrollTo(){},print(){},fullscreenElement:null};
+ const storage={getItem(){return null},setItem(){},removeItem(){}};
+ const code=read(file).replace(/\}\)\(\);\s*$/,expose);
+ new vm.Script(code,{filename:file}).runInNewContext(vm.createContext({
+   document:d,window:w,localStorage:storage,performance:{now(){return 1000}},
+   setTimeout(){return 1},clearTimeout(){},setInterval(){return 1},clearInterval(){},confirm(){return true},
+   console
+ }),{timeout:10000});
+ return {qa:w.__qa,get:$};
+}
+const solo=suiteHarness('saiko-solo-arcade/app.js','window.__qa={start,getState:()=>state};})();');
+for(const game of ['reaction','mole','simon','order','math','odd','word','merge'])solo.qa.start(game);
+solo.qa.start('merge');assert.equal(solo.qa.getState().cells.length,16);
+solo.qa.start('word');assert.equal(solo.qa.getState().questions.length,10);
+solo.qa.start('math');assert.equal(solo.qa.getState().question.options.length,4);
+const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,gestures:GESTURES,clues:CLUES,facts:FACTS};})();');
+party.qa.start('bingo');assert.equal(party.qa.getState().numbers.length,75);
+assert.equal(new Set(party.qa.getState().numbers).size,75);
+party.qa.start('gesture');assert.equal(party.qa.gestures.length,80);
+party.qa.start('association');assert.equal(party.qa.clues.length,50);
+party.qa.start('ox');assert.equal(party.qa.facts.length,50);
+assert.equal(party.qa.getState().items.length,50);
+for(const folder of ['saiko-solo-arcade','saiko-party-games']){
+ assert(fs.existsSync(path.join(root,folder,'index.html')));
+ assert(fs.existsSync(path.join(root,folder,'app.js')));
+}
 console.log('PASS: 30/30 adventure maps solved ('+steps+' movements), gems and stars valid');
 console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids puzzles');
 console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, corrected placeholders, portal links');
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
+console.log('PASS: 8 solo games and 4 group games with 75/80/50/50 banks');
