@@ -6,6 +6,24 @@ const TITLES={memory:'🧠 神経衰弱',highlow:'⬆️⬇️ ハイ＆ロー',
 const KEY='saiko-cardgames-records-v1';
 let records={};try{const r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object'&&!Array.isArray(r))records=r;}catch(e){}
 let game=null,st=null,run=0,tasks=[],clock=null;
+
+const THEME_KEY='saiko-card-theme-v1';
+let theme='neon';
+try{if(localStorage.getItem(THEME_KEY)==='sunshine')theme='sunshine'}catch(e){}
+function applyTheme(){
+ if(document.body?.dataset)document.body.dataset.theme=theme;
+ const button=$('themeToggle');
+ button.textContent=theme==='neon'?'☀️ やさしい色':'🌌 ネオン表示';
+ button.setAttribute('aria-pressed',String(theme==='sunshine'));
+ button.title=theme==='neon'?'明るい配色に切り替える':'ネオン配色に戻す';
+}
+$('themeToggle').onclick=()=>{
+ theme=theme==='neon'?'sunshine':'neon';
+ try{localStorage.setItem(THEME_KEY,theme)}catch(e){}
+ applyTheme();
+};
+applyTheme();
+
 const random=n=>Math.floor(Math.random()*n),shuffle=a=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const j=random(i+1);[b[i],b[j]]=[b[j],b[i]]}return b;};
 const idOf=c=>c.suit+c.rank,card=(suit,rank)=>({suit,rank,id:suit+rank});
 function deck52(){return SUITS.flatMap(s=>Array.from({length:13},(_,i)=>card(s.id,i+1)))}
