@@ -113,6 +113,30 @@ for(const path of ['lumi-escape/index.html','lumi-escape-2/index.html']){
  const staff=read(path.replace('index.html','staff.html'));
  assert.equal((staff.match(/<article class="case"/g)||[]).length,50,'Staff guide mismatch '+path);
 }
+
+for(const file of ['lumi-escape/index.html','lumi-escape-2/index.html']){
+ const raw=read(file),script=raw.match(/<script>([\s\S]*?)<\/script>/)[1];
+ const elements=new Map();
+ function elem(id){return{id,hidden:false,innerHTML:'',textContent:'',className:'',disabled:false,children:[],onclick:null,
+  append(c){this.children.push(c)},addEventListener(){}};}
+ const by=id=>elements.get(id)||(elements.set(id,elem(id)),elements.get(id));
+ const d={getElementById:by,createElement:elem,addEventListener(){}};
+ const save={data:{},getItem(k){return this.data[k]||null},setItem(k,v){this.data[k]=v},removeItem(k){delete this.data[k]}};
+ const w={};const source=script.replace(/document\.addEventListener\('keydown'/,
+  "window.__qa={start,getStep:()=>step,getHint:()=>hint,getShown:()=>shown};document.addEventListener('keydown'");
+ const sandbox={window:w,document:d,localStorage:save,confirm(){return true}};
+ new vm.Script(source,{filename:file}).runInNewContext(vm.createContext(sandbox),{timeout:10000});
+ assert.equal(by('chapterPicker').children.length,10);
+ by('chapterPicker').children[9].onclick();assert.equal(w.__qa.getStep(),45);
+ w.__qa.start(0);
+ for(let index=0;index<50;index++){
+  assert.equal(w.__qa.getStep(),index);
+  by('hintBtn').onclick();assert.equal(w.__qa.getHint(),1);
+  by('revealBtn').onclick();assert.equal(w.__qa.getShown(),true);
+  by('next').onclick();
+ }
+ assert(by('game').innerHTML.includes('脱出成功'));
+}
 const appHub=read('saiko-apps/index.html');
 for(const href of ['../lumi-nazotoki/','../lumi-escape/','../lumi-escape-2/','../saiko-adventure/','../saiko-kids/','../saiko-draw/','guide.html']){
  assert(appHub.includes('href="'+href+'"'),'Missing hub link '+href);
@@ -165,3 +189,4 @@ console.log('PASS: 3 difficulty modes: memory decks, differences, 10 unique kids
 console.log('PASS: 150 hosted puzzles and 100 escape stages, matching hints, corrected placeholders, portal links');
 console.log('PASS: group/solo play modes classify all '+playCards.length+' app cards');
 console.log('PASS: 8 solo games and 4 group games with 75/80/50/50 banks');
+console.log('PASS: Both escape series play through all 50 stages and allow all chapter jumps');
