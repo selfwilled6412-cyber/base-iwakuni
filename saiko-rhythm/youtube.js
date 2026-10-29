@@ -63,7 +63,7 @@ function createPlayer(){
     onReady:()=>{
      if(token!==runToken)return;
      ready=true;
-     status('✅ 動画の準備ができたよ！ 使用許諾を確認し「音ゲーを準備」。その後、動画の▶を押してね。');
+     status('✅ 動画の準備OK！ YouTubeの曲だけでは自動譜面は作れません。「🎼 譜面を作る」から同じ曲の音楽ファイルを読み込めます。');
      draw();
     },
     onStateChange:e=>{
@@ -108,6 +108,11 @@ function loadVideo(){
  document.head.appendChild(script);
 }
 $('load').onclick=loadVideo;
+$('openStudioSettings').onclick=()=>{
+ const settings=$('studioSettings');settings.open=true;
+ settings.scrollIntoView?.({behavior:'smooth',block:'start'});
+};
+
 const bpmTaps=[];
 $('tapBpm').onclick=()=>{
  const now=performance.now(),last=bpmTaps[bpmTaps.length-1];
@@ -244,7 +249,7 @@ function prepareChart(){
  chart=generated;awaitingPrepare=false;
  resetScores(getVideoTime());lastTime=getVideoTime();$('restart').disabled=false;
  feedback('🎹 譜面準備OK！');
- status('✅ '+chart.notes.length+'個の音符を用意したよ！ YouTube側の▶を押すとゲームが動くよ。');
+ status('⚠️ BPM仮譜面（'+chart.notes.length+'個）です。YouTubeの音を解析した譜面ではないため、曲に一致しない場合があります。');
  draw();
 }
 $('prepare').onclick=()=>prepareChart();
