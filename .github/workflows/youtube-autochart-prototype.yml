@@ -44,4 +44,6 @@ jobs:
           sudo apt-get install -y ffmpeg
           python -m pip install -r saiko-rhythm/autochart-service/requirements.txt
       - name: Real CC BY video acquisition and automatic note chart smoke
+        env:
+          SAIKO_CHART_DIAGNOSTICS: "1"
         run: python saiko-rhythm/autochart-service/tests/smoke_youtube_cc.py
