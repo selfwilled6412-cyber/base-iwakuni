@@ -7,8 +7,9 @@ const elements=new Map();
 function element(id){
  return {id,value:id==='volume'?'65':'0',checked:false,hidden:false,innerHTML:'',textContent:'',dataset:{},style:{},onclick:null,onchange:null,oninput:null,disabled:false,
  classList:{add(){},remove(){},toggle(){}},setAttribute(){},addEventListener(){},querySelectorAll(){return []},
- getBoundingClientRect(){return {width:810,height:510}},getContext(){return null;}};
+ getBoundingClientRect(){return {width:810,height:510}},getContext(){return fakeCanvas();}};
 }
+function fakeCanvas(){const g={addColorStop(){}};return {setTransform(){},clearRect(){},createLinearGradient(){return g},fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},roundRect(){},fill(){},save(){},restore(){},fillText(){}};}
 const get=id=>elements.get(id)||(elements.set(id,element(id)),elements.get(id));
 const document={getElementById:get,querySelectorAll(){return []},querySelector(){return element('pad')},addEventListener(){}};
 const stored={};const localStorage={getItem(k){return stored[k]||null},setItem(k,v){stored[k]=v}};
@@ -25,7 +26,7 @@ class FakeAudioContext{
 }
 let rafCount=0;
 const window={AudioContext:FakeAudioContext,addEventListener(){},devicePixelRatio:1,scrollTo(){}};
-const modified=source.replace(/\}\)\(\);\s*$/, "window.__test={begin,input,pauseToggle,finish,stopGame,getGame:()=>game,getSound:()=>sound,settings,section};})();");
+const modified=source.replace(/\}\)\(\);\s*$/, "window.__test={begin,input,pump,paint,pauseToggle,finish,stopGame,getGame:()=>game,getSound:()=>sound,settings,section};})();");
 assert(modified.includes('window.__test='));
 const sandbox={window,document,localStorage,performance:{now(){return 1000}},Math,Float32Array,
  requestAnimationFrame(){return ++rafCount},cancelAnimationFrame(){},
@@ -68,6 +69,8 @@ assert.equal(core.qualityRank({perfect:0,great:0,good:0,miss:20}),'D');
  assert.equal(qa.getGame().mode,'solo');assert.equal(qa.getGame().players.length,1);
  const game=qa.getGame(),sound=qa.getSound(),note=game.notes[0];
  assert(sound.ctx.currentTime===0);
+ sound.ctx.currentTime=.10;qa.pump();assert(sound.cursor>0,'Audio schedule must consume music events');
+ qa.paint();
  sound.ctx.currentTime=sound.origin+note.t+.014;
  qa.input(note.lane);
  assert.equal(note.judge,'perfect');assert(game.players[0].score>0);
