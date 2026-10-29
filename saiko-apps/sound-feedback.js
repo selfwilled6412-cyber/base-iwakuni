@@ -64,7 +64,7 @@
   return target&&typeof target.closest==='function'&&
    target.closest('button:not(#saikoSoundToggle),[role="button"],input[type="button"],input[type="submit"],.gameCell,.tile,.cell,.cardChoice');
  }
- document.addEventListener('click',e=>{if(isAction(e.target)&&e.target?.id!=='saikoSoundTest')cue('tap')},true);
+ document.addEventListener('click',e=>{if(isAction(e.target)&&!['saikoSoundTest','a_draw','a_repeat'].includes(e.target?.id))cue('tap')},true);
  // Chimes on genuine status changes in the game; never inspect page content for music.
  const ids=['feedback','gameFeedback','status','info','win','extraHint'];
  if(typeof MutationObserver!=='undefined'){
