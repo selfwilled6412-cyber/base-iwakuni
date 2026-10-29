@@ -64,6 +64,8 @@ function createPlayer(){
      if(token!==runToken)return;
      ready=true;
      status('▶ 動画の準備ができました');
+     // One URL submission is enough when a private gateway is configured.
+     if(gatewayBase())void chartFromGateway();
      draw();
     },
     onStateChange:e=>{
@@ -140,8 +142,10 @@ async function chartFromGateway(){
   $('studioSettings').open=true;
   return;
  }
+ if(!requestGameRights(chartFromGateway))return;
  const key=$('chartKey').value;
- if(vid!==videoId)loadVideo();
+ // Only start analysis after the official player has a matching video.
+ if(vid!==videoId){loadVideo();return}
  const token=runToken,button=$('autoChart');
  button.disabled=true;button.textContent='🎼 音の解析中…';
  status('🥁 動画の音からノーツを作成中…');$('chartGatewayStatus').textContent='音の解析を実行しています';
