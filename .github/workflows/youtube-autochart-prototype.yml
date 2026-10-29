@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install test dependencies
-        run: python -m pip install numpy fastapi uvicorn
+        run: python -m pip install numpy fastapi uvicorn httpx
       - name: Test synthetic music accents, input validation, and mocked analysis
         run: python -m unittest discover -s saiko-rhythm/autochart-service/tests -p "test_*.py" -v
       - uses: actions/setup-node@v4
@@ -29,7 +29,8 @@ jobs:
       - name: Validate existing YouTube game and its safe mock
         run: node tests/validate-youtube.cjs && node tests/validate-beat-analyzer.cjs
   live-cc-smoke:
-    # Live YouTube checks are informational only: network/bot restrictions vary.
+    # Run explicitly when private IP/network access is suitable. CI runners are frequently blocked as bots.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 9
     continue-on-error: true
