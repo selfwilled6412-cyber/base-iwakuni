@@ -109,7 +109,7 @@ main > .footer{order:3}
 <main>
 <section class="quickLaunch" aria-label="YouTube動画を読み込む">
  <div class="quickRow"><label for="videoUrl" class="visuallyHidden">YouTube動画URL</label><input id="videoUrl" type="text" inputmode="url" autocomplete="url" placeholder="YouTube動画URLを貼り付け"><button id="load" class="button primary" type="button">読み込む</button></div>
- <div class="quickTools"><p>譜面を作成した曲でプレイできます</p><button id="openStudioSettings" type="button">⚙ 譜面・設定</button></div>
+ <div class="quickTools"><button id="nativeAuto" class="button primary" type="button" style="flex:1;background:linear-gradient(90deg,#59f4e1,#ffe27b);color:#09213a">⚡ 音を解析してあそぶ</button><button id="openStudioSettings" type="button">⚙ 詳細</button></div>
  <p class="status" id="status" role="status">曲を読み込んでね</p>
 </section>
 <section class="layout" aria-label="音ゲー画面">
@@ -151,7 +151,7 @@ main > .footer{order:3}
   <p class="hint"><a href="studio.html">音楽ファイルだけで自動譜面を作る</a> ／ <a href="./">オリジナル曲で遊ぶ</a></p>
  </div>
 </details>
-<p class="footer">SAIKO BEAT × YouTube 試作モード。YouTubeの公式認定製品ではありません。</p>
+<p class="footer">Android試作版／音源解析はスマホ内で処理。YouTube公式認定製品ではありません。</p>
 <dialog id="consentDialog" class="consentDialog">
  <h2>この動画を音ゲーに使いますか？</h2>
  <p>ゲームに使用する楽曲・動画の権利と許諾を確認してください。動画が視聴できることは、ゲームへの利用許可を意味しません。</p>
