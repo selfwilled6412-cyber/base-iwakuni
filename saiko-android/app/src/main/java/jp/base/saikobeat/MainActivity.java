@@ -2,6 +2,7 @@ package jp.base.saikobeat;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
@@ -69,6 +70,10 @@ public final class MainActivity extends Activity {
     settings.setAllowContentAccess(false);
     settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
     view.setWebViewClient(new WebViewClient(){
+      @Override public void onPageFinished(WebView v,String url){
+        if(url.startsWith("https://appassets.androidplatform.net/assets/"))
+          acceptSharedLink(getIntent());
+      }
       @Override public android.webkit.WebResourceResponse shouldInterceptRequest(WebView v,android.webkit.WebResourceRequest req) {
         return assetLoader.shouldInterceptRequest(req.getUrl());
       }
@@ -82,6 +87,23 @@ public final class MainActivity extends Activity {
     });
     view.addJavascriptInterface(new NativeAutoChart(),"SaikoNativeAutoChart");
     view.loadUrl("https://appassets.androidplatform.net/assets/youtube.html");
+  }
+
+  private void acceptSharedLink(Intent intent){
+    if(view==null||intent==null||!Intent.ACTION_SEND.equals(intent.getAction()))return;
+    String raw=intent.getStringExtra(Intent.EXTRA_TEXT);
+    if(raw==null)return;
+    java.util.regex.Matcher match=java.util.regex.Pattern
+      .compile("https?://(?:www\\.)?(?:youtube\\.com/watch\\?[^\\s]*v=|youtu\\.be/)[A-Za-z0-9_-]{11}[^\\s]*")
+      .matcher(raw);
+    if(!match.find())return;
+    String shared=match.group();
+    String expression="(function(){var x=document.getElementById('videoUrl');if(x){x.value="+
+      JSONObject.quote(shared)+";document.getElementById('load').click();}})()";
+    view.evaluateJavascript(expression,null);
+  }
+  @Override protected void onNewIntent(Intent intent){
+    super.onNewIntent(intent);setIntent(intent);acceptSharedLink(intent);
   }
 
   private void notifyJS(String fn,String value) {
