@@ -10,6 +10,7 @@ let recordedTaps=[],recording=false,audioOnsets=[],analyzedAudioName='';
 let awaitingPrepare=false,lastTime=null,runToken=0,frame=0,judgeMessage='',judgeUntil=0,ended=false;
 function status(text){$('status').textContent=text}
 let rightsRetry=null;
+try{$('rights').checked=window.localStorage?.getItem('saiko-beat-ack-v1')==='yes'}catch(e){}
 function requestGameRights(retry){
  if($('rights').checked)return true;
  rightsRetry=retry||null;
@@ -20,6 +21,7 @@ function requestGameRights(retry){
 }
 $('rightsConfirm').onclick=()=>{
  if(!$('rights').checked){status('音ゲーの利用権限を確認してチェックしてね。');return}
+ try{window.localStorage?.setItem('saiko-beat-ack-v1','yes')}catch(e){}
  const dialog=$('consentDialog');if(typeof dialog.close==='function')dialog.close();else dialog.hidden=true;
  const resume=rightsRetry;rightsRetry=null;if(typeof resume==='function')resume();
 };
@@ -118,6 +120,10 @@ $('openStudioSettings').onclick=()=>{
  * Extracting or caching audio happens on a separately operated gateway. */
 function gatewayBase(){
  const value=$('chartEndpoint').value.trim();
+ const loc=window.location;
+ // Same-origin local Python gateway: zero URL/API-key setup for players.
+ if(!value&&loc&&['localhost','127.0.0.1'].includes(loc.hostname)&&
+    String(loc.pathname||'').startsWith('/game/')&&loc.origin)return loc.origin;
  try{
   const u=new URL(value);
   if((u.protocol!=='https:'&&!(u.protocol==='http:'&&['localhost','127.0.0.1'].includes(u.hostname)))||u.username||u.password||u.search||u.hash)throw Error();
