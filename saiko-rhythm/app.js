@@ -28,10 +28,17 @@ function save(){
 function rand(seed){let x=seed>>>0;return()=>{x=(Math.imul(x,1664525)+1013904223)>>>0;return x/4294967296}}
 function createChart(songIndex,level='easy',mode='solo'){
  const song=SONGS[songIndex];if(!song)throw Error('Unknown song');
- if(!['easy','normal','hard'].includes(level)||!['solo','duel'].includes(mode))throw Error('Unsupported mode');
+ if(!['easy','normal','hard'].includes(level)||!['solo','duel','party'].includes(mode))throw Error('Unsupported mode');
  const rng=rand(17023+songIndex*197+['easy','normal','hard'].indexOf(level)*101+(mode==='duel'?893:0));
  const beatSec=60/song.bpm,notes=[];
- if(mode==='duel'){
+ if(mode==='party'){
+  for(let b=4;b<BEATS-2;b+=4){
+   for(let k=0;k<4;k++){
+    notes.push({t:(b+k)*beatSec,lane:k,player:k,judge:'pending'});
+    if(level!=='easy')notes.push({t:(b+k+.5)*beatSec,lane:k,player:k,judge:'pending'});
+   }
+  }
+ }else if(mode==='duel'){
   for(let b=4;b<BEATS-2;b++){
    const add=b%2===0||rng()<.65;
    if(add){
@@ -244,6 +251,10 @@ function updateHud(){
  const g=game,time=Math.max(0,g.duration-clock());$('time').textContent=Math.floor(time/60)+':'+String(Math.ceil(time%60)).padStart(2,'0');
  if(g.mode==='solo'){
   $('score').textContent=g.players[0].score.toLocaleString('ja-JP');$('combo').textContent=g.players[0].combo;
+ }else if(g.mode==='party'){
+  $('score').textContent=g.players.reduce((a,p)=>a+p.score,0).toLocaleString('ja-JP');
+  $('combo').textContent=g.players.reduce((a,p)=>a+p.perfect+p.great+p.good,0);
+  for(let i=0;i<4;i++)$('partyScore'+i).textContent=g.players[i].score.toLocaleString('ja-JP');
  }else{
   $('score').textContent=g.players[0].score.toLocaleString('ja-JP');$('combo').textContent=g.players[1].score.toLocaleString('ja-JP');
   $('scoreLeft').textContent=g.players[0].score.toLocaleString('ja-JP');
@@ -301,13 +312,14 @@ async function begin(){
   const song=SONGS[settings.track],beatSec=60/song.bpm,notes=createChart(settings.track,settings.level,settings.mode),duration=BEATS*beatSec;
   sound.origin=sound.ctx.currentTime+.20;sound.events=createMusicEvents(settings.track);sound.cursor=0;
   game={mode:settings.mode,level:settings.level,track:settings.track,beatSec,duration,
-   notes,speed:Math.min(290,Math.max(170,550/2.1)),players:settings.mode==='solo'?[createStats()]:[createStats(),createStats()],
+   notes,speed:Math.min(290,Math.max(170,550/2.1)),players:Array.from({length:settings.mode==='party'?4:settings.mode==='duel'?2:1},createStats),
    feedback:{text:'',until:0,color:'#fff'},lastInput:[0,0,0,0],paused:false};
-  $('playingTitle').textContent='🎵 '+song.title+' • '+(game.mode==='duel'?'2 PLAYER BATTLE':'SOLO');
-  $('scoreLabel').textContent=game.mode==='duel'?'💗 左スコア':'SCORE';
-  $('comboLabel').textContent=game.mode==='duel'?'💠 右スコア':'COMBO';
+  $('playingTitle').textContent='🎵 '+song.title+' • '+(game.mode==='duel'?'2 PLAYER BATTLE':game.mode==='party'?'4 PLAYER RELAY':'SOLO');
+  $('scoreLabel').textContent=game.mode==='duel'?'💗 左スコア':game.mode==='party'?'TEAM TOTAL':'SCORE';
+  $('comboLabel').textContent=game.mode==='duel'?'💠 右スコア':game.mode==='party'?'HITS':'COMBO';
   $('battleScores').hidden=game.mode!=='duel';
-  const keys=game.mode==='solo'?['D','F','J','K']:['A','S','K','L'];
+  $('partyScores').hidden=game.mode!=='party';
+  const keys=game.mode==='duel'?['A','S','K','L']:['D','F','J','K'];
   for(let lane=0;lane<4;lane++){
    $('pad'+lane).textContent=keys[lane];const p=document.querySelector('.pad[data-lane="'+lane+'"]');
    p.classList.toggle('inactive',game.mode==='solo'&&game.level==='easy'&&(lane===0||lane===3));
@@ -350,6 +362,11 @@ function finish(){
   grade=endRank(p);
   desc='最高コンボ '+p.maxCombo+'！ '+(p.score>prev?'✨ 自己ベスト更新！':'自己ベスト '+best[key].toLocaleString('ja-JP'));
   result=[['SCORE',p.score.toLocaleString('ja-JP')],['PERFECT',p.perfect],['GREAT',p.great],['GOOD',p.good],['MISS',p.miss],['MAX COMBO',p.maxCombo]].map(([name,n])=>'<div><span>'+name+'</span><strong>'+n+'</strong></div>').join('');
+ }else if(g.mode==='party'){
+  const highest=Math.max(...players.map(p=>p.score)),winners=players.map((p,i)=>p.score===highest?['💗','⭐','💠','⚡'][i]+' '+(i+1)+'人目':null).filter(Boolean);
+  title='🎉 '+(winners.length===4?'全員同点！':winners.join('・')+' 優勝！');grade='🏆';
+  desc='4人で1つずつのボタンを担当！ みんなでリズムゲームをクリア！';
+  result=players.map((p,i)=>'<div><span>'+['💗','⭐','💠','⚡'][i]+' '+(i+1)+'人目 / MAX COMBO '+p.maxCombo+'</span><strong>'+p.score.toLocaleString('ja-JP')+'</strong></div>').join('');
  }else{
   const [a,b]=players,who=a.score===b.score?'DRAW! 🤝':a.score>b.score?'💗 左の勝ち！':'💠 右の勝ち！';
   title='⚔️ '+who;grade=a.score===b.score?'🤝':'🏆';
