@@ -109,6 +109,7 @@ for(const t of [1.02,1.45,1.96,2.54,3.17]){
 }
 assert.equal(window.SaikoYouTubeGame.getState().recordedCount,5);
 window.SaikoYouTubeGame.stopRecording();
+$('restart').onclick(); // user seeks to the beginning for a full playthrough
 const beatChart=window.SaikoYouTubeGame.getState().chart;
 assert.deepEqual(Array.from(beatChart.notes,n=>n.t),[1.02,1.45,1.96,2.54,3.17]);
 assert.notEqual(beatChart.notes.length,oldNoteCount);
