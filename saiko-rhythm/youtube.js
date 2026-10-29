@@ -63,7 +63,7 @@ function createPlayer(){
     onReady:()=>{
      if(token!==runToken)return;
      ready=true;
-     status('✅ 動画の準備OK！ YouTubeの曲だけでは自動譜面は作れません。「🎼 譜面を作る」から同じ曲の音楽ファイルを読み込めます。');
+     status('▶ 動画の準備ができました');
      draw();
     },
     onStateChange:e=>{
@@ -71,7 +71,7 @@ function createPlayer(){
      const state=Number(e.data);
      playing=state===1;
      if(playing){
-      if(awaitingPrepare)prepareChart();
+      // Chart creation is user-initiated; no synthetic chart on playback.
       if(chart&&!ended){status('🎶 再生中！ 光るノーツが判定ラインに重なったらタップ！')}
       if(chart&&getVideoTime()>2&&lastTime===null)resetScores(getVideoTime());
       lastTime=getVideoTime();
@@ -239,18 +239,10 @@ function prepareChart(){
  if(recording){stopRecording();return}
  if(audioOnsets.length>=4){generateFromAudioOnsets();return}
  if(recordedTaps.length>=4){if(!requestGameRights(prepareChart))return;applyRecordedBeats();return}
- if(!requestGameRights(prepareChart)){awaitingPrepare=false;return}
- if(!player||!ready){status('⚠️ YouTube動画を先に読み込んでね。');return}
- const dur=getDuration();
- if(!dur){awaitingPrepare=true;status('▶️ 動画プレーヤーで一度再生してね。長さが取得できたら譜面を準備するよ。');return}
- let generated;
- try{generated=ytCore.makeSyncChart(studio,{duration:dur,bpm:Number($('bpm').value),offset:Number($('offset').value),level:$('level').value})}
- catch(e){awaitingPrepare=false;status('⚠️ '+e.message);return}
- chart=generated;awaitingPrepare=false;
- resetScores(getVideoTime());lastTime=getVideoTime();$('restart').disabled=false;
- feedback('🎹 譜面準備OK！');
- status('⚠️ BPM仮譜面（'+chart.notes.length+'個）です。YouTubeの音を解析した譜面ではないため、曲に一致しない場合があります。');
- draw();
+ // No arbitrary BPM-grid notes: they do not follow the song.
+ // Require a measured local-audio waveform or actual recorded beat timestamps.
+ status('🎼 この動画の譜面はまだありません。譜面・設定から曲の音を解析するか、リズムを記録してね。');
+ $('studioSettings').open=true;
 }
 $('prepare').onclick=()=>prepareChart();
 $('restart').onclick=()=>{
