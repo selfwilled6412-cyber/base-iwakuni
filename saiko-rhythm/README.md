@@ -27,6 +27,26 @@
 
 **詳細:** [PRODUCT_ROADMAP.md](PRODUCT_ROADMAP.md) に、施設販売版・個人版の商用化ゲート、音楽権利処理、現場評価の段階的計画を記載しています。
 
+## NEW: BEAT RUSH × YouTube（無料・実験モード）
+
+- URL: https://selfwilled6412-cyber.github.io/base-iwakuni/saiko-rhythm/youtube.html
+- YouTubeの一般公開動画URL（watch / youtu.be / shorts / embedなど）を入力すると、**YouTube公式IFrameプレーヤーを可視状態のまま**動画を読み込める。
+- 音ゲーの譜面は **手入力BPM・リズム開始位置・難易度** から制作する決定的な下書き。動画音声の抽出、ダウンロード、解析、保存、YouTube広告スキップは一切しない。
+- テンポが不明な場合は動画の拍に合わせて「BPMをタップ測定」を4回以上押す。音声を取り込まずにBPMを推定できる。
+- プレーヤーの `getCurrentTime()` と `onStateChange` を用い、別領域の4レーンにノーツを表示して採点。動画の停止・読み込み中は譜面も停止。ジャンプしたら得点を初期化する。
+- YouTube側の標準動画・広告・音量・字幕・設定・リンクを操作可能なまま残す。背後に隠した動画から音だけを利用したり、視聴を有料で制限する機能はない。
+- **サイ校内の試作のみ。利用許諾済み動画で試すこと**。埋め込みが許可された5秒〜10分の通常動画が対象。許諾がないYouTubeの楽曲を音ゲーで利用し販売できるとは断言しない。
+- 不具合例：動画の埋め込み制限、広告による遅延、通信バッファリング、端末による判定タイミング差。YouTube側の制約は回避しない。
+
+### 商用販売に関する原則
+
+YouTube連動版を有料販売するには、`YouTube API Services Developer Policies`、`Required Minimum Functionality` の最新規約、各楽曲／原盤／映像の利用許諾、YouTubeのAPIコンプライアンス監査・必要な承認などを確認し、ユーザーのYouTube動画視聴を有料ゲートで制限しない設計が必要。**現段階では販売対象外**。
+
+公式資料:
+- https://developers.google.com/youtube/terms/developer-policies
+- https://developers.google.com/youtube/terms/required-minimum-functionality
+- https://developers.google.com/youtube/iframe_api_reference
+
 ## サイ校での試遊手順
 
 1. PCでChromeを開き、対象画面・スピーカー・音量を確認する。端末により音声出力の遅延が異なる。
@@ -55,6 +75,7 @@
 - `app.js` に譜面生成・Web Audio合成・スコア・2人／4人モード
 - `node tests/validate-rhythm.cjs` でリズムゲームの自動テスト
 - `node tests/validate-studio.cjs` で譜面工房のJSON・譜面生成・誤判定の回帰テスト
+- `node tests/validate-youtube.cjs` でYouTubeのURL検証・仮想IFrame API同期・一時停止・権利確認・再生中の採点を検証
 - `node tests/validate-games.cjs` で既存ゲームを含む回帰テスト
 
 **本版はサイ校向け試作品です。販売開始済みの商品ではありません。**
