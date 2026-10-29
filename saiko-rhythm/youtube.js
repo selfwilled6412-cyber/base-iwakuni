@@ -1,12 +1,12 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const ytCore=window.SaikoYouTubeCore,studio=window.SaikoStudioCore;
-if(!ytCore||!studio){$('status').textContent='譜面エンジンを読み込めません。再読み込みしてください。';return}
+const ytCore=window.SaikoYouTubeCore,studio=window.SaikoStudioCore,analyzer=window.SaikoBeatAnalyzer;
+if(!ytCore||!studio||!analyzer){$('status').textContent='譜面エンジンを読み込めません。再読み込みしてください。';return}
 const COLORS=['#ff87c4','#ffe393','#7ef1e8','#c1a2ff'];
 const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');
 let player=null,videoId=null,ready=false,playing=false,apiRequested=false,apiReady=!!window.YT?.Player;
 let chart=null,done=new Set(),score=0,combo=0,maxCombo=0,perfect=0,great=0,good=0,miss=0;
-let recordedTaps=[],recording=false;
+let recordedTaps=[],recording=false,audioOnsets=[],analyzedAudioName='';
 let awaitingPrepare=false,lastTime=null,runToken=0,frame=0,judgeMessage='',judgeUntil=0,ended=false;
 function status(text){$('status').textContent=text}
 function feedback(message){judgeMessage=message;judgeUntil=performance.now()+650;$('judge').textContent=message}
@@ -29,7 +29,7 @@ function resetScores(skipPast=0){
  updateHud();
 }
 function releasePlayer(){
- runToken++;ready=false;playing=false;awaitingPrepare=false;lastTime=null;chart=null;recording=false;recordedTaps=[];refreshBeatUI();
+ runToken++;ready=false;playing=false;awaitingPrepare=false;lastTime=null;chart=null;recording=false;recordedTaps=[];audioOnsets=[];analyzedAudioName='';refreshBeatUI();$('audioAnalysisStatus').textContent='動画を読み込んだら、同じ曲の音源ファイルから譜面を作れます。';
  resetScores();if(player){try{player.destroy()}catch(e){}player=null}
  $('videoContainer').innerHTML='<div id="ytPlayer"></div>';
  feedback('動画を読み込んでね！');
@@ -107,6 +107,44 @@ $('tapBpm').onclick=()=>{
 };
 
 
+/* Local user-owned audio file analysis. YouTube IFrame audio is NEVER accessed. */
+function generateFromAudioOnsets(){
+ if(!$('rights').checked){status('⚠️ 音源と映像をゲームに使う許諾を確認してね。');return false}
+ const duration=getDuration(),shift=Number($('syncShift').value);
+ try{
+  const next=analyzer.chartFromOnsets(studio,{duration,bpm:Number($('bpm').value),offset:Number($('offset').value),level:$('level').value,title:analyzedAudioName||'AUDIO SYNC',times:audioOnsets,shift});
+  chart=next;resetScores(getVideoTime());lastTime=getVideoTime();$('restart').disabled=false;
+  feedback('🎵 本当の音から譜面作成！');
+  status('✅ '+chart.notes.length+'ノーツ！ 実際の音源から検出したリズムを使っています。⏮「最初から挑戦」を押してね。');
+  $('audioAnalysisStatus').textContent='✅ '+audioOnsets.length+'箇所の音のアタックを検出し、'+chart.notes.length+'個のノーツに変換しました。';
+  return true;
+ }catch(e){status('⚠️ '+e.message);$('audioAnalysisStatus').textContent='⚠️ '+e.message;return false}
+}
+$('syncShift').addEventListener('change',()=>{if(audioOnsets.length>=4)generateFromAudioOnsets()});
+$('analyzeAudio').onclick=async()=>{
+ if(!$('rights').checked){status('⚠️ 音源・動画のゲーム利用権限を確認してね。');return}
+ if(!player||!ready||!getDuration()){status('⚠️ YouTube動画を読み込んで、▶で一度再生してね。');return}
+ const file=$('syncAudioFile').files?.[0];
+ if(!file){status('⚠️ 先にMP3・WAV等の音源ファイルを選んでね。');return}
+ if(file.size>32*1024*1024){status('⚠️ 解析する音源は32MB以内にしてね。');return}
+ if(!String(file.type||'').startsWith('audio/')&&!/\\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name)){status('⚠️ 音楽ファイルを選んでね。');return}
+ let ac;const token=runToken,button=$('analyzeAudio');
+ button.disabled=true;status('🔎 音源ファイルをこの端末だけで解析中…');$('audioAnalysisStatus').textContent='🥁 音の立ち上がりを検出しています…';
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw Error('このブラウザは音声解析に対応していません');
+  ac=new AC();
+  const decoded=await ac.decodeAudioData(await file.arrayBuffer());
+  if(token!==runToken)return;
+  if(Math.abs(decoded.duration-getDuration())>35)throw Error('動画と音源の長さが大きく違います。正しい音源か確認してね。');
+  const onsets=analyzer.extractOnsets(decoded,{level:$('level').value});
+  if(onsets.length<4)throw Error('音のリズムを十分検出できませんでした。ドラム等が聞こえる曲で試してね。');
+  audioOnsets=onsets;analyzedAudioName=file.name.replace(/\\.[^.]+$/,'').slice(0,80);
+  recording=false;recordedTaps=[];refreshBeatUI();
+  generateFromAudioOnsets();
+ }catch(e){if(token===runToken){status('⚠️ 音声解析できませんでした。'+(e.message||'MP3やWAVで試してね'));$('audioAnalysisStatus').textContent='⚠️ '+(e.message||'解析失敗')}}
+ finally{if(ac)try{await ac.close()}catch(e){}button.disabled=false}
+};
+
 /* Live authoring uses YouTube's time position, NEVER its audio/video bytes. */
 function beatStorageKey(){return videoId?'saiko-youtube-beats-v1:'+videoId:null}
 function refreshBeatUI(){
@@ -175,6 +213,7 @@ refreshBeatUI();
 
 function prepareChart(){
  if(recording){stopRecording();return}
+ if(audioOnsets.length>=4){generateFromAudioOnsets();return}
  if(recordedTaps.length>=4){if(!$('rights').checked){status('⚠️ 利用権利の確認が必要です。');return}applyRecordedBeats();return}
  if(!$('rights').checked){awaitingPrepare=false;status('⚠️ 動画の音ゲー利用に必要な権利・許諾を確認してチェックしてください。視聴だけなら動画の▶をそのまま押せます。');return}
  if(!player||!ready){status('⚠️ YouTube動画を先に読み込んでね。');return}
@@ -200,7 +239,8 @@ $('restart').onclick=()=>{
  status('▶️ 動画を先頭に戻したよ。YouTubeの▶で再生してスタート！');
 };
 for(const field of ['bpm','offset','level'])$(field).addEventListener('change',()=>{
- if(chart){chart=null;resetScores();lastTime=null;$('restart').disabled=true;status('🎼 設定を変更したよ。「音ゲーを準備」をもう一度押してね。')}
+ if(audioOnsets.length>=4){generateFromAudioOnsets();return}
+ if(chart){chart=null;resetScores();lastTime=null;$('restart').disabled=true;status('🎼 設定を変更したよ。再度「音ゲーを準備」を押してね。')}
 });
 function tap(lane){
  if(!chart||!playing||ended||!Number.isInteger(lane)||lane<0||lane>3)return;
