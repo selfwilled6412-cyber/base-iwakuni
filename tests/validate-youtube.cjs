@@ -45,6 +45,19 @@ assert.equal(core.selectHit(chart.notes,first.t,first.lane,new Set([hit.index]))
 assert.equal(core.selectHit(chart.notes,first.t,5,new Set()),null);
 const missed=new Set();assert(core.recordMisses(chart.notes,first.t+.5,missed)>0);
 assert.equal(core.recordMisses(chart.notes,first.t+.5,missed),0);
+
+// Manual beat timestamps must be used verbatim: a BPM estimate cannot move the recorded hits.
+const performed=[1.03,1.49,2.04,2.61,3.23,4.11].map(t=>({t,lane:null}));
+const live=core.makeRecordedChart(studio,{duration:65,bpm:120,offset:0,level:'normal',taps:performed});
+assert.deepEqual(live.notes.map(n=>n.t),performed.map(n=>n.t),'Real performance timestamps, not even BPM-grid notes');
+const easyRecorded=core.makeRecordedChart(studio,{duration:65,bpm:120,offset:0,level:'easy',taps:performed});
+assert.deepEqual(easyRecorded.notes.map(n=>n.t),[1.03,2.04,3.23]);
+const fourLanes=core.makeRecordedChart(studio,{duration:65,bpm:120,offset:0,level:'hard',taps:[{t:1,lane:0},{t:1,lane:3},{t:1.5,lane:1},{t:2,lane:2}]});
+assert.equal(fourLanes.notes.length,4,'Manually chosen simultaneous lanes are preserved');
+assert.throws(()=>core.makeRecordedChart(studio,{duration:65,bpm:120,offset:0,level:'normal',taps:[{t:1}]}));
+assert(html.includes('id="recordBeat"')&&html.includes('id="captureBeat"'));
+assert(!html.includes('canvas id="gameCanvas"')||html.indexOf('id="gameCanvas"')>html.indexOf('id="videoContainer"'),'Notes exist outside official iframe');
+
 // Full page integration with a simulated official IFrame API. No real YouTube data is downloaded.
 const elements=new Map(),listeners=new Map(),pads=[],drawLog=[],frames=[];
 const mockCtx={setTransform(){},clearRect(){},fillRect(){},fillText(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},roundRect(){}};
@@ -85,6 +98,21 @@ assert(window.SaikoYouTubeGame.getState().score>0);
 const before=window.SaikoYouTubeGame.getState().score;
 window.SaikoYouTubeGame.tap(actual.notes[0].lane);
 assert.equal(window.SaikoYouTubeGame.getState().score,before,'No duplicate tap credit');
+
+const oldNoteCount=window.SaikoYouTubeGame.getState().chart.notes.length;
+// A recorded performance must produce a chart with the exact recorded beat times.
+lastPlayer.clock=1.02;
+window.SaikoYouTubeGame.startRecording();
+assert.equal(window.SaikoYouTubeGame.getState().recording,true);
+for(const t of [1.02,1.45,1.96,2.54,3.17]){
+ lastPlayer.clock=t;window.SaikoYouTubeGame.captureRecordedTap();
+}
+assert.equal(window.SaikoYouTubeGame.getState().recordedCount,5);
+window.SaikoYouTubeGame.stopRecording();
+const beatChart=window.SaikoYouTubeGame.getState().chart;
+assert.deepEqual(Array.from(beatChart.notes,n=>n.t),[1.02,1.45,1.96,2.54,3.17]);
+assert.notEqual(beatChart.notes.length,oldNoteCount);
+
 lastPlayer.emit(2);
 assert.equal(window.SaikoYouTubeGame.getState().playing,false);
 document.hidden=true;lastPlayer.emit(1);
