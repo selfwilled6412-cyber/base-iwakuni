@@ -30,8 +30,8 @@ buttons[0].listeners.click({stopPropagation(){}});
 assert.equal(store['saiko-sfx-enabled-v1'],'on');status.feedback.textContent='大正解！';
 observers.feedback();
 assert(played>count+1,'Correct answer must make a win chime');
-for(const folder of ['saiko-adventure','saiko-kids','saiko-solo-arcade','saiko-party-games','saiko-card-games','lumi-escape','lumi-escape-2']){
+for(const folder of ['saiko-adventure','saiko-kids','saiko-solo-arcade','saiko-party-games','saiko-card-games','lumi-escape','lumi-escape-2','lumi-nazotoki']){
  const html=fs.readFileSync(path.join(root,folder,'index.html'),'utf8');
  assert(html.includes('../saiko-apps/sound-feedback.js'),folder+' missing sound module');
 }
-console.log('PASS: shared SFX has no autoplay; click, win, mute toggling works in seven game series');
+console.log('PASS: shared SFX has no autoplay; click, win, mute toggling works in eight game series');
