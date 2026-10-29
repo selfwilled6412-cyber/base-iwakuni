@@ -31,6 +31,39 @@ function makeSyncChart(studio,opts){
  if(!['easy','normal','hard'].includes(level))throw Error('難易度が正しくありません');
  return studio.makeChart({title:'YouTube SYNC',duration,bpm,offset,level});
 }
+
+/* An authored beatmap: every note timestamp comes from a human's taps during
+   actual playback. This does NOT inspect or infer the YouTube audio stream. */
+function makeRecordedChart(studio,opts){
+ if(!studio||typeof studio.normalizeChart!=='function')throw Error('譜面エンジンを読み込めません');
+ const duration=Number(opts?.duration),bpm=Number(opts?.bpm),offset=Number(opts?.offset),level=opts?.level||'normal';
+ if(!validateVideoDuration(duration))throw Error('5秒〜10分の動画で試してね');
+ if(!Number.isInteger(bpm)||bpm<60||bpm>220)throw Error('BPMは60〜220で設定してください');
+ if(!Number.isFinite(offset)||offset<0||offset>3)throw Error('開始位置は0〜3秒にしてください');
+ if(!['easy','normal','hard'].includes(level))throw Error('難易度が正しくありません');
+ const taps=opts?.taps;
+ if(!Array.isArray(taps)||taps.length<4||taps.length>2000)throw Error('曲を再生して4回以上リズムを記録してね');
+ const notes=[],seen=new Set();
+ let count=0;
+ for(const tap of taps){
+  const t=Number(tap?.t);
+  if(!Number.isFinite(t)||t<0||t>duration)continue;
+  const explicit=Number.isInteger(tap.lane)&&tap.lane>=0&&tap.lane<=3;
+  if(level==='easy'&&count++%2===1)continue;
+  if(level!=='easy')count++;
+  const lane=explicit?tap.lane:level==='easy'?1+(notes.length%2):(notes.length*7+Math.floor(notes.length/4))%4;
+  const time=Math.round(t*1000)/1000;
+  const key=Math.round(time*100)/10+':'+lane;
+  if(seen.has(key))continue;
+  const prev=notes[notes.length-1];
+  if(prev&&time-prev.t<.10&&(!explicit||prev.lane===lane))continue;
+  seen.add(key);
+  notes.push({t:time,lane});
+ }
+ if(notes.length<2)throw Error('記録が短すぎます。曲に合わせてもう少しタップしてね');
+ return studio.normalizeChart({version:1,title:'YouTube TAP SYNC',duration,bpm,offset,level,notes});
+}
+
 function selectHit(notes,time,lane,done,adjustMs=0){
  if(!Array.isArray(notes)||typeof time!=='number'||!Number.isFinite(time)||!Number.isInteger(lane)||lane<0||lane>3||!done||typeof done.has!=='function')return null;
  const when=time-adjustMs/1000;
@@ -64,7 +97,7 @@ function estimateTapBpm(taps){
  const middle=diffs[Math.floor(diffs.length/2)],bpm=Math.round(60000/middle);
  return bpm>=60&&bpm<=220?bpm:null;
 }
-const api=Object.freeze({parseYouTube,validateVideoDuration,makeSyncChart,selectHit,recordMisses,estimateTapBpm});
+const api=Object.freeze({parseYouTube,validateVideoDuration,makeSyncChart,makeRecordedChart,selectHit,recordMisses,estimateTapBpm});
 if(typeof module==='object'&&module.exports)module.exports=api;
 if(root)root.SaikoYouTubeCore=api;
 })(typeof window!=='undefined'?window:null);
