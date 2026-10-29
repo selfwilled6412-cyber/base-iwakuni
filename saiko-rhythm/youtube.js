@@ -10,6 +10,7 @@ let recordedTaps=[],recording=false,audioOnsets=[],analyzedAudioName='';
 let awaitingPrepare=false,lastTime=null,runToken=0,frame=0,judgeMessage='',judgeUntil=0,ended=false;
 function status(text){$('status').textContent=text}
 let rightsRetry=null;
+try{$('rights').checked=window.localStorage?.getItem('saiko-native-consent')==='yes'}catch(e){}
 function requestGameRights(retry){
  if($('rights').checked)return true;
  rightsRetry=retry||null;
@@ -20,6 +21,7 @@ function requestGameRights(retry){
 }
 $('rightsConfirm').onclick=()=>{
  if(!$('rights').checked){status('音ゲーの利用権限を確認してチェックしてね。');return}
+ try{window.localStorage?.setItem('saiko-native-consent','yes')}catch(e){}
  const dialog=$('consentDialog');if(typeof dialog.close==='function')dialog.close();else dialog.hidden=true;
  const resume=rightsRetry;rightsRetry=null;if(typeof resume==='function')resume();
 };
@@ -64,6 +66,7 @@ function createPlayer(){
      if(token!==runToken)return;
      ready=true;
      status('▶ 動画の準備ができました');
+     if(window.SaikoNativeAutoChart)startNativeAnalysis();
      draw();
     },
     onStateChange:e=>{
@@ -108,6 +111,52 @@ function loadVideo(){
  document.head.appendChild(script);
 }
 $('load').onclick=loadVideo;
+// Android-only path: the on-device extractor supplies real waveform-derived timestamps.
+// Do not create a BPM-grid chart when audio extraction is unavailable.
+let nativeWorking=false;
+function startNativeAnalysis(){
+ if(!window.SaikoNativeAutoChart){status('この版ではスマホ内音声解析が利用できません');return}
+ if(!ready||!player){status('動画の読み込みを待っています');return}
+ if(!requestGameRights(startNativeAnalysis))return;
+ if(nativeWorking)return;
+ nativeWorking=true;
+ $('nativeAuto').disabled=true;
+ $('nativeAuto').textContent='🎼 自動解析中…';
+ status('🎼 スマホ内で曲を解析しています。曲によっては音声を取得できない場合があります');
+ try{window.SaikoNativeAutoChart.analyze(videoId,$('level').value)}
+ catch(e){window.SaikoNativeChartError('Android解析処理を開始できません')}
+}
+window.SaikoNativeChartProgress=msg=>status('🎼 '+String(msg).slice(0,180));
+window.SaikoNativeChartError=msg=>{
+ nativeWorking=false;
+ $('nativeAuto').disabled=false;$('nativeAuto').textContent='⚡ 音を解析してあそぶ';
+ status('⚠️ この動画は解析できませんでした：'+String(msg).slice(0,160));
+ feedback('この動画では利用できません');
+};
+window.SaikoNativeChartReady=text=>{
+ nativeWorking=false;$('nativeAuto').disabled=false;$('nativeAuto').textContent='⚡ 音を解析してあそぶ';
+ try{
+  const data=JSON.parse(text);
+  if(data.video_id!==videoId||!Array.isArray(data.notes)||data.notes.length<5)throw Error('再生可能な譜面ではありません');
+  const next=studio.normalizeChart({version:1,duration:data.duration,title:'SAIKO BEAT',level:$('level').value,
+   bpm:Number($('bpm').value),offset:0,notes:data.notes});
+  chart=next;
+  recording=false;awaitingPrepare=false;recordedTaps=[];audioOnsets=[];
+  refreshBeatUI();resetScores(getVideoTime());lastTime=null;ended=false;
+  $('restart').disabled=false;
+  feedback('♪ MUSIC READY');
+  status('✅ 音源から'+chart.notes.length+'ノーツを生成！ 再生ボタンを押してあそんでね。');
+  draw();
+ }catch(e){status('⚠️ 解析結果をゲームに反映できません：'+String(e.message||e))}
+};
+$('nativeAuto').onclick=()=>{
+ if(!window.SaikoNativeAutoChart){status('この機能はAndroidアプリでのみ動作します');return}
+ const id=ytCore.parseYouTube($('videoUrl').value);
+ if(!id){status('YouTubeのURLを貼り付けてね');return}
+ if(id!==videoId||!ready)loadVideo();
+ else startNativeAnalysis();
+};
+
 $('openStudioSettings').onclick=()=>{
  const settings=$('studioSettings');settings.open=true;
  settings.scrollIntoView?.({behavior:'smooth',block:'start'});
