@@ -1,102 +1,107 @@
-/* Shared optional SFX for SAIKO games (no external assets, no autoplay).
- * All notes are tiny original WebAudio feedback sounds, initiated after user action.
- * Persistent sound preference contains no personal data. */
+/* Compact optional SFX shared by SAIKO games.
+ * No network, autoplay, personal data, or non-original sounds. */
 (()=>{'use strict';
  const KEY='saiko-sfx-enabled-v1';
  let enabled=true,ctx=null,lastCue=0,lastText='';
  try{enabled=localStorage.getItem(KEY)!=='off'}catch(e){}
- const button=document.createElement('button');
- button.type='button';button.id='saikoSoundToggle';
- button.setAttribute('aria-label','ゲームの効果音の切り替え');
- button.style.cssText='position:fixed;right:10px;bottom:12px;z-index:1000;border:2px solid #fff;background:#192c65;color:#fff;font:900 13px system-ui;padding:10px;min-height:45px;border-radius:13px;box-shadow:0 4px 15px #07092099;cursor:pointer';
- function render(){button.textContent=enabled?'🔊 効果音 ON':'🔇 効果音 OFF';button.setAttribute('aria-pressed',String(enabled))}
+ const root=document.body||document.documentElement;
+ const menu=document.createElement('button');
+ menu.type='button';menu.id='saikoSoundMenu';
+ menu.setAttribute('aria-label','効果音の設定を開く');
+ menu.style.cssText='position:fixed;right:11px;bottom:12px;z-index:1001;border:2px solid #eaf6ff;background:#162d5a;color:#fff;width:47px;height:47px;border-radius:50%;font:900 20px system-ui;box-shadow:0 3px 11px #040b2dbb;cursor:pointer';
+ const panel=document.createElement('div');
+ panel.id='saikoSoundPanel';panel.hidden=true;
+ panel.style.cssText='position:fixed;right:11px;bottom:67px;width:min(275px,calc(100vw - 22px));z-index:1001;display:none;grid-template-columns:1fr 1fr;gap:8px;border:2px solid #9fc7ff;border-radius:14px;background:#152748;color:white;padding:11px;box-shadow:0 8px 25px #01071de0;font:800 13px system-ui';
+ const toggle=document.createElement('button');
+ toggle.type='button';toggle.id='saikoSoundToggle';toggle.setAttribute('aria-label','ゲームの効果音を切り替える');
+ const test=document.createElement('button');
+ test.type='button';test.id='saikoSoundTest';test.textContent='🎵 音テスト';
+ const statusElement=document.createElement('div');
+ statusElement.id='saikoSoundStatus';statusElement.setAttribute('role','status');
+ statusElement.style.cssText='grid-column:1/-1;font:700 12px system-ui;line-height:1.6;color:#dceeff';
+ for(const el of [toggle,test]){
+  el.style.cssText='min-height:43px;border:1px solid #a0c9eb;border-radius:10px;background:#315077;color:white;font:850 12px system-ui;cursor:pointer;padding:7px 5px';
+ }
+ panel.append(toggle,test,statusElement);
+ root.append(menu,panel);
+ let open=false;
+ function render(){
+  menu.textContent=enabled?'🔊':'🔇';
+  toggle.textContent=enabled?'🔊 効果音 ON':'🔇 効果音 OFF';
+  toggle.setAttribute('aria-pressed',String(enabled));
+  menu.setAttribute('aria-expanded',String(open));
+  panel.hidden=!open;panel.style.display=open?'grid':'none';
+ }
+ function status(message){statusElement.textContent=message}
  render();
- (document.body||document.documentElement).appendChild(button);
- const testButton=document.createElement('button');
- testButton.type='button';testButton.id='saikoSoundTest';
- testButton.textContent='🎵 音テスト';
- testButton.setAttribute('aria-label','ゲーム音声の試聴');
- testButton.style.cssText='position:fixed;right:147px;bottom:12px;z-index:1000;border:2px solid #eaf5ff;background:#2b5674;color:#fff;font:900 13px system-ui;padding:10px;min-height:45px;border-radius:13px;box-shadow:0 4px 15px #07092099;cursor:pointer';
- (document.body||document.documentElement).appendChild(testButton);
- const audioStatus=document.createElement('div');
- audioStatus.setAttribute('role','status');
- audioStatus.style.cssText='position:fixed;right:10px;bottom:66px;max-width:270px;z-index:1000;border-radius:10px;padding:8px 10px;background:#192d4be9;color:#fff;font:700 12px system-ui;display:none';
- (document.body||document.documentElement).appendChild(audioStatus);
- function status(text){audioStatus.textContent=text;audioStatus.style.display='block'}
- 
+ menu.addEventListener('click',e=>{
+  e.stopPropagation();open=!open;status(enabled?'音が聞こえるか「音テスト」で確認してね':'効果音はOFFです');
+  render();
+ });
  function context(){
   if(!enabled)return null;
-  if(ctx&&ctx.state==='closed')ctx=null;
+  if(ctx?.state==='closed')ctx=null;
   if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;try{ctx=new AC()}catch(e){return null}}
-  if(ctx.state==='suspended')ctx.resume().catch(()=>{status('⚠️ 音声再生がブロックされました。Chromeで開いて音量を確認してね')});
+  if(ctx.state==='suspended'&&typeof ctx.resume==='function')ctx.resume().catch(()=>status('⚠️ 音声再生が制限されています。ブラウザで開いてね'));
   return ctx;
  }
- function tone(freq,duration=.07,volume=.045,delay=0,type='sine'){
+ function tone(freq,duration=.12,volume=.11,delay=0,type='sine'){
   const a=context();if(!a)return;
   try{
-   const t=a.currentTime+delay,osc=a.createOscillator(),gain=a.createGain();
-   osc.type=type;osc.frequency.setValueAtTime(freq,t);
-   gain.gain.setValueAtTime(.0001,t);
-   gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),t+.007);
-   gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
-   osc.connect(gain);gain.connect(a.destination);osc.start(t);osc.stop(t+duration+.015);
-  }catch(e){}
+   const t=a.currentTime+delay,o=a.createOscillator(),g=a.createGain();
+   o.type=type;o.frequency.setValueAtTime(freq,t);
+   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),t+.007);
+   g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+duration+.018);
+  }catch(e){status('⚠️ 効果音を作成できませんでした')}
  }
- function cue(kind){
+ function cue(kind='tap'){
   if(!enabled)return;
-  if(kind==='win'){
-   tone(659,.15,.15,0);tone(880,.16,.15,.15);tone(1047,.27,.12,.31);
-  }else if(kind==='fail'){
-   tone(280,.14,.105,0,'triangle');tone(220,.22,.095,.12,'triangle');
-  }else tone(560,.11,.11,0,'triangle');
+  if(kind==='win'){tone(659,.15,.15,0);tone(880,.16,.15,.15);tone(1047,.27,.12,.31)}
+  else if(kind==='fail'){tone(280,.14,.105,0,'triangle');tone(220,.22,.095,.12,'triangle')}
+  else tone(560,.11,.11,0,'triangle');
  }
- testButton.addEventListener('click',e=>{
-  e.stopPropagation();
-  if(!enabled){status('🔇 効果音がOFFです。ONにしてからテストしてね');return}
-  if(!(window.AudioContext||window.webkitAudioContext)){
-   status('⚠️ このブラウザはゲーム音に非対応です。ChromeまたはEdgeで開いてね');return
-  }
-  // Create/unlock the AudioContext synchronously from a deliberate click.
-  const audio=context();
-  if(!audio){status('⚠️ 音声エンジンが起動できません。ブラウザで開き直してね');return}
-  status('🔊 音声エンジンを確認しています…');
-  const verify=()=>{
-   if(audio.state!=='running'){status('⚠️ 再生が許可されませんでした。Chromeで開き「音テスト」を押してね');return}
-   cue('win');
-   status('🔊 テスト音を鳴らしています。聞こえなければメディア音量や出力先を確認してね');
-  };
-  if(audio.state==='running')verify();
-  else if(typeof audio.resume==='function')audio.resume().then(verify).catch(()=>{
-   status('⚠️ 音声の再生がブロックされました。Chromeで直接開いてみてね')
-  });
-  else status('⚠️ このブラウザでは音声が開始できません');
- });
- button.addEventListener('click',e=>{
+ toggle.addEventListener('click',e=>{
   e.stopPropagation();enabled=!enabled;try{localStorage.setItem(KEY,enabled?'on':'off')}catch(err){}
-  render();status(enabled?'🔊 効果音ON。🎵音テストで確認できるよ':'🔇 効果音OFF');if(enabled)cue('tap');
+  render();status(enabled?'🔊 効果音をONにしました':'🔇 効果音をOFFにしました');
+  if(enabled)cue('tap');
  });
- function isAction(target){
-  return target&&typeof target.closest==='function'&&
-   target.closest('button:not(#saikoSoundToggle),[role="button"],input[type="button"],input[type="submit"],.gameCell,.tile,.cell,.cardChoice');
- }
- document.addEventListener('click',e=>{if(isAction(e.target)&&!['saikoSoundTest','a_draw','a_repeat'].includes(e.target?.id))cue('tap')},true);
- // Chimes on genuine status changes in the game; never inspect page content for music.
- const ids=['feedback','gameFeedback','status','info','win','extraHint'];
- if(typeof MutationObserver!=='undefined'){
-  for(const id of ids){
-   const node=document.getElementById(id);if(!node)continue;
-   const watcher=new MutationObserver(()=>{
-    if(!enabled||node.hidden)return;
-    const text=(node.textContent||'').replace(/\s+/g,' ').trim().slice(0,250);
-    if(!text||text===lastText)return;
-    const now=Date.now();if(now-lastCue<350)return;
-    let kind=null;
-    if(/(おめでとう|クリア！|脱出成功|大正解|正解！|勝利！|大成功|PERFECT)/i.test(text))kind='win';
-    else if(/(不正解|失敗！|残念！|ゲームオーバー)/.test(text))kind='fail';
-    if(kind){lastText=text;lastCue=now;cue(kind)}
-   });
-   watcher.observe(node,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['hidden']});
+ test.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(!enabled){status('🔇 効果音をONにしてから試してね');return}
+  if(!(window.AudioContext||window.webkitAudioContext)){status('⚠️ このブラウザはWebAudioに対応していません');return}
+  const audio=context();
+  if(!audio){status('⚠️ 音声エンジンを起動できません');return}
+  status('音声出力を確認中…');
+  const play=()=>{
+   if(audio.state!=='running'){status('⚠️ ブラウザに音声再生をブロックされました。Chromeで直接開いてね');return}
+   cue('win');status('🔊 テスト音を出力中。聞こえなければメディア音量と出力先を確認してね');
+  };
+  if(audio.state==='running')play();
+  else if(typeof audio.resume==='function')audio.resume().then(play).catch(()=>status('⚠️ 音声再生が許可されませんでした'));
+  else status('⚠️ このブラウザでは音が鳴らせません');
+ });
+ document.addEventListener('click',e=>{
+  const t=e.target;
+  if(!t||typeof t.closest!=='function')return;
+  if(t.closest('#saikoSoundPanel,#saikoSoundMenu'))return;
+  if(t.closest('button,[role="button"],input[type="button"],input[type="submit"],.gameCell,.tile,.cell,.cardChoice')){
+   if(!['a_draw','a_repeat'].includes(t.id))cue('tap');
   }
+ },true);
+ const ids=['feedback','gameFeedback','status','info','win','extraHint'];
+ if(typeof MutationObserver!=='undefined')for(const id of ids){
+  const node=document.getElementById(id);if(!node)continue;
+  new MutationObserver(()=>{
+   if(!enabled||node.hidden)return;
+   const value=(node.textContent||'').replace(/\s+/g,' ').trim().slice(0,250);
+   if(!value||value===lastText)return;
+   const now=Date.now();if(now-lastCue<350)return;
+   let kind=null;
+   if(/(おめでとう|クリア！|脱出成功|大正解|正解！|勝利！|大成功|PERFECT)/i.test(value))kind='win';
+   else if(/(不正解|失敗！|残念！|ゲームオーバー)/.test(value))kind='fail';
+   if(kind){lastText=value;lastCue=now;cue(kind)}
+  }).observe(node,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['hidden']});
  }
- window.addEventListener('pagehide',()=>{if(ctx){try{ctx.close()}catch(e){}}});
+ window.addEventListener('pagehide',()=>{if(ctx)try{ctx.close()}catch(e){}});
 })();
