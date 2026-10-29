@@ -28,3 +28,20 @@ jobs:
           node-version: "22"
       - name: Validate existing YouTube game and its safe mock
         run: node tests/validate-youtube.cjs && node tests/validate-beat-analyzer.cjs
+  live-cc-smoke:
+    # Live YouTube checks are informational only: network/bot restrictions vary.
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install FFmpeg and extraction/runtime packages
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python -m pip install -r saiko-rhythm/autochart-service/requirements.txt
+      - name: Real CC BY video acquisition and automatic note chart smoke
+        run: python saiko-rhythm/autochart-service/tests/smoke_youtube_cc.py
