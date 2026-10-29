@@ -152,6 +152,7 @@ function refreshBeatUI(){
  $('recordBeat').textContent=recording?'⏹ 記録終了・譜面を作る':'🔴 記録開始';
  $('recordBeat').classList.toggle('active',recording);
  $('captureBeat').disabled=!recording;
+ $('tapDock').disabled=!recording;$('recordDock').textContent=recording?'⏹ 記録を終える':'🔴 曲に合わせて記録';
 }
 function restoreRecordedBeats(){
  const key=beatStorageKey();if(!key)return;
@@ -203,6 +204,8 @@ function stopRecording(){
  persistRecordedBeats();applyRecordedBeats();
 }
 $('recordBeat').onclick=()=>recording?stopRecording():startRecording();
+$('recordDock').onclick=()=>recording?stopRecording():startRecording();
+$('tapDock').addEventListener('pointerdown',e=>{e.preventDefault();captureRecordedTap()});
 $('captureBeat').addEventListener('pointerdown',e=>{e.preventDefault();captureRecordedTap()});
 $('clearBeats').onclick=()=>{
  recording=false;recordedTaps=[];chart=null;resetScores();$('restart').disabled=true;
