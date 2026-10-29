@@ -16,13 +16,18 @@ const document={getElementById:get,querySelectorAll(q){return q==='[data-lane]'?
 const localStorage={getItem(k){return storageData.get(k)||null},setItem(k,v){storageData.set(k,v)}};
 const URL={createObjectURL(){return 'blob:offline-test'},revokeObjectURL(){}};
 class AudioContext{
- async decodeAudioData(){return {sampleRate:8000,getChannelData(){return new Float32Array(8000*12)}}}
+ async decodeAudioData(){
+  const sr=8000,duration=15,samples=new Float32Array(sr*duration);
+  for(let t=.5;t<14;t+=.5)for(let k=0;k<640;k++)samples[Math.floor(t*sr)+k]=.7*Math.exp(-k/140)*Math.sin(k*.22);
+  return {sampleRate:sr,numberOfChannels:1,duration,getChannelData(){return samples}};
+ }
  async close(){}
 }
 const window={AudioContext,devicePixelRatio:1,addEventListener(){}};
 const context=vm.createContext({window,document,localStorage,URL,Blob:class{},console,Float32Array,
  setTimeout(){return 1},setInterval(){return 2},clearInterval(){},Date,Math});
 new vm.Script(source('saiko-rhythm/studio-core.js'),{filename:'studio-core.js'}).runInContext(context);
+new vm.Script(source('saiko-rhythm/beat-analyzer.js'),{filename:'beat-analyzer.js'}).runInContext(context);
 new vm.Script(source('saiko-rhythm/studio.js'),{filename:'studio.js'}).runInContext(context);
 (async()=>{
  const api=window.SaikoBeatStudio;assert(api);
