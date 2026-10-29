@@ -67,7 +67,7 @@ body{background:radial-gradient(ellipse at 93% 0,#d6d0ff 0,transparent 36%),radi
    const hay=(title+' '+card.textContent).normalize('NFKC').toLocaleLowerCase('ja');
    const key=keys.get(card),starred=key&&favorites.includes(key);
    const matchCategory=selected==='all'||selected==='favorites'?(selected==='all'||!!starred):card.dataset.category.split(' ').includes(selected);
-   const matchPlay=selected==='favorites'?true:selectedPlay==='all'||card.dataset.play===selectedPlay;
+   const matchPlay=selected==='favorites'?true:selectedPlay==='all'||card.dataset.play.split(' ').includes(selectedPlay);
    const pass=matchCategory&&matchPlay&&(!q||hay.includes(q));
    card.hidden=!pass;if(pass)visible++;
    card.style.order=starred?'-1':'0';
