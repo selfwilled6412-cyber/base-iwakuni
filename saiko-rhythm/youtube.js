@@ -127,7 +127,7 @@ $('analyzeAudio').onclick=async()=>{
  const file=$('syncAudioFile').files?.[0];
  if(!file){status('⚠️ 先にMP3・WAV等の音源ファイルを選んでね。');return}
  if(file.size>32*1024*1024){status('⚠️ 解析する音源は32MB以内にしてね。');return}
- if(!String(file.type||'').startsWith('audio/')&&!/\\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name)){status('⚠️ 音楽ファイルを選んでね。');return}
+ if(!String(file.type||'').startsWith('audio/')&&!/\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name)){status('⚠️ 音楽ファイルを選んでね。');return}
  let ac;const token=runToken,button=$('analyzeAudio');
  button.disabled=true;status('🔎 音源ファイルをこの端末だけで解析中…');$('audioAnalysisStatus').textContent='🥁 音の立ち上がりを検出しています…';
  try{
@@ -138,7 +138,7 @@ $('analyzeAudio').onclick=async()=>{
   if(Math.abs(decoded.duration-getDuration())>35)throw Error('動画と音源の長さが大きく違います。正しい音源か確認してね。');
   const onsets=analyzer.extractOnsets(decoded,{level:$('level').value});
   if(onsets.length<4)throw Error('音のリズムを十分検出できませんでした。ドラム等が聞こえる曲で試してね。');
-  audioOnsets=onsets;analyzedAudioName=file.name.replace(/\\.[^.]+$/,'').slice(0,80);
+  audioOnsets=onsets;analyzedAudioName=file.name.replace(/\.[^.]+$/,'').slice(0,80);
   recording=false;recordedTaps=[];refreshBeatUI();
   generateFromAudioOnsets();
  }catch(e){if(token===runToken){status('⚠️ 音声解析できませんでした。'+(e.message||'MP3やWAVで試してね'));$('audioAnalysisStatus').textContent='⚠️ '+(e.message||'解析失敗')}}
