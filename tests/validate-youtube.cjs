@@ -91,7 +91,14 @@ assert.equal(createdPlayers,1);assert(lastPlayer);assert(lastPlayer.opts.videoId
 lastPlayer.start();assert(window.SaikoYouTubeGame.getState().ready);
 $('prepare').onclick();assert.equal(window.SaikoYouTubeGame.getState().chart,null);
 $('rights').checked=true;$('prepare').onclick();
-const actual=window.SaikoYouTubeGame.getState().chart;assert(actual&&actual.notes.length>10);
+assert.equal(window.SaikoYouTubeGame.getState().chart,null,'Never invent beatmap from BPM without audio');
+lastPlayer.emit(1);
+window.SaikoYouTubeGame.startRecording();
+for(const t of [1.2,1.6,2.0,2.4,2.8,3.2]){lastPlayer.clock=t;window.SaikoYouTubeGame.captureRecordedTap()}
+window.SaikoYouTubeGame.stopRecording();
+const actual=window.SaikoYouTubeGame.getState().chart;assert(actual&&actual.notes.length===6);
+$('restart').onclick();
+lastPlayer.emit(2);
 lastPlayer.clock=actual.notes[0].t+.02;
 window.SaikoYouTubeGame.tap(actual.notes[0].lane);
 assert.equal(window.SaikoYouTubeGame.getState().score,0,'Cannot score while YouTube is paused');
