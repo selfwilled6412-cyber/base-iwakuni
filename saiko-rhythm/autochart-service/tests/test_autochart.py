@@ -58,6 +58,23 @@ class AnalyzerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             detect_beats(np.full(SAMPLE_RATE * 12, np.nan, dtype=np.float32))
 
+    def test_localhost_serves_game_without_asking_for_external_host(self):
+        from fastapi.testclient import TestClient
+        with TestClient(app.app, client=("127.0.0.1", 44001)) as client:
+            page = client.get("/game/youtube.html")
+            self.assertEqual(page.status_code, 200)
+            self.assertIn('id="autoChart"', page.text)
+            js = client.get("/game/youtube.js")
+            self.assertEqual(js.status_code, 200)
+            self.assertIn("gatewayBase", js.text)
+            with patch.object(app, "_chart_for_video", return_value={
+                "duration": 12.0, "notes": [{"t": 1.2, "lane": 0}, {"t": 1.6, "lane": 1}]
+            }):
+                response = client.post("/api/chart", json={"video_id": "YE7VzlLtp-4", "level": "normal"})
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["video_id"], "YE7VzlLtp-4")
+                self.assertEqual(response.json()["notes"][0]["t"], 1.2)
+
     def test_video_id_validation_happens_before_extracting(self):
         with self.assertRaises(Exception):
             app._chart_for_video("localhost:80", "normal")
