@@ -12,6 +12,7 @@ on:
       - "saiko-solo-arcade/**"
       - "saiko-party-games/**"
       - "saiko-card-games/**"
+      - "saiko-rhythm/**"
       - "saiko-apps/**"
       - "tests/**"
       - ".github/workflows/saiko-games-qa.yml"
@@ -28,4 +29,4 @@ jobs:
         with:
           node-version: "22"
       - name: Validate puzzle banks, routes, and all 30 maze stages
-        run: node tests/validate-games.cjs
+        run: node tests/validate-games.cjs && node tests/validate-rhythm.cjs
