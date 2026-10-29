@@ -24,7 +24,26 @@ function card(){
  const nums=Array.from({length:5},(_,r)=>Array.from({length:5},(_,c)=>r===2&&c===2?'FREE':cols[c][r]));
  return '<div class="cardPrint"><h3>サイ校 ビンゴ</h3><div class="bingo">'+[...'BINGO'].map(x=>'<div class="head">'+x+'</div>').join('')+nums.flat().map(n=>'<div>'+n+'</div>').join('')+'</div></div>';
 }
-function bingoShow(){let previous=state.numbers.slice(0,state.pos).reverse();show(state.pos+' / 75 出た数字は重複しないよ');panel('<div class="big">'+(previous.length?bingoName(previous[0]):'START')+'</div><div class="history">'+previous.slice(0,20).map(n=>'<span>'+bingoName(n)+'</span>').join('')+'</div>');actions([['draw','🎲 次の数字'],['undo','↶ 1つ戻す'],['print','🖨 ビンゴカードを4枚印刷']]);$('a_draw').disabled=state.pos>=75;$('a_undo').disabled=state.pos===0;$('a_draw').onclick=()=>{if(state.pos<75){state.pos++;persist();bingoShow()}};$('a_undo').onclick=()=>{if(state.pos){state.pos--;persist();bingoShow()}};$('a_print').onclick=()=>{$('printCards').innerHTML=Array.from({length:4},card).join('');window.print()}}
+function bingoShow(){
+ let previous=state.numbers.slice(0,state.pos).reverse();
+ show(state.pos+' / 75 出た数字は重複しないよ');
+ panel('<div class="big">'+(previous.length?bingoName(previous[0]):'START')+'</div><p id="bingoVoiceStatus" class="bingoVoiceStatus" role="status" aria-live="polite">'+(window.SaikoBingoVoice?.isEnabled()?'🔊 数字は自動で読み上げるよ':'🔇 数字の読み上げはOFF')+'</p><div class="history">'+previous.slice(0,20).map(n=>'<span>'+bingoName(n)+'</span>').join('')+'</div>');
+ actions([['draw','🎱 次の数字を出す'],['repeat','🔁 もう一度読む'],['voice',window.SaikoBingoVoice?.isEnabled()?'🔊 読み上げON':'🔇 読み上げOFF'],['undo','↶ 1つ戻す'],['print','🖨 ビンゴカード印刷']]);
+ $('a_draw').disabled=state.pos>=75;$('a_undo').disabled=state.pos===0;
+ $('a_draw').onclick=()=>{
+  if(state.pos>=75)return;
+  const called=state.numbers[state.pos];state.pos++;persist();bingoShow();
+  // Invoke speech directly from the user's tap, not a timer or background script.
+  window.SaikoBingoVoice?.say(called);
+ };
+ $('a_repeat').onclick=()=>{
+  const number=previous[0]||59;
+  window.SaikoBingoVoice?.say(number);
+ };
+ $('a_voice').onclick=()=>{window.SaikoBingoVoice?.toggle();bingoShow()};
+ $('a_undo').onclick=()=>{if(state.pos){window.SaikoBingoVoice?.cancel();state.pos--;persist();bingoShow()}};
+ $('a_print').onclick=()=>{$('printCards').innerHTML=Array.from({length:4},card).join('');window.print()};
+}
 function gestureShow(){if(state.pos>=state.items.length){show('80問完走！');panel('<div class="answer">おめでとう！</div>');actions([['next','最初から']]);$('a_next').onclick=()=>start('gesture');return}
  const word=state.items[state.pos];show((state.pos+1)+' / 80 問　お題を見る人以外は目を閉じてね');
  panel(state.phase===0?'<div class="prompt">🙈 ほかの人は目を閉じてね</div>':state.phase===1?'<div class="prompt">'+word+'</div>':state.phase===2?'<div class="big" id="seconds">'+state.seconds+'秒</div>':'<div class="answer">'+word+'</div>');
