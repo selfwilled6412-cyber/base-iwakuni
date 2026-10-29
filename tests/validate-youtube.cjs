@@ -74,6 +74,7 @@ class FakePlayer{
  getDuration(){return this.duration}
  getCurrentTime(){return this.clock}
  pauseVideo(){this.pauses++}
+ seekTo(time){this.clock=time}
  destroy(){this.destroyed=true}
  start(){this.opts.events.onReady({target:this})}
  emit(code){this.opts.events.onStateChange({data:code,target:this})}
