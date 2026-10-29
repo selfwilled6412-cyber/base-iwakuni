@@ -29,4 +29,4 @@ jobs:
         with:
           node-version: "22"
       - name: Validate puzzle banks, routes, and all 30 maze stages
-        run: node tests/validate-games.cjs && node tests/validate-rhythm.cjs
+        run: node tests/validate-games.cjs && node tests/validate-rhythm.cjs && node tests/validate-studio.cjs
