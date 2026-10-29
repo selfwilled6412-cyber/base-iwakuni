@@ -112,6 +112,70 @@ $('openStudioSettings').onclick=()=>{
  const settings=$('studioSettings');settings.open=true;
  settings.scrollIntoView?.({behavior:'smooth',block:'start'});
 };
+/* Private autochart prototype. Browser obtains ONLY beatmap JSON.
+ * Extracting or caching audio happens on a separately operated gateway. */
+function gatewayBase(){
+ const value=$('chartEndpoint').value.trim();
+ try{
+  const u=new URL(value);
+  if((u.protocol!=='https:'&&!(u.protocol==='http:'&&['localhost','127.0.0.1'].includes(u.hostname)))||u.username||u.password||u.search||u.hash)throw Error();
+  return u.origin;
+ }catch(e){return null}
+}
+$('chartEndpoint').addEventListener('change',()=>{
+ const base=gatewayBase();
+ if(base){try{window.localStorage?.setItem('saiko-chart-service-url',base)}catch(e){}}
+});
+try{
+ const saved=window.localStorage?.getItem('saiko-chart-service-url');
+ if(saved)$('chartEndpoint').value=saved;
+}catch(e){}
+async function chartFromGateway(){
+ const vid=ytCore.parseYouTube($('videoUrl').value);
+ if(!vid){status('動画のURLを入力してね');return}
+ const base=gatewayBase();
+ if(!base){
+  status('🎼 音声解析サーバーが未接続です。詳細から解析サーバーのURLを設定してね');
+  $('chartGatewayStatus').textContent='⚠️ 解析サーバーが未接続。接続しない限り、自動採譜は利用できません。';
+  $('studioSettings').open=true;
+  return;
+ }
+ const key=$('chartKey').value;
+ if(vid!==videoId)loadVideo();
+ const token=runToken,button=$('autoChart');
+ button.disabled=true;button.textContent='🎼 音の解析中…';
+ status('🥁 動画の音からノーツを作成中…');$('chartGatewayStatus').textContent='音の解析を実行しています';
+ try{
+  const response=await fetch(base+'/api/chart',{
+    method:'POST',mode:'cors',cache:'no-store',
+    headers:{'Content-Type':'application/json',...(key?{'X-Chart-Key':key}:{})},
+    body:JSON.stringify({video_id:vid,level:$('level').value})
+  });
+  let data={};try{data=await response.json()}catch(e){}
+  if(token!==runToken)return;
+  if(!response.ok)throw Error(data?.detail||('解析サーバーからエラー '+response.status));
+  if(data.video_id!==vid||!Array.isArray(data.notes)||data.notes.length<4)throw Error('曲から有効なノーツを生成できませんでした');
+  const next=studio.normalizeChart({
+    version:1,title:'AUTO CHART '+vid,duration:Number(data.duration),
+    bpm:Number($('bpm').value),offset:0,level:$('level').value,notes:data.notes
+  });
+  chart=next;recording=false;awaitingPrepare=false;recordedTaps=[];audioOnsets=[];
+  refreshBeatUI();resetScores(0);lastTime=null;ended=false;
+  $('restart').disabled=false;
+  feedback('🎵 AUTO CHART READY');
+  status('✅ 曲の音から'+chart.notes.length+'個のノーツを生成！ 動画を先頭から再生してね。遅れがあれば判定補正を調整できます。');
+  $('chartGatewayStatus').textContent='✅ '+chart.notes.length+'ノーツ生成。音源ファイルの手動アップロードなし';
+  draw();
+ }catch(e){
+  if(token===runToken){
+   const message=String(e?.message||'解析失敗').slice(0,190);
+   status('⚠️ 自動採譜できませんでした：'+message);
+   $('chartGatewayStatus').textContent='⚠️ '+message+'。接続先と端末のネット接続を確認してね';
+  }
+ }finally{button.disabled=false;button.textContent='⚡ この曲を自動採譜（試作）'}
+}
+$('autoChart').onclick=chartFromGateway;
+
 
 const bpmTaps=[];
 $('tapBpm').onclick=()=>{
