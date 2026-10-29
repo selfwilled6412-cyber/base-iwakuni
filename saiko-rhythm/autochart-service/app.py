@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 import re
 import secrets
+import sys
 import shutil
 import subprocess
 import tempfile
@@ -59,7 +60,13 @@ def _run(args: list[str], *, timeout: int) -> bytes:
     except subprocess.TimeoutExpired as error:
         raise HTTPException(status_code=504, detail="Audio analysis timed out") from error
     if done.returncode != 0:
-        # Do not expose third-party details or machine paths to the caller.
+        # Only explicit private CI diagnostics can print a REDACTED tool error.
+        # Never return YouTube's raw response or signed stream URLs to a client.
+        if os.environ.get("SAIKO_CHART_DIAGNOSTICS") == "1" and args and args[0] == "yt-dlp":
+            lines=done.stderr.decode(errors="replace").splitlines()[-10:]
+            for line in lines:
+                line=re.sub(r"https?://\\S+", "[URL]", line)
+                print("[YT-DLP DIAG]", line[:250], file=sys.stderr)
         raise HTTPException(status_code=422, detail="Could not process this video. It may be unavailable or restricted")
     return done.stdout
 
