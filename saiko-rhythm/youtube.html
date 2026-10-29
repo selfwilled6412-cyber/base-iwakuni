@@ -85,12 +85,21 @@ main > .footer{order:5}
   .pad{min-height:58px}
   .judge{min-height:30px;font-size:20px;margin:5px}
 }
+
+.quickHelp{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:12px;font-weight:800;color:#fce5b4}
+.quickHelp button{border:2px solid #8decea;background:#12476b;color:white;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:900;white-space:nowrap;cursor:pointer}
+@media(max-width:800px){
+ .layout .videoPane{position:sticky;top:0;z-index:12;box-shadow:0 8px 19px #010423b0}
+ .videoContainer,.videoContainer iframe{min-height:200px!important}
+}
+@media(max-width:420px){.quickHelp{font-size:11px}.quickHelp button{font-size:11px}}
 </style></head>
 <body><header><div class="brand">🎵 SAIKO <b>BEAT × YouTube</b></div><a href="./">← BEAT RUSHへ戻る</a></header>
 <main>
 <section class="quickLaunch" aria-label="動画を選ぶ"><div class="quickBrand">🎵 <strong>SAIKO BEAT <span>RUSH</span></strong><small> YouTube SESSION</small></div>
 <div class="quickRow"><label for="videoUrl" class="visuallyHidden">YouTube動画URL</label><input id="videoUrl" type="text" inputmode="url" autocomplete="url" placeholder="YouTube動画のURLを貼り付け"><button id="load" type="button" class="button primary">▶ 動画を開く</button></div>
-<p id="status" role="status" class="status">曲を選んでスタート！ 音に合う譜面は自分で作成・読み込みできます。</p></section>
+<div class="quickHelp"><span>🎯 曲に合うノーツには同じ曲の音楽ファイルが必要</span><button type="button" id="openStudioSettings">🎼 譜面を作る</button></div>
+<p id="status" role="status" class="status">YouTubeだけでは音を解析できません。動画を選んで、譜面を作ってね。</p></section>
 <section class="hero"><span class="eyebrow">✦ EXPERIMENTAL YOUTUBE SYNC • FREE BETA</span><h1>好きな動画に合わせて、<span>音ゲーに挑戦！</span></h1><p>YouTubeの動画を公式プレーヤーで見ながら、再生時間に合わせて大きな専用レーンの音符をタップする実験版。<br>音楽は抽出・保存しないよ。好きな動画を入力し、テンポに合わせて遊ぼう！</p><div class="tags"><span>📺 公式YouTubeプレーヤー</span><span>🎹 4レーン</span><span>🎮 スマホ・PC</span><span>🔐 音声抽出・アップロードなし</span></div></section>
 <details class="card compactSettings" id="studioSettings"><summary>⚙️ 詳細設定・リズム譜面を作る</summary><div class="settingsInside"><h2>譜面の作成・音ズレ調整</h2><div class="fields">
 
