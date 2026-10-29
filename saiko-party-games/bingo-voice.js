@@ -47,4 +47,4 @@
  const api=Object.freeze({say,toggle,cancel,getText,isEnabled,supported,getStatus:()=>lastResult});
  if(typeof module==='object'&&module.exports)module.exports=api;
  root.SaikoBingoVoice=api;
-})(typeof window!=='undefined'?window:null);
+})(typeof window!=='undefined'?window:typeof globalThis!=='undefined'?globalThis:null);
