@@ -39,31 +39,82 @@ header{padding:13px max(14px,calc((100vw - 1240px)/2));background:#140f39;border
 #audioAnalysisStatus{color:#c1ffeb;font-weight:900;font-size:15px;line-height:1.65}
 .dockControls{margin-top:10px;display:flex;gap:9px}.dockControls .button{flex:1;min-width:0;padding:8px 9px;min-height:48px;font-size:clamp(13px,1.5vw,17px)}.dockControls #tapDock{background:linear-gradient(100deg,#86ffe8,#ffebad);color:#10233b}
 @media(max-width:430px){.dockControls .button{font-size:13px;padding:7px 5px}}
+
+/* 2026-10-29 mobile-first compact arcade shell. Game occupies first screen. */
+main{display:flex;flex-direction:column;gap:12px;padding:10px 12px 42px;max-width:1100px}
+main > .quickLaunch{order:0}
+main > .layout{order:1;margin-top:0}
+main > .compactSettings{order:2}
+main > .hero{order:3;display:none}
+main > .card:not(.compactSettings){order:4}
+main > .footer{order:5}
+.quickLaunch{padding:12px 14px;border:2px solid #8e72ed;border-radius:17px;background:linear-gradient(112deg,#1c1850,#163d65);box-shadow:0 10px 26px #04031a83}
+.quickBrand{font-weight:1000;font-size:clamp(18px,3vw,27px);margin-bottom:9px;color:#eefaff}
+.quickBrand span{color:#66fbea}.quickBrand small{font-size:10px;letter-spacing:.18em;color:#c4c6ff}
+.quickRow{display:flex;gap:8px;align-items:center}.quickRow input{flex:1;min-width:0;color:#1f2350;background:#fff;padding:11px 13px;border:2px solid #e3ddff;border-radius:11px;min-height:47px;font-size:15px}
+.quickRow .button{font-size:14px;min-height:47px;padding:9px 12px;white-space:nowrap}
+.quickLaunch .status{font-size:13px;min-height:0;color:#c5f5fc;margin:8px 0 0}
+.compactSettings{margin:0;padding:0;border:1px solid #767bb8;background:#1d1c4c}
+.compactSettings summary{font-weight:900;font-size:16px;cursor:pointer;padding:15px 16px;color:#f5e9ff;list-style:revert}
+.compactSettings .settingsInside{padding:2px 14px 20px;border-top:1px solid #8a89b96d}
+.settingsInside h2{font-size:20px}
+.settingsInside>.hint{font-size:12px}
+.consentDialog{max-width:min(94vw,470px);border:3px solid #bc9bff;border-radius:22px;background:#1c1846;color:white;padding:20px;box-shadow:0 0 0 100vmax #05051ab3}
+.consentDialog::backdrop{background:#090719b9}
+.consentDialog h2{font-size:25px;margin:0 0 10px}.consentDialog p{font-size:15px;line-height:1.7}.consentDialog .rights{margin:10px 0}
+.visuallyHidden{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:nowrap}
+.layout{padding:6px;box-shadow:0 12px 35px #07041b9e}
+.videoPane h2,.playPane h2{font-size:16px!important}
+.playPane .scoreboard strong{font-size:20px}
+.gameWindow canvas{height:clamp(320px,53vh,520px)}
+@media(max-width:800px){
+  .layout .videoPane{position:relative;top:auto;z-index:auto}
+  .videoContainer,.videoContainer iframe{min-height:0;aspect-ratio:16/9}
+  .layout .playPane{padding:7px}
+  .gameWindow canvas{height:clamp(290px,43vh,480px)}
+  .dockControls{gap:6px}
+  .dockControls .button{font-size:13px;min-height:44px}
+  main{gap:10px;padding:8px 8px 30px}
+  .gameHelp{display:none}
+}
+@media(max-width:420px){
+  .quickBrand small{display:none}
+  .quickRow input{font-size:14px}
+  .gameWindow canvas{height:320px}
+  .scoreboard div{padding:3px 2px}
+  .pad{min-height:58px}
+  .judge{min-height:30px;font-size:20px;margin:5px}
+}
 </style></head>
 <body><header><div class="brand">🎵 SAIKO <b>BEAT × YouTube</b></div><a href="./">← BEAT RUSHへ戻る</a></header>
 <main>
+<section class="quickLaunch" aria-label="動画を選ぶ"><div class="quickBrand">🎵 <strong>SAIKO BEAT <span>RUSH</span></strong><small> YouTube SESSION</small></div>
+<div class="quickRow"><label for="videoUrl" class="visuallyHidden">YouTube動画URL</label><input id="videoUrl" type="text" inputmode="url" autocomplete="url" placeholder="YouTube動画のURLを貼り付け"><button id="load" type="button" class="button primary">▶ 動画を開く</button></div>
+<p id="status" role="status" class="status">曲を選んでスタート！ 音に合う譜面は自分で作成・読み込みできます。</p></section>
 <section class="hero"><span class="eyebrow">✦ EXPERIMENTAL YOUTUBE SYNC • FREE BETA</span><h1>好きな動画に合わせて、<span>音ゲーに挑戦！</span></h1><p>YouTubeの動画を公式プレーヤーで見ながら、再生時間に合わせて大きな専用レーンの音符をタップする実験版。<br>音楽は抽出・保存しないよ。好きな動画を入力し、テンポに合わせて遊ぼう！</p><div class="tags"><span>📺 公式YouTubeプレーヤー</span><span>🎹 4レーン</span><span>🎮 スマホ・PC</span><span>🔐 音声抽出・アップロードなし</span></div></section>
-<section class="card"><h2>🎬 ① YouTube動画を選ぼう</h2><div class="fields">
-<label class="field wide">YouTubeの動画URL、または11文字の動画ID<input id="videoUrl" type="text" inputmode="url" autocomplete="url" placeholder="https://www.youtube.com/watch?v=..." aria-label="YouTube動画のURL"></label>
+<details class="card compactSettings" id="studioSettings"><summary>⚙️ 詳細設定・リズム譜面を作る</summary><div class="settingsInside"><h2>譜面の作成・音ズレ調整</h2><div class="fields">
+
 <label class="field">🎼 曲のBPM（テンポ）<input id="bpm" type="number" min="60" max="220" step="1" value="120"></label>
 <label class="field">🎯 リズム開始位置<select id="offset"><option value="0" selected>0秒</option><option value="0.5">0.5秒</option><option value="1">1秒</option><option value="1.5">1.5秒</option><option value="2">2秒</option><option value="2.5">2.5秒</option><option value="3">3秒</option></select></label>
 <label class="field">⭐ 難易度<select id="level"><option value="easy">🌱 初級（中央2レーン）</option><option value="normal" selected>⚡ 中級</option><option value="hard">🔥 上級</option></select></label>
 <label class="field">🚀 ノーツの落下速度<select id="noteSpeed"><option value="0.8">ゆっくり・見やすい</option><option value="1" selected>標準</option><option value="1.3">速い</option></select></label><label class="field">🕒 タップ判定の調整<select id="latency"><option value="-150">−150 ms</option><option value="-100">−100 ms</option><option value="-50">−50 ms</option><option selected value="0">0 ms（標準）</option><option value="50">＋50 ms</option><option value="100">＋100 ms</option><option value="150">＋150 ms</option></select></label>
 </div>
 <div class="row" style="margin-top:16px"><button class="button" type="button" id="tapBpm">👏 曲に合わせてタップしてBPM測定</button><span id="tapBpmStatus" class="hint">動画を流して4回以上、拍に合わせて押すとテンポを推定できるよ</span></div>
-<div class="row" style="margin-top:17px"><button class="button primary" type="button" id="load">📺 YouTube動画を読み込む</button><a id="openOriginal" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" hidden>元の動画をYouTubeで見る</a></div>
-<label class="rights"><input id="rights" type="checkbox"><span>音ゲーと組み合わせて利用する権利・許諾がある動画で試します。<b>動画を視聴できることだけでは、ゲームに使用・販売する権利は得られません。</b> このチェックは権利の自動確認ではありません。動画の視聴自体にはチェック不要です。</span></label>
+<div class="row" style="margin-top:10px"><a id="openOriginal" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" hidden>元の動画をYouTubeで見る</a></div>
+
 <div class="audioAnalysis"><h3>🎧 NEW！音源を本当に解析してノーツを自動生成</h3><p>YouTubeの音声はAPIから解析できません。<b>動画と同じ曲の、利用権限があるMP3・WAV等のファイル</b>を選ぶと、この端末内で音の立ち上がりを解析して譜面を作るよ。音源ファイルはアップロード・再生しません。ゲーム本番の音はYouTubeから流れます。</p>
 <div class="row"><label class="field" style="flex:1;min-width:220px">🎼 同じ曲の音楽ファイル<input id="syncAudioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac"></label><label class="field">⏱ 動画との開始ズレ（秒）<input id="syncShift" type="number" min="-10" max="10" step="0.1" value="0"></label></div>
 <div class="row"><button id="analyzeAudio" class="button primary" type="button">⚡ 音源を解析して譜面を作る</button><span id="audioAnalysisStatus" role="status">音源ファイルを選ぶと、BPM一定の仮譜面より曲に沿ったノーツを作れるよ</span></div>
 <p class="hint">同じ曲でも動画の前に挨拶・無音・演出などがある場合、開始ズレの秒数を調整してね。どんな楽曲も完璧に自動採譜できるわけではありません。歌のみ・音の変化が小さい曲では精度が下がる場合があります。</p></div>
 <div class="recordPanel" id="recordPanel"><h3>🥁 NEW！曲の音を聴いて「本当のリズム」を記録</h3><p><b>おすすめ：</b>動画の▶で再生 →「記録開始」→ 曲のドラム・拍に合わせて「♪ ビートを刻む」をタップ →「記録終了」。記録した<b>実際の再生時刻</b>にノーツを配置するよ。PCのスペースキーでも記録できる。4レーンのボタンを押すとレーンを指定して記録できるよ。</p><div class="row"><button type="button" id="recordBeat" class="button">🔴 記録開始</button><button type="button" id="captureBeat" class="button" disabled>🥁 ♪ ビートを刻む</button><button type="button" id="clearBeats" class="button">🗑 記録を消す</button><span id="captureCount" aria-live="polite">記録 0 個</span></div><p class="hint">※ YouTube音声の自動解析ではなく、聴きながらタップした位置を譜面にする機能です。記録した時刻だけをこの端末に保存できます。動画への重ね描きは公式規定上できないため、右側（スマホではすぐ下）に明るい専用レーンを表示します。</p></div>
 <div class="row"><button class="button primary" id="prepare" type="button">🪄 BPMだけで仮譜面を作る（精度低）</button><button class="button" id="restart" type="button" disabled>⏮ 最初から挑戦</button></div>
-<p class="status" role="status" id="status">まずYouTubeの動画URLを入力してね！</p><p class="hint">📝 BPMだけの仮譜面は実際の曲と合いません。おすすめは上の「同じ曲の音源ファイルを解析」です。再生や広告によって開始まで時間がかかる場合があります。</p></section>
+<p class="hint">📝 BPMだけの仮譜面は実際の曲と合いません。おすすめは上の「同じ曲の音源ファイルを解析」です。再生や広告によって開始まで時間がかかる場合があります。</p></div></details>
 <section class="layout"><div class="videoPane"><h2>📺 YouTube公式プレーヤー</h2><div class="videoContainer" id="videoContainer"><div id="ytPlayer"><div class="videoPlaceholder"><div>▶️ YouTube</div><div>上で動画URLを読み込んでね</div></div></div></div><div class="row dockControls"><button type="button" class="button" id="recordDock">🔴 曲に合わせて記録</button><button type="button" class="button primary" id="tapDock" disabled>🥁 リズムを刻む</button></div><p>動画はこの画面から見られるよ。再生・停止・音量・字幕・広告・YouTubeリンクなど、プレーヤー標準の機能をそのまま使ってね。</p></div>
 <div class="playPane"><h2>🎹 ネオンノーツが降ってくる！</h2><div class="scoreboard"><div>SCORE<strong id="score">0</strong></div><div>COMBO<strong id="combo">0</strong></div><div>PERFECT<strong id="perfect">0</strong></div><div>MISS<strong id="miss">0</strong></div></div><div class="gameWindow"><canvas id="gameCanvas" aria-label="4レーンの音符。YouTubeの再生時間を使って判定する音ゲー" role="img"></canvas></div><div class="pads"><button type="button" class="pad" data-lane="0">D 💗</button><button type="button" class="pad" data-lane="1">F ⭐</button><button type="button" class="pad" data-lane="2">J 💠</button><button type="button" class="pad" data-lane="3">K ⚡</button></div><div id="judge" class="judge" aria-live="polite">動画の再生を始めよう！</div><p class="gameHelp">PCは D・F・J・K ／ スマホは4つの大きなボタン。動画が停止・読み込み中はノーツも停止。再生位置を変更するとスコアをリセットすることがあるよ。</p><div class="result" id="result" hidden></div></div></section>
 <section class="card"><h2>💡 YouTube連動の仕組みと注意</h2><div class="legal"><p>公式のYouTube IFrame Player APIから<strong>再生位置だけ</strong>を取得し、当アプリが独自に生成した譜面を表示します。動画ファイルや音声は取得・ダウンロード・解析・キャッシュしません。YouTubeプレーヤーは動画と音声を一緒に表示し、広告や標準操作を妨げません。</p>
 <p>この試作品は、5秒〜10分の<strong>埋め込み再生が許可された通常動画</strong>が対象です。著作権者による制限、年齢制限、地域制限、ライブ配信、通信状態、端末の音ズレなどにより動作しないことがあります。広告が入った場合も自動スキップしません。</p>
 <p>動画のBPMはYouTubeから抽出しません。BPMだけの仮譜面は音に合わない場合があります。ビート記録機能なら、利用者が聴いて刻んだ拍の時刻を譜面にできます（自動音声解析ではありません）。YouTubeのAPI利用規約・権利許諾に照らした有料販売の適法性は別途審査・確認が必要で、<strong>この実験版は無料・非商用・利用許諾済み素材の検証用</strong>です。</p></div></section>
 <p class="footer">SAIKO BEAT RUSH • YouTube SYNC BETA ／ サイ校プロジェクト岩国・株式会社BASE 商品化研究<br>YouTubeはGoogle LLCのサービスです。本アプリはYouTubeの公式認定製品ではありません。</p>
-</main><script defer src="studio-core.js"></script><script defer src="youtube-core.js"></script><script defer src="beat-analyzer.js"></script><script defer src="youtube.js"></script></body></html>
+<dialog id="consentDialog" class="consentDialog"><h2>音ゲーを始める前に</h2><p>この試作では、音楽や動画をゲームと組み合わせる利用許諾がある素材だけを使用してください。YouTubeで視聴できるだけでは、ゲーム利用や販売の許諾にはなりません。</p>
+<label class="rights"><input id="rights" type="checkbox"><span>利用権限を確認しました</span></label>
+<div class="row"><button id="rightsConfirm" class="button primary" type="button">この内容で進む</button><button id="rightsCancel" class="button" type="button">戻る</button></div></dialog></main><script defer src="studio-core.js"></script><script defer src="youtube-core.js"></script><script defer src="beat-analyzer.js"></script><script defer src="youtube.js"></script></body></html>
