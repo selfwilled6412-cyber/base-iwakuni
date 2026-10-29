@@ -8,6 +8,13 @@ new vm.Script(client,{filename:'youtube.js'});
 assert(html.includes('studio-core.js')&&html.includes('youtube-core.js')&&html.includes('youtube.js'));
 assert(html.includes('videoContainer')&&html.includes('id="rights"')&&html.includes('音声抽出・アップロードなし'));
 assert(html.includes('正規')===false||html.includes('YouTube'));
+
+assert(html.indexOf('id="videoUrl"')<html.indexOf('id="studioSettings"'),'Video entry must come before setup');
+assert(html.indexOf('id="recordDock"')>html.indexOf('id="studioSettings"'),'Recording buttons stay out of first-screen gameplay');
+const startView=html.slice(html.indexOf('<main>'),html.indexOf('<section class="layout"'));
+assert(!startView.includes('音声を解析できません')&&!startView.includes('利用権限'),'Technical and legal explanations must not crowd first screen');
+assert(!client.includes('ytCore.makeSyncChart('),'Video-only playback must never invent BPM filler notes');
+
 const valid=[
  ['https://www.youtube.com/watch?v=dQw4w9WgXcQ','dQw4w9WgXcQ'],
  ['https://youtu.be/dQw4w9WgXcQ?t=1','dQw4w9WgXcQ'],
