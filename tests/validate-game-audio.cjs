@@ -20,10 +20,11 @@ class MutationObserver{constructor(fn){this.fn=fn}observe(node){observers[node.i
 const localStorage={getItem(k){return store[k]||null},setItem(k,v){store[k]=v}};
 const window={AudioContext:AC,addEventListener(){}};
 vm.runInNewContext(source,{document,window,localStorage,MutationObserver,Date,Math});
-assert.equal(buttons.length,1,'One toggle must be exposed');
+assert.equal(buttons.length,3,'Toggle, sound test and feedback status must be exposed');
 assert.equal(played,0,'No audio before gesture');
 events.click({target:makeNode('start')});
 assert(played>0,'Click must create playable sound');
+const beforeTest=played;buttons[1].listeners.click({stopPropagation(){}});assert(played>beforeTest,'Sound test must play an audible chime');
 const count=played;buttons[0].listeners.click({stopPropagation(){}});
 assert.equal(store['saiko-sfx-enabled-v1'],'off');events.click({target:makeNode('start')});assert.equal(played,count);
 buttons[0].listeners.click({stopPropagation(){}});
