@@ -1,0 +1,19 @@
+# Private/internal trial ONLY; do not expose unauthenticated port publicly.
+services:
+  saiko-autochart:
+    build: .
+    init: true
+    restart: unless-stopped
+    environment:
+      - SAIKO_CHART_API_KEY=${SAIKO_CHART_API_KEY:?A private gateway key is required}
+    ports:
+      - "127.0.0.1:8766:8766"
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,noexec,nosuid
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    mem_limit: 512m

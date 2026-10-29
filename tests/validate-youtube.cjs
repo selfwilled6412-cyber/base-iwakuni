@@ -90,7 +90,7 @@ const analyzer=require('../saiko-rhythm/beat-analyzer.js');
 class FakeAudioContext{async decodeAudioData(){return {duration:120}}async close(){}}
 const window={YT:{Player:FakePlayer},AudioContext:FakeAudioContext,devicePixelRatio:1,addEventListener(){},SaikoYouTubeCore:core,SaikoStudioCore:studio,SaikoBeatAnalyzer:{...analyzer,extractOnsets(){return [1.02,1.5,2.05,2.6,3.19,4.2,5.18]}}};
 const context=vm.createContext({window,document,performance:{now(){return 1500}},console,
- requestAnimationFrame(fn){frames.push(fn);return frames.length},cancelAnimationFrame(){},Math,Set,Number});
+ requestAnimationFrame(fn){frames.push(fn);return frames.length},cancelAnimationFrame(){},Math,Set,Number,URL});
 $('bpm').value='120';$('offset').value='0';$('level').value='normal';$('latency').value='0';$('videoUrl').value='https://youtu.be/dQw4w9WgXcQ';
 new vm.Script(client).runInContext(context);
 $('load').onclick();
@@ -155,6 +155,27 @@ $('syncShift').value='0.3';
  assert.equal(mapped.notes[0].t,1.32,'Audio onset + video intro shift');
  assert($('audioAnalysisStatus').textContent.includes('検出'));
  console.log('PASS: real-audio-derived YouTube beatmap wiring using a separate licensed local audio file');
+ // The draft autochart URL-only path must receive the BEATMAP JSON directly.
+ let calls=0;
+ $('chartEndpoint').value='https://private-chart.example';
+ context.fetch=async(url,options)=>{
+  calls++;
+  assert.equal(url,'https://private-chart.example/api/chart');
+  assert.equal(options.method,'POST');
+  assert.equal(JSON.parse(options.body).video_id,'abcDEF123_-');
+  assert(!options.body.includes('audio')&&!options.body.includes('youtube.com'));
+  return {ok:true,json:async()=>({video_id:'abcDEF123_-',duration:120,notes:[
+   {t:1.13,lane:0},{t:1.59,lane:2},{t:2.10,lane:3},{t:2.72,lane:1},{t:3.17,lane:0}
+  ]})};
+ };
+ await $('autoChart').onclick();
+ assert.equal(calls,1,'One request per manual autochart tap');
+ const generated=window.SaikoYouTubeGame.getState().chart;
+ assert(generated&&generated.notes.length===5,'Server-detected notes must play in the game');
+ assert.deepEqual(Array.from(generated.notes,n=>n.t),[1.13,1.59,2.10,2.72,3.17]);
+ assert($('status').textContent.includes('5個のノーツ'));
+ console.log('PASS: YouTube URL -> private audio analysis gateway -> genuine timestamped playable notes');
+
 })().catch(e=>{console.error(e);process.exitCode=1});
 console.log('PASS: strict YouTube ID parsing, malicious host rejection, 3 difficulties, time-based judging');
 console.log('PASS: official visible IFrame setup, rights gate only for gameplay, play/pause/finish/seek reset, no audio downloads');
