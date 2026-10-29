@@ -87,7 +87,7 @@ function loadVideo(){
  if(apiRequested){status('📡 YouTube公式プレーヤーの読み込みを待っています…');return}
  apiRequested=true;status('📡 YouTube公式プレーヤーを読み込んでいます…');
  const script=document.createElement('script');script.src='https://www.youtube.com/iframe_api';script.async=true;
- script.onerror=()=>status('⚠️ YouTubeプレーヤーの読み込みに失敗しました。ネット接続またはブラウザ設定を確認してね。');
+ script.onerror=()=>{apiRequested=false;script.remove?.();status('⚠️ YouTubeプレーヤーの読み込みに失敗しました。ネット接続を確認し、もう一度「動画を読み込む」を押してね。');};
  document.head.appendChild(script);
 }
 $('load').onclick=loadVideo;
@@ -147,7 +147,11 @@ document.addEventListener('keydown',e=>{
  const lane=['d','f','j','k'].indexOf(String(e.key).toLowerCase());if(lane!==-1){e.preventDefault();tap(lane)}
 });
 function finish(){
- if(!chart||ended)return;ended=true;playing=false;
+ if(!chart||ended)return;
+ // At video completion, count all remaining, previously unjudged notes as misses.
+ const remaining=ytCore.recordMisses(chart.notes,chart.duration+.3,done);
+ if(remaining){miss+=remaining;combo=0;updateHud()}
+ ended=true;playing=false;
  const count=perfect+great+good+miss;
  const accuracy=count?Math.round((perfect+great*.75+good*.4)/count*100):0;
  const rank=accuracy>=94?'S':accuracy>=82?'A':accuracy>=65?'B':accuracy>=40?'C':'D';
