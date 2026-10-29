@@ -16,7 +16,7 @@ try{
   if(['easy','normal','hard'].includes(old.settings.level))settings.level=old.settings.level;
   if([0,1,2].includes(old.settings.track))settings.track=old.settings.track;
   if(Number.isInteger(old.settings.volume)&&old.settings.volume>=0&&old.settings.volume<=100)settings.volume=old.settings.volume;
-  if([-100,-50,0,50,100].includes(old.settings.offset))settings.offset=old.settings.offset;
+  if(Number.isInteger(old.settings.offset)&&old.settings.offset>=-200&&old.settings.offset<=200&&old.settings.offset%25===0)settings.offset=old.settings.offset;
   settings.lowFx=old.settings.lowFx===true;
  }
 }catch(e){}
