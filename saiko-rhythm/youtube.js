@@ -9,6 +9,22 @@ let chart=null,done=new Set(),score=0,combo=0,maxCombo=0,perfect=0,great=0,good=
 let recordedTaps=[],recording=false,audioOnsets=[],analyzedAudioName='';
 let awaitingPrepare=false,lastTime=null,runToken=0,frame=0,judgeMessage='',judgeUntil=0,ended=false;
 function status(text){$('status').textContent=text}
+let rightsRetry=null;
+function requestGameRights(retry){
+ if($('rights').checked)return true;
+ rightsRetry=retry||null;
+ const dialog=$('consentDialog');
+ if(typeof dialog.showModal==='function'){if(!dialog.open)dialog.showModal()}
+ else {dialog.hidden=false}
+ return false;
+}
+$('rightsConfirm').onclick=()=>{
+ if(!$('rights').checked){status('音ゲーの利用権限を確認してチェックしてね。');return}
+ const dialog=$('consentDialog');if(typeof dialog.close==='function')dialog.close();else dialog.hidden=true;
+ const resume=rightsRetry;rightsRetry=null;if(typeof resume==='function')resume();
+};
+$('rightsCancel').onclick=()=>{const dialog=$('consentDialog');if(typeof dialog.close==='function')dialog.close();else dialog.hidden=true;rightsRetry=null};
+
 function feedback(message){judgeMessage=message;judgeUntil=performance.now()+650;$('judge').textContent=message}
 function getVideoTime(){
  if(!player||!ready||typeof player.getCurrentTime!=='function')return 0;
@@ -109,7 +125,7 @@ $('tapBpm').onclick=()=>{
 
 /* Local user-owned audio file analysis. YouTube IFrame audio is NEVER accessed. */
 function generateFromAudioOnsets(){
- if(!$('rights').checked){status('⚠️ 音源と映像をゲームに使う許諾を確認してね。');return false}
+ if(!requestGameRights(generateFromAudioOnsets))return false
  const duration=getDuration(),shift=Number($('syncShift').value);
  try{
   const next=analyzer.chartFromOnsets(studio,{duration,bpm:Number($('bpm').value),offset:Number($('offset').value),level:$('level').value,title:analyzedAudioName||'AUDIO SYNC',times:audioOnsets,shift});
@@ -122,7 +138,7 @@ function generateFromAudioOnsets(){
 }
 $('syncShift').addEventListener('change',()=>{if(audioOnsets.length>=4)generateFromAudioOnsets()});
 $('analyzeAudio').onclick=async()=>{
- if(!$('rights').checked){status('⚠️ 音源・動画のゲーム利用権限を確認してね。');return}
+ if(!requestGameRights(()=>$('analyzeAudio').onclick()))return
  if(!player||!ready||!getDuration()){status('⚠️ YouTube動画を読み込んで、▶で一度再生してね。');return}
  const file=$('syncAudioFile').files?.[0];
  if(!file){status('⚠️ 先にMP3・WAV等の音源ファイルを選んでね。');return}
@@ -178,7 +194,7 @@ function applyRecordedBeats(){
  }catch(e){status('⚠️ '+e.message)}
 }
 function startRecording(){
- if(!$('rights').checked){status('⚠️ 音ゲーで使える権利を確認しチェックしてから記録してね。');return}
+ if(!requestGameRights(startRecording))return
  if(!ready||!player){status('⚠️ YouTubeの動画を先に読み込んでね。');return}
  if(!playing){status('▶️ YouTube動画の▶を押して、音が流れ始めてから記録を開始してね。');return}
  if(!getDuration()){status('⌛ 動画の再生時間が取得できません。');return}
@@ -217,8 +233,8 @@ refreshBeatUI();
 function prepareChart(){
  if(recording){stopRecording();return}
  if(audioOnsets.length>=4){generateFromAudioOnsets();return}
- if(recordedTaps.length>=4){if(!$('rights').checked){status('⚠️ 利用権利の確認が必要です。');return}applyRecordedBeats();return}
- if(!$('rights').checked){awaitingPrepare=false;status('⚠️ 動画の音ゲー利用に必要な権利・許諾を確認してチェックしてください。視聴だけなら動画の▶をそのまま押せます。');return}
+ if(recordedTaps.length>=4){if(!requestGameRights(prepareChart))return;applyRecordedBeats();return}
+ if(!requestGameRights(prepareChart)){awaitingPrepare=false;return}
  if(!player||!ready){status('⚠️ YouTube動画を先に読み込んでね。');return}
  const dur=getDuration();
  if(!dur){awaitingPrepare=true;status('▶️ 動画プレーヤーで一度再生してね。長さが取得できたら譜面を準備するよ。');return}
@@ -313,7 +329,7 @@ function draw(){
  ctx.shadowColor='#ffe99e';ctx.shadowBlur=18*pulse;ctx.fillStyle='#fff6c3';ctx.fillRect(0,hitY-6,w,12);ctx.shadowBlur=0;
  for(let lane=0;lane<4;lane++){ctx.fillStyle=COLORS[lane];ctx.fillRect(lane*laneW+laneW*.2,hitY-10,laneW*.6,20)}
  if(chart){ctx.fillStyle='#82f7e7';ctx.fillRect(0,h-6,w*rnd(t/chart.duration,0,1),6)}
- if(!chart){ctx.textAlign='center';ctx.fillStyle='#e2d2ff';ctx.font='bold '+Math.round(rnd(w/17,17,30))+'px system-ui';ctx.fillText('YouTubeの再生位置に',w/2,h*.38);ctx.fillText('合わせてノーツが流れるよ！',w/2,h*.46);ctx.textAlign='left'}
+ if(!chart){ctx.textAlign='center';ctx.fillStyle='#e2d2ff';ctx.font='bold '+Math.round(rnd(w/17,17,30))+'px system-ui';ctx.fillText('譜面がまだありません',w/2,h*.38);ctx.fillText('詳細設定で曲の音を解析してね',w/2,h*.46);ctx.textAlign='left'}
  if(chart&&!playing&&!ended){ctx.fillStyle='#ffffffde';ctx.font='bold 20px system-ui';ctx.textAlign='center';ctx.fillText('⏸ YouTubeの再生待ち',w/2,h*.40);ctx.textAlign='left'}
  if(chart&&playing&&t>=chart.duration-.08&&!ended)finish();
  if(!document.hidden)frame=requestAnimationFrame(draw);
