@@ -79,7 +79,9 @@ class FakePlayer{
  start(){this.opts.events.onReady({target:this})}
  emit(code){this.opts.events.onStateChange({data:code,target:this})}
 }
-const window={YT:{Player:FakePlayer},devicePixelRatio:1,addEventListener(){},SaikoYouTubeCore:core,SaikoStudioCore:studio};
+const analyzer=require('../saiko-rhythm/beat-analyzer.js');
+class FakeAudioContext{async decodeAudioData(){return {duration:120}}async close(){}}
+const window={YT:{Player:FakePlayer},AudioContext:FakeAudioContext,devicePixelRatio:1,addEventListener(){},SaikoYouTubeCore:core,SaikoStudioCore:studio,SaikoBeatAnalyzer:{...analyzer,extractOnsets(){return [1.02,1.5,2.05,2.6,3.19,4.2,5.18]}}};
 const context=vm.createContext({window,document,performance:{now(){return 1500}},console,
  requestAnimationFrame(fn){frames.push(fn);return frames.length},cancelAnimationFrame(){},Math,Set,Number});
 $('bpm').value='120';$('offset').value='0';$('level').value='normal';$('latency').value='0';$('videoUrl').value='https://youtu.be/dQw4w9WgXcQ';
@@ -129,6 +131,17 @@ $('videoUrl').value='https://youtu.be/abcDEF123_-';$('load').onclick();
 assert.equal(createdPlayers,2);
 assert.equal(lastPlayer.opts.videoId,'abcDEF123_-');
 assert.equal(window.SaikoYouTubeGame.getState().chart,null);
+$('rights').checked=true;lastPlayer.start();
+$('syncAudioFile').files=[{type:'audio/wav',size:110000,name:'licensed-original.wav',async arrayBuffer(){return new ArrayBuffer(64)}}];
+$('syncShift').value='0.3';
+(async()=>{
+ await $('analyzeAudio').onclick();
+ const mapped=window.SaikoYouTubeGame.getState().chart;
+ assert(mapped&&mapped.notes.length===7,'Automatic beatmap uses detected music accents');
+ assert.equal(mapped.notes[0].t,1.32,'Audio onset + video intro shift');
+ assert($('audioAnalysisStatus').textContent.includes('検出'));
+ console.log('PASS: real-audio-derived YouTube beatmap wiring using a separate licensed local audio file');
+})().catch(e=>{console.error(e);process.exitCode=1});
 console.log('PASS: strict YouTube ID parsing, malicious host rejection, 3 difficulties, time-based judging');
 console.log('PASS: official visible IFrame setup, rights gate only for gameplay, play/pause/finish/seek reset, no audio downloads');
 console.log('PASS: frame hides when inactive and YouTube paused on background; no permanent video/track storage');
