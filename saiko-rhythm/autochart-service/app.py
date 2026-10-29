@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import os
 import re
+import secrets
 import shutil
 import subprocess
 import tempfile
@@ -113,7 +114,12 @@ def health() -> dict:
 @app.post("/api/chart")
 def chart(request: ChartRequest, http: Request) -> dict:
     api_key = os.environ.get("SAIKO_CHART_API_KEY", "")
-    if api_key and http.headers.get("X-Chart-Key") != api_key:
+    # Fail closed if accidentally exposed through uvicorn/gunicorn rather than
+    # the guarded __main__ path. Loopback alone is allowed for local demos.
+    peer_host = (http.client.host if http.client else "") or ""
+    if not api_key and peer_host not in {"127.0.0.1", "::1"}:
+        raise HTTPException(status_code=503, detail="Private gateway requires a service key")
+    if api_key and not secrets.compare_digest(http.headers.get("X-Chart-Key", ""), api_key):
         raise HTTPException(status_code=401, detail="Invalid chart service key")
     if not BUSY.acquire(blocking=False):
         raise HTTPException(status_code=429, detail="Analysis in progress. Retry after it finishes")
