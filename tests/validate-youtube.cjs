@@ -92,6 +92,7 @@ listeners.get('doc:visibilitychange')();
 assert.equal(lastPlayer.pauses,1,'Never allow background playback');
 lastPlayer.emit(0);
 assert.equal(window.SaikoYouTubeGame.getState().ended,true);
+assert.equal(window.SaikoYouTubeGame.getState().perfect+window.SaikoYouTubeGame.getState().great+window.SaikoYouTubeGame.getState().good+window.SaikoYouTubeGame.getState().miss,actual.notes.length,'Every note must count at video end, including missed notes');
 assert.equal($('result').hidden,false);
 assert($('result').textContent.includes('RANK'));
 $('videoUrl').value='https://youtu.be/abcDEF123_-';$('load').onclick();
