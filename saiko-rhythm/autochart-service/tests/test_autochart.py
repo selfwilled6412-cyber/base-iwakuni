@@ -1,0 +1,87 @@
+"""Offline contract tests: never contact YouTube or download protected works."""
+import sys
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from analyzer import SAMPLE_RATE, detect_beats, make_chart
+import app
+
+
+def synthetic_track(seconds: int = 12) -> np.ndarray:
+    sr = SAMPLE_RATE
+    samples = np.zeros(sr * seconds, dtype=np.float32)
+    starts = [0.5 + i * .5 for i in range(int((seconds - 1) / .5))]
+    for pos in starts:
+        start = int(pos * sr)
+        duration = int(.11 * sr)
+        x = np.arange(duration)
+        samples[start:start + duration] = (
+            .7 * np.exp(-x / (sr * .018)) * np.sin(2 * np.pi * 220 * x / sr)
+        ).astype(np.float32)
+    return samples
+
+
+class AnalyzerTests(unittest.TestCase):
+    def test_onsets_follow_actual_audio(self):
+        samples = synthetic_track()
+        beats = detect_beats(samples)
+        self.assertGreaterEqual(len(beats), 10)
+        recorded = [b.time for b in beats]
+        expected = [.5 + i * .5 for i in range(21)]
+        close = sum(any(abs(t - e) < .13 for t in recorded) for e in expected)
+        self.assertGreaterEqual(close, 10, "Onsets should follow the sampled transients")
+        self.assertTrue(all(0 <= b.lane < 4 for b in beats))
+
+    def test_no_invented_beats_for_silence(self):
+        self.assertEqual(detect_beats(np.zeros(SAMPLE_RATE * 12, dtype=np.float32)), [])
+        with self.assertRaises(ValueError):
+            make_chart(np.zeros(SAMPLE_RATE * 12, dtype=np.float32))
+
+    def test_all_difficulties(self):
+        samples = synthetic_track()
+        counts = {}
+        for level in ["easy", "normal", "hard"]:
+            chart = make_chart(samples, level=level)
+            self.assertTrue(all(0 <= n["t"] <= 12 for n in chart["notes"]))
+            self.assertEqual(chart["note_count"], len(chart["notes"]))
+            counts[level] = chart["note_count"]
+        self.assertLessEqual(counts["easy"], counts["hard"])
+
+    def test_time_bounds(self):
+        with self.assertRaises(ValueError):
+            detect_beats(np.zeros(SAMPLE_RATE * 3, dtype=np.float32))
+        with self.assertRaises(ValueError):
+            detect_beats(np.full(SAMPLE_RATE * 12, np.nan, dtype=np.float32))
+
+    def test_video_id_validation_happens_before_extracting(self):
+        with self.assertRaises(Exception):
+            app._chart_for_video("localhost:80", "normal")
+        with self.assertRaises(Exception):
+            app._chart_for_video("dQw4w9WgXcQ", "malicious")
+        self.assertTrue(app.VIDEO_ID.fullmatch("dQw4w9WgXcQ"))
+
+    def test_end_to_end_without_network(self):
+        samples = synthetic_track()
+        ffmpeg_output = samples.astype("<f4").tobytes()
+        def mocked(args, *, timeout):
+            if args[0] == "yt-dlp":
+                template = args[args.index("-o") + 1]
+                Path(template.replace("%(ext)s", "m4a")).write_bytes(b"FAKE PRIVATE TEST RECORDING")
+                return b""
+            if args[0] == "ffprobe":
+                return b"12.0\n"
+            if args[0] == "ffmpeg":
+                return ffmpeg_output
+            raise AssertionError(args)
+        with patch.object(app, "_checked_commands", lambda: None), patch.object(app, "_run", mocked):
+            chart = app._chart_for_video("dQw4w9WgXcQ", "normal")
+        self.assertGreaterEqual(len(chart["notes"]), 10)
+        self.assertEqual(chart["source"], "decoded-audio-transients")
+
+
+if __name__ == "__main__":
+    unittest.main()
