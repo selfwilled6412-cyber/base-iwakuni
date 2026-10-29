@@ -75,6 +75,16 @@ class AnalyzerTests(unittest.TestCase):
                 self.assertEqual(response.json()["video_id"], "YE7VzlLtp-4")
                 self.assertEqual(response.json()["notes"][0]["t"], 1.2)
 
+    def test_youtube_bot_block_is_reported_without_leaking_stream_urls(self):
+        from fastapi import HTTPException
+        blocked=SimpleNamespace(returncode=1,stdout=b"",stderr=b"ERROR: Sign in to confirm you're not a bot. [URL] private token")
+        with patch.object(app.subprocess, "run", return_value=blocked):
+            with self.assertRaises(HTTPException) as error:
+                app._run(["yt-dlp", "--", "https://www.youtube.com/watch?v=YE7VzlLtp-4"], timeout=10)
+        self.assertEqual(error.exception.status_code,403)
+        self.assertIn("bot verification",error.exception.detail)
+        self.assertNotIn("token",error.exception.detail)
+
     def test_video_id_validation_happens_before_extracting(self):
         with self.assertRaises(Exception):
             app._chart_for_video("localhost:80", "normal")
