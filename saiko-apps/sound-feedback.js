@@ -53,8 +53,23 @@
  testButton.addEventListener('click',e=>{
   e.stopPropagation();
   if(!enabled){status('🔇 効果音がOFFです。ONにしてからテストしてね');return}
-  if(!(window.AudioContext||window.webkitAudioContext)){status('⚠️ このブラウザはゲーム音に非対応です。ChromeまたはEdgeで開いてね');return}
-  cue('win');status('🎵 テスト音を再生しました。聞こえない場合は端末のメディア音量を上げてみてね');
+  if(!(window.AudioContext||window.webkitAudioContext)){
+   status('⚠️ このブラウザはゲーム音に非対応です。ChromeまたはEdgeで開いてね');return
+  }
+  // Create/unlock the AudioContext synchronously from a deliberate click.
+  const audio=context();
+  if(!audio){status('⚠️ 音声エンジンが起動できません。ブラウザで開き直してね');return}
+  status('🔊 音声エンジンを確認しています…');
+  const verify=()=>{
+   if(audio.state!=='running'){status('⚠️ 再生が許可されませんでした。Chromeで開き「音テスト」を押してね');return}
+   cue('win');
+   status('🔊 テスト音を鳴らしています。聞こえなければメディア音量や出力先を確認してね');
+  };
+  if(audio.state==='running')verify();
+  else if(typeof audio.resume==='function')audio.resume().then(verify).catch(()=>{
+   status('⚠️ 音声の再生がブロックされました。Chromeで直接開いてみてね')
+  });
+  else status('⚠️ このブラウザでは音声が開始できません');
  });
  button.addEventListener('click',e=>{
   e.stopPropagation();enabled=!enabled;try{localStorage.setItem(KEY,enabled?'on':'off')}catch(err){}
