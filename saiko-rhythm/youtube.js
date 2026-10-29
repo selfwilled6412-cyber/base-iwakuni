@@ -6,6 +6,7 @@ const COLORS=['#ff87c4','#ffe393','#7ef1e8','#c1a2ff'];
 const canvas=$('gameCanvas'),ctx=canvas.getContext('2d');
 let player=null,videoId=null,ready=false,playing=false,apiRequested=false,apiReady=!!window.YT?.Player;
 let chart=null,done=new Set(),score=0,combo=0,maxCombo=0,perfect=0,great=0,good=0,miss=0;
+let recordedTaps=[],recording=false;
 let awaitingPrepare=false,lastTime=null,runToken=0,frame=0,judgeMessage='',judgeUntil=0,ended=false;
 function status(text){$('status').textContent=text}
 function feedback(message){judgeMessage=message;judgeUntil=performance.now()+650;$('judge').textContent=message}
@@ -28,7 +29,7 @@ function resetScores(skipPast=0){
  updateHud();
 }
 function releasePlayer(){
- runToken++;ready=false;playing=false;awaitingPrepare=false;lastTime=null;chart=null;
+ runToken++;ready=false;playing=false;awaitingPrepare=false;lastTime=null;chart=null;recording=false;recordedTaps=[];refreshBeatUI();
  resetScores();if(player){try{player.destroy()}catch(e){}player=null}
  $('videoContainer').innerHTML='<div id="ytPlayer"></div>';
  feedback('動画を読み込んでね！');
@@ -79,7 +80,7 @@ window.onYouTubeIframeAPIReady=()=>{apiReady=true;createPlayer()};
 function loadVideo(){
  const id=ytCore.parseYouTube($('videoUrl').value);
  if(!id){status('⚠️ 正しいYouTube動画URL、または11文字の動画IDを入力してね。');return}
- releasePlayer();videoId=id;
+ releasePlayer();videoId=id;restoreRecordedBeats();
  const original='https://www.youtube.com/watch?v='+encodeURIComponent(id);
  $('openOriginal').href=original;$('openOriginal').hidden=false;
  $('restart').disabled=true;
@@ -105,7 +106,76 @@ $('tapBpm').onclick=()=>{
  }else $('tapBpmStatus').textContent='👏 '+bpmTaps.length+'回目！ 音楽の拍に合わせてあと'+Math.max(0,4-bpmTaps.length)+'回以上押してね。';
 };
 
+
+/* Live authoring uses YouTube's time position, NEVER its audio/video bytes. */
+function beatStorageKey(){return videoId?'saiko-youtube-beats-v1:'+videoId:null}
+function refreshBeatUI(){
+ $('captureCount').textContent='記録 '+recordedTaps.length+' 個'+(recordedTaps.length>=4?' ✅':'（4個以上必要）');
+ $('recordBeat').textContent=recording?'⏹ 記録終了・譜面を作る':'🔴 記録開始';
+ $('recordBeat').classList.toggle('active',recording);
+ $('captureBeat').disabled=!recording;
+}
+function restoreRecordedBeats(){
+ const key=beatStorageKey();if(!key)return;
+ try{
+  const raw=JSON.parse(window.localStorage?.getItem(key)||'null');
+  if(Array.isArray(raw)&&raw.length<=2000){
+   recordedTaps=raw.filter(n=>n&&Number.isFinite(n.t)&&n.t>=0&&n.t<=600&&(n.lane===null||Number.isInteger(n.lane)&&n.lane>=0&&n.lane<=3)).map(n=>({t:n.t,lane:n.lane??null}));
+  }
+ }catch(e){recordedTaps=[]}
+ refreshBeatUI();
+}
+function persistRecordedBeats(){
+ try{if(beatStorageKey()&&window.localStorage){window.localStorage.setItem(beatStorageKey(),JSON.stringify(recordedTaps))}}catch(e){status('⚠️ この端末の保存容量が不足しています。譜面はこの画面で引き続き利用できます。')}
+}
+function applyRecordedBeats(){
+ if(!ready||!player)return;
+ const dur=getDuration();
+ try{
+  const result=ytCore.makeRecordedChart(studio,{duration:dur,bpm:Number($('bpm').value),offset:Number($('offset').value),level:$('level').value,taps:recordedTaps});
+  chart=result;resetScores(getVideoTime());lastTime=getVideoTime();$('restart').disabled=false;
+  feedback('🥁 曲に合わせた譜面OK！');
+  status('✅ 実際にタップした'+recordedTaps.length+'拍を使った '+chart.notes.length+'ノーツ！ YouTube動画を最初から再生して挑戦してね。');
+ }catch(e){status('⚠️ '+e.message)}
+}
+function startRecording(){
+ if(!$('rights').checked){status('⚠️ 音ゲーで使える権利を確認しチェックしてから記録してね。');return}
+ if(!ready||!player){status('⚠️ YouTubeの動画を先に読み込んでね。');return}
+ if(!playing){status('▶️ YouTube動画の▶を押して、音が流れ始めてから記録を開始してね。');return}
+ if(!getDuration()){status('⌛ 動画の再生時間が取得できません。');return}
+ recording=true;recordedTaps=[];chart=null;resetScores();$('restart').disabled=true;
+ feedback('🔴 RECORDING');
+ refreshBeatUI();
+ status('🔴 記録中！ 音に合わせて「♪ ビートを刻む」を押してね。PCはスペースキー、4レーンも使えるよ。');
+}
+function captureRecordedTap(lane=null){
+ if(!recording)return;
+ if(!playing){status('⏸ 動画が止まっているので記録は一時停止中。動画を再生してね。');return}
+ const t=Math.round(getVideoTime()*1000)/1000;
+ if(!Number.isFinite(t)||t<0||t>getDuration()||recordedTaps.length>=1600)return;
+ const prev=recordedTaps[recordedTaps.length-1];
+ if(prev&&t-prev.t<.09&&(lane===null||prev.lane===lane))return;
+ recordedTaps.push({t,lane});refreshBeatUI();
+ feedback('🥁 '+recordedTaps.length+' BEATS');
+}
+function stopRecording(){
+ if(!recording)return;
+ recording=false;refreshBeatUI();
+ if(recordedTaps.length<4){status('⚠️ 最低4回リズムを記録してね。もう一度「記録開始」を押してやり直せるよ。');return}
+ persistRecordedBeats();applyRecordedBeats();
+}
+$('recordBeat').onclick=()=>recording?stopRecording():startRecording();
+$('captureBeat').addEventListener('pointerdown',e=>{e.preventDefault();captureRecordedTap()});
+$('clearBeats').onclick=()=>{
+ recording=false;recordedTaps=[];chart=null;resetScores();$('restart').disabled=true;
+ try{if(beatStorageKey())window.localStorage?.removeItem(beatStorageKey())}catch(e){}
+ refreshBeatUI();status('🗑 リズム記録を消しました。もう一度記録するかBPM仮譜面を使ってね。');
+};
+refreshBeatUI();
+
 function prepareChart(){
+ if(recording){stopRecording();return}
+ if(recordedTaps.length>=4){if(!$('rights').checked){status('⚠️ 利用権利の確認が必要です。');return}applyRecordedBeats();return}
  if(!$('rights').checked){awaitingPrepare=false;status('⚠️ 動画の音ゲー利用に必要な権利・許諾を確認してチェックしてください。視聴だけなら動画の▶をそのまま押せます。');return}
  if(!player||!ready){status('⚠️ YouTube動画を先に読み込んでね。');return}
  const dur=getDuration();
@@ -141,10 +211,11 @@ function tap(lane){
  else{good++;score+=420;feedback('👍 GOOD!')}
  updateHud();
 }
-for(const pad of document.querySelectorAll('[data-lane]'))pad.addEventListener('pointerdown',e=>{e.preventDefault();tap(Number(pad.dataset.lane))});
+for(const pad of document.querySelectorAll('[data-lane]'))pad.addEventListener('pointerdown',e=>{e.preventDefault();const lane=Number(pad.dataset.lane);if(recording)captureRecordedTap(lane);else tap(lane)});
 document.addEventListener('keydown',e=>{
  if(e.repeat||e.altKey||e.ctrlKey||e.metaKey||['INPUT','SELECT','TEXTAREA'].includes(e.target?.tagName))return;
- const lane=['d','f','j','k'].indexOf(String(e.key).toLowerCase());if(lane!==-1){e.preventDefault();tap(lane)}
+ if(recording&&e.code==='Space'){e.preventDefault();captureRecordedTap();return}
+ const lane=['d','f','j','k'].indexOf(String(e.key).toLowerCase());if(lane!==-1){e.preventDefault();if(recording)captureRecordedTap(lane);else tap(lane)}
 });
 function finish(){
  if(!chart||ended)return;
@@ -169,11 +240,12 @@ function draw(){
  const rect=canvas.getBoundingClientRect(),w=Math.max(270,rect.width||490),h=Math.max(220,rect.height||410),dpr=Math.min(2,window.devicePixelRatio||1);
  if(canvas.width!==Math.floor(w*dpr)||canvas.height!==Math.floor(h*dpr)){canvas.width=Math.floor(w*dpr);canvas.height=Math.floor(h*dpr)}
  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
- const laneW=w/4,hitY=h*.80,t=getVideoTime();
+ const laneW=w/4,hitY=h*.79,t=getVideoTime(),pulse=1+Math.sin(performance.now()/145)*.12;
  for(let lane=0;lane<4;lane++){
-  ctx.fillStyle=lane%2?'#242458':'#1a1a46';ctx.fillRect(lane*laneW,0,laneW,h);
-  ctx.fillStyle=COLORS[lane];ctx.globalAlpha=.32;ctx.fillRect(lane*laneW,0,5,h);ctx.globalAlpha=1;
-  ctx.fillStyle='#ffffffd9';ctx.font='bold 15px system-ui';ctx.fillText(['D','F','J','K'][lane],lane*laneW+10,24);
+  ctx.fillStyle=lane%2?'#090e29':'#111132';ctx.fillRect(lane*laneW,0,laneW,h);
+  ctx.fillStyle=COLORS[lane];ctx.globalAlpha=.38;ctx.fillRect(lane*laneW,0,6,h);ctx.globalAlpha=1;
+  ctx.fillStyle='#ffffff';ctx.font='bold 22px system-ui';ctx.shadowBlur=8;ctx.shadowColor=COLORS[lane];ctx.fillText(['D','F','J','K'][lane],lane*laneW+14,33);ctx.shadowBlur=0;
+  ctx.fillStyle=COLORS[lane];ctx.globalAlpha=.16;ctx.fillRect(lane*laneW+8,hitY-44,laneW-16,84);ctx.globalAlpha=1;
  }
  if(chart&&!ended){
   if(lastTime!==null&&Math.abs(t-lastTime)>1.65){
@@ -181,17 +253,19 @@ function draw(){
   }
   lastTime=t;
   if(playing){const n=ytCore.recordMisses(chart.notes,t-Number($('latency').value)/1000,done);if(n){miss+=n;combo=0;updateHud()}}
-  const speed=Math.max(110,h*.49);
+  const speed=Math.max(165,h*.68)*(Number($('noteSpeed').value)||1);
   for(let i=0;i<chart.notes.length;i++){
    const note=chart.notes[i];if(done.has(i))continue;
    const y=hitY-(note.t-t)*speed;if(y<-26||y>h+26)continue;
-   const x=note.lane*laneW+6,width=laneW-12;
-   ctx.fillStyle=COLORS[note.lane];ctx.shadowColor=COLORS[note.lane];ctx.shadowBlur=9;
-   ctx.fillRect(x,y-11,width,22);ctx.shadowBlur=0;
-   ctx.fillStyle='#ffffffb4';ctx.fillRect(x+5,y-9,Math.max(4,width-10),4);
+   const x=note.lane*laneW+7,width=laneW-14;
+   ctx.fillStyle='#ffffff';ctx.shadowColor=COLORS[note.lane];ctx.shadowBlur=23;
+   ctx.fillRect(x-2,y-18,width+4,36);
+   ctx.fillStyle=COLORS[note.lane];ctx.fillRect(x,y-15,width,30);
+   ctx.shadowBlur=0;ctx.fillStyle='#ffffff';ctx.fillRect(x+5,y-12,Math.max(3,width-10),6);
   }
  }
- ctx.fillStyle='#ffe4a4';ctx.fillRect(0,hitY-4,w,8);
+ ctx.shadowColor='#ffe99e';ctx.shadowBlur=18*pulse;ctx.fillStyle='#fff6c3';ctx.fillRect(0,hitY-6,w,12);ctx.shadowBlur=0;
+ for(let lane=0;lane<4;lane++){ctx.fillStyle=COLORS[lane];ctx.fillRect(lane*laneW+laneW*.2,hitY-10,laneW*.6,20)}
  if(chart){ctx.fillStyle='#82f7e7';ctx.fillRect(0,h-6,w*rnd(t/chart.duration,0,1),6)}
  if(!chart){ctx.textAlign='center';ctx.fillStyle='#e2d2ff';ctx.font='bold '+Math.round(rnd(w/17,17,30))+'px system-ui';ctx.fillText('YouTubeの再生位置に',w/2,h*.38);ctx.fillText('合わせてノーツが流れるよ！',w/2,h*.46);ctx.textAlign='left'}
  if(chart&&!playing&&!ended){ctx.fillStyle='#ffffffde';ctx.font='bold 20px system-ui';ctx.textAlign='center';ctx.fillText('⏸ YouTubeの再生待ち',w/2,h*.40);ctx.textAlign='left'}
@@ -217,7 +291,7 @@ if(typeof IntersectionObserver!=='undefined'){
 window.addEventListener('pagehide',()=>{try{player?.pauseVideo()}catch(e){}if(frame)cancelAnimationFrame(frame)});
 if(!frame)frame=requestAnimationFrame(draw);
 window.SaikoYouTubeGame=Object.freeze({
- getState:()=>({videoId,ready,playing,chart,score,combo,perfect,great,good,miss,ended}),
- tap,prepareChart,loadVideo,resetScores
+ getState:()=>({videoId,ready,playing,chart,score,combo,perfect,great,good,miss,ended,recording,recordedCount:recordedTaps.length}),
+ tap,prepareChart,loadVideo,resetScores,captureRecordedTap,startRecording,stopRecording
 });
 })();
