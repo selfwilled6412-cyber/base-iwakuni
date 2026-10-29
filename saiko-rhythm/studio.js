@@ -1,6 +1,6 @@
 (()=>{'use strict';
-const $=id=>document.getElementById(id),core=window.SaikoStudioCore;
-if(!core){$('setupStatus').textContent='譜面エンジンを読み込めませんでした。再読み込みしてください。';return}
+const $=id=>document.getElementById(id),core=window.SaikoStudioCore,analyzer=window.SaikoBeatAnalyzer;
+if(!core||!analyzer){$('setupStatus').textContent='音声解析エンジンを読み込めませんでした。再読み込みしてください。';return}
 const audio=$('audio'),canvas=$('timeline'),ctx=canvas.getContext('2d');
 const COLORS=['#ff9acb','#ffe194','#8bf1eb','#c5a9ff'];
 const SAVE_KEY='saiko-beat-studio-chart-v1';
@@ -34,32 +34,37 @@ $('audioFile').addEventListener('change',()=>{
  };
  audio.onerror=()=>{status('⚠️ このファイルを再生できません。MP3やWAVで試してください。');audioDispose()};
 });
-async function analyzeFile(){
- const file=audioFile;if(!file||file.size>14*1024*1024)return [];
+async function analyzeFile(level){
+ const file=audioFile;
+ if(!file)return [];
+ if(file.size>32*1024*1024)throw Error('この音源は解析用として大きすぎます（32MB以内推奨）。圧縮したMP3等を選んでね。');
  let ac;
  try{
   const AC=window.AudioContext||window.webkitAudioContext;
-  if(!AC)return [];
-  ac=new AC();const buf=await file.arrayBuffer();
-  const decoded=await ac.decodeAudioData(buf);
-  if(file!==audioFile)return [];
-  return core.detectPeaks(decoded.getChannelData(0),decoded.sampleRate,600);
- }catch(e){return []}
+  if(!AC)throw Error('このブラウザは音声解析に対応していません');
+  ac=new AC();
+  const data=await file.arrayBuffer(),decoded=await ac.decodeAudioData(data);
+  if(file!==audioFile)return null;
+  return analyzer.extractOnsets(decoded,{level});
+ }catch(e){if(file!==audioFile)return null;throw Error('音声の解析に失敗しました。'+(e.message||'MP3やWAVで試してね。'))}
  finally{if(ac)try{await ac.close()}catch(e){}}
 }
+
 $('generate').onclick=async()=>{
  if(!rightConfirmed()||!ensureAudio())return;
  let meta;try{meta=validateMeta()}catch(e){status('⚠️ '+e.message);return}
- $('generate').disabled=true;status('✨ 音の強弱を見ながら譜面の下書きを生成しています…');
+ $('generate').disabled=true;status('🔎 音源のアタック（拍や打楽器の立ち上がり）を解析中…');
  try{
-  peaks=await analyzeFile();
-  if(!audioFile){status('音源を選び直してください');return}
-  chart=core.makeChart({...meta,peaks});lastChart=null;editPage=0;
+  const detected=await analyzeFile(meta.level);
+  if(detected===null||!audioFile){status('音源を選び直してください');return}
+  if(detected.length<4)throw Error('この曲から明確な音のアタックを検出できませんでした。別の音源を選ぶか、手動で譜面を作成してください。');
+  peaks=detected;
+  chart=analyzer.chartFromOnsets(core,{...meta,times:peaks,title:meta.title});lastChart=null;editPage=0;
   switchMode('edit');$('editor').hidden=false;audio.pause();audio.currentTime=0;
-  status('✅ '+chart.notes.length+'個の音符を配置！ '+(peaks.length?'音の強弱に合わせて配置しました。':'BPMに合わせたリズムを配置しました。')+' タップで直してね。');
+  status('✅ 実際の音源から検出した'+peaks.length+'箇所をもとに '+chart.notes.length+'個のノーツを配置！ リズムを聴いて必要なら手直ししてね。');
   render();
   $('editor').scrollIntoView({behavior:'smooth',block:'start'});
- }catch(e){status('⚠️ 生成できませんでした。'+(e.message||'音源を確認してください。'))}
+ }catch(e){status('⚠️ '+(e.message||'音源を確認してください。'))}
  finally{$('generate').disabled=false}
 };
 function setChart(next){if(!next)return;lastChart=chart;chart=core.normalizeChart(next);$('noteCount').textContent='音符 '+chart.notes.length+' 個';$('result').hidden=true;render()}
