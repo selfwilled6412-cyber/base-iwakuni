@@ -75,6 +75,9 @@ def _run(args: list[str], *, timeout: int) -> bytes:
             for line in lines:
                 line=re.sub(r"https?://\\S+", "[URL]", line)
                 print("[YT-DLP DIAG]", line[:250], file=sys.stderr)
+        diagnostic=done.stderr.decode(errors="replace").lower()
+        if "sign in to confirm" in diagnostic or "not a bot" in diagnostic:
+            raise HTTPException(status_code=403, detail="YouTube is blocking automated access from this server (bot verification)")
         raise HTTPException(status_code=422, detail="Could not process this video. It may be unavailable or restricted")
     return done.stdout
 
