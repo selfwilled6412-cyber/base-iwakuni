@@ -40,7 +40,7 @@ for(let song=0;song<3;song++){
  assert(events.every(e=>Number.isFinite(e.t)&&e.t>=0&&e.t<=80*beat));
  assert(events.some(e=>e.type==='kick')&&events.some(e=>e.type==='bass')&&events.some(e=>e.type==='lead'));
  for(const difficulty of ['easy','normal','hard']){
-  for(const mode of ['solo','duel']){
+  for(const mode of ['solo','duel','party']){
    const notes=core.createChart(song,difficulty,mode);
    assert(notes.length>20&&notes.length<270,'Unexpected chart size');
    assert(notes.every(n=>n.t>=4*beat&&n.t<80*beat&&n.lane>=0&&n.lane<4));
@@ -49,6 +49,10 @@ for(let song=0;song<3;song++){
     assert.equal(notes.filter(n=>n.player===0).length,notes.filter(n=>n.player===1).length);
     assert(notes.some(n=>n.lane===0||n.lane===1));
     assert(notes.some(n=>n.lane===2||n.lane===3));
+   }else if(mode==='party'){
+    const counts=[0,1,2,3].map(p=>notes.filter(n=>n.player===p).length);
+    assert(new Set(counts).size===1,'Every relay player receives equal chart notes');
+    assert(notes.every(n=>n.lane===n.player),'Relay player owns exactly one lane');
    }else{
     assert(notes.every(n=>n.player===0));
     if(difficulty==='easy')assert(notes.every(n=>[1,2].includes(n.lane)),'Easy must have two reachable lanes');
@@ -81,8 +85,18 @@ assert.equal(core.qualityRank({perfect:0,great:0,good:0,miss:20}),'D');
  assert.equal(p0.judge,'perfect');assert.equal(p1.judge,'perfect');
  assert(duel.players[0].score>0&&duel.players[1].score>0);
  qa.finish();assert(get('resultTitle').textContent.includes('勝ち')||get('resultTitle').textContent.includes('DRAW'));
+ qa.settings.mode='party';qa.settings.level='easy';qa.settings.track=2;
+ await qa.begin();
+ const party=qa.getGame(),track=qa.getSound();
+ assert.equal(party.players.length,4);
+ for(let p=0;p<4;p++){
+  const note=party.notes.find(n=>n.player===p);
+  track.ctx.currentTime=track.origin+note.t+.015;qa.input(note.lane);
+  assert.equal(note.judge,'perfect');assert(party.players[p].score>0);
+ }
+ qa.finish();assert(get('resultTitle').textContent.includes('優勝')||get('resultTitle').textContent.includes('同点'));
  qa.stopGame();
- console.log('PASS: 3 original-synth music tracks × 3 difficulties × 2 modes');
- console.log('PASS: beginner two-lane charts and equal two-player note counts');
+ console.log('PASS: 3 original-synth music tracks × 3 difficulties × 3 modes');
+ console.log('PASS: beginner two-lane charts, equal two-player duels and fair four-person relay');
  console.log('PASS: WebAudio clock judgement, pause/resume, both player scores and local record');
 })().catch(e=>{console.error(e);process.exitCode=1});
