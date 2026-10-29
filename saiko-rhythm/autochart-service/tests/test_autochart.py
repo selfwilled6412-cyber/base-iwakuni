@@ -2,6 +2,7 @@
 import sys
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
@@ -81,6 +82,25 @@ class AnalyzerTests(unittest.TestCase):
             chart = app._chart_for_video("dQw4w9WgXcQ", "normal")
         self.assertGreaterEqual(len(chart["notes"]), 10)
         self.assertEqual(chart["source"], "decoded-audio-transients")
+
+    def test_private_gateway_rejects_unauthenticated_public_clients(self):
+        from fastapi import HTTPException
+        req = app.ChartRequest(video_id="dQw4w9WgXcQ", level="normal")
+        public = SimpleNamespace(client=SimpleNamespace(host="203.0.113.10"), headers={})
+        local = SimpleNamespace(client=SimpleNamespace(host="127.0.0.1"), headers={})
+        with patch.dict("os.environ", {"SAIKO_CHART_API_KEY": ""}):
+            with self.assertRaises(HTTPException) as failure:
+                app.chart(req, public)
+            self.assertEqual(failure.exception.status_code, 503)
+            with patch.object(app, "_chart_for_video", return_value={"notes": [{"t": 1.2, "lane": 0}]}):
+                self.assertEqual(app.chart(req, local)["video_id"], "dQw4w9WgXcQ")
+        with patch.dict("os.environ", {"SAIKO_CHART_API_KEY": "long-test-secret"}):
+            with self.assertRaises(HTTPException) as failure:
+                app.chart(req, public)
+            self.assertEqual(failure.exception.status_code, 401)
+            authed = SimpleNamespace(client=public.client, headers={"X-Chart-Key": "long-test-secret"})
+            with patch.object(app, "_chart_for_video", return_value={"notes": [{"t": 2, "lane": 1}]}):
+                self.assertEqual(app.chart(req, authed)["video_id"], "dQw4w9WgXcQ")
 
 
 if __name__ == "__main__":
