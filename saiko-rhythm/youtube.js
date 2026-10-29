@@ -38,9 +38,10 @@ function createPlayer(){
  if(!videoId||!window.YT?.Player)return;
  const token=runToken;
  try{
+  const playerVars={playsinline:1};if(window.location?.origin)playerVars.origin=window.location.origin;
   player=new window.YT.Player('ytPlayer',{
    width:'640',height:'360',videoId,
-   playerVars:{playsinline:1},
+   playerVars,
    events:{
     onReady:()=>{
      if(token!==runToken)return;
@@ -90,6 +91,20 @@ function loadVideo(){
  document.head.appendChild(script);
 }
 $('load').onclick=loadVideo;
+const bpmTaps=[];
+$('tapBpm').onclick=()=>{
+ const now=performance.now(),last=bpmTaps[bpmTaps.length-1];
+ if(last===undefined||now-last>2200||now-last<260)bpmTaps.length=0;
+ bpmTaps.push(now);
+ if(bpmTaps.length>8)bpmTaps.shift();
+ const estimated=ytCore.estimateTapBpm(bpmTaps);
+ if(estimated){
+  $('bpm').value=String(estimated);
+  $('tapBpmStatus').textContent='✅ '+estimated+' BPMを推定！ 「音ゲーを準備」を押してね。';
+  if(chart){chart=null;resetScores();lastTime=null;$('restart').disabled=true;status('🎼 BPMが変わったので、もう一度「音ゲーを準備」を押そう！')}
+ }else $('tapBpmStatus').textContent='👏 '+bpmTaps.length+'回目！ 音楽の拍に合わせてあと'+Math.max(0,4-bpmTaps.length)+'回以上押してね。';
+};
+
 function prepareChart(){
  if(!$('rights').checked){awaitingPrepare=false;status('⚠️ 動画の音ゲー利用に必要な権利・許諾を確認してチェックしてください。視聴だけなら動画の▶をそのまま押せます。');return}
  if(!player||!ready){status('⚠️ YouTube動画を先に読み込んでね。');return}
@@ -186,6 +201,15 @@ document.addEventListener('visibilitychange',()=>{
   if(frame){cancelAnimationFrame(frame);frame=0}
  }else if(!frame)frame=requestAnimationFrame(draw);
 });
+if(typeof IntersectionObserver!=='undefined'){
+ const visibleVideo=new IntersectionObserver(entries=>{
+  const item=entries[0];
+  if(item&&item.intersectionRatio<.5&&player&&ready&&playing){
+   try{player.pauseVideo()}catch(e){}
+  }
+ },{threshold:[0,.5,1]});
+ visibleVideo.observe($('videoContainer'));
+}
 window.addEventListener('pagehide',()=>{try{player?.pauseVideo()}catch(e){}if(frame)cancelAnimationFrame(frame)});
 if(!frame)frame=requestAnimationFrame(draw);
 window.SaikoYouTubeGame=Object.freeze({
