@@ -192,9 +192,12 @@ function prepareChart(){
 $('prepare').onclick=()=>prepareChart();
 $('restart').onclick=()=>{
  if(!chart)return;
- resetScores(getVideoTime());
- lastTime=getVideoTime();
- feedback('🔄 スコアをリセットしました！');
+ // This is a direct user action; official player remains visible and interactive.
+ try{if(player&&ready&&typeof player.seekTo==='function')player.seekTo(0,true)}catch(e){}
+ resetScores(0);
+ lastTime=null;
+ feedback('🔄 先頭から挑戦！');
+ status('▶️ 動画を先頭に戻したよ。YouTubeの▶で再生してスタート！');
 };
 for(const field of ['bpm','offset','level'])$(field).addEventListener('change',()=>{
  if(chart){chart=null;resetScores();lastTime=null;$('restart').disabled=true;status('🎼 設定を変更したよ。「音ゲーを準備」をもう一度押してね。')}
