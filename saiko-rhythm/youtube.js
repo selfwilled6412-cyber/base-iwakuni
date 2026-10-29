@@ -387,7 +387,8 @@ document.addEventListener('visibilitychange',()=>{
   if(frame){cancelAnimationFrame(frame);frame=0}
  }else if(!frame)frame=requestAnimationFrame(draw);
 });
-if(typeof IntersectionObserver!=='undefined'){
+// Native Android layout keeps the music playing while users scroll to four pads.
+if(!window.SaikoNativeAutoChart&&typeof IntersectionObserver!=='undefined'){
  const visibleVideo=new IntersectionObserver(entries=>{
   const item=entries[0];
   if(item&&item.intersectionRatio<.5&&player&&ready&&playing){
