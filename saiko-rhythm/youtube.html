@@ -28,7 +28,7 @@ header{padding:13px max(14px,calc((100vw - 1240px)/2));background:#140f39;border
 #captureBeat{background:linear-gradient(120deg,#68ffea,#fff2a9);color:#1e2b47;border-color:white;min-width:180px}
 #captureBeat:active{transform:scale(.96)}
 #captureCount{font-weight:900;font-size:15px;color:#a6fff1}
-@media(max-width:800px){.layout{display:flex;flex-direction:column;overflow:visible;padding:6px}.layout .videoPane{position:static;box-shadow:none;border-radius:14px 14px 0 0;width:100%;padding:9px}.layout .playPane{border:0;border-top:3px solid #81efff;border-radius:0 0 14px 14px;width:100%}.gameWindow canvas{height:clamp(320px,50vh,540px)}}
+@media(max-width:800px){.layout{display:flex;flex-direction:column;overflow:visible;padding:6px}.layout .videoPane{position:sticky;top:0;z-index:20;box-shadow:0 9px 20px #080a28c4;border-radius:14px 14px 0 0;width:100%;padding:9px}.layout .playPane{border:0;border-top:3px solid #81efff;border-radius:0 0 14px 14px;width:100%}.gameWindow canvas{height:clamp(320px,50vh,540px)}}
 @media(max-width:420px){.gameWindow canvas{height:350px}.recordPanel{padding:10px}.layout .videoPane{padding:6px}}
 
 .audioAnalysis{border:3px solid #ffdb7f;border-radius:19px;background:linear-gradient(105deg,#332b62,#134e68);padding:17px;margin:16px 0;box-shadow:0 0 22px #ffd67145}
