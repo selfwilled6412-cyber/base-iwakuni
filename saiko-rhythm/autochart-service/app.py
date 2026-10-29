@@ -24,6 +24,7 @@ from pathlib import Path
 import numpy as np
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from analyzer import SAMPLE_RATE, make_chart
@@ -40,6 +41,13 @@ origins = [
     "http://127.0.0.1:8766",
 ]
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["POST", "GET"], allow_headers=["Content-Type", "X-Chart-Key"])
+# On Windows PC, serve the prototype and API from the same local origin.
+# This avoids cross-origin localhost/mixed-content and exposes no credentials.
+if os.environ.get("SAIKO_LOCAL_GAME", "1") == "1":
+    public_game_dir = Path(__file__).resolve().parent.parent
+    if public_game_dir.joinpath("youtube.html").is_file():
+        app.mount("/game", StaticFiles(directory=public_game_dir, html=True), name="local-game")
+
 
 
 class ChartRequest(BaseModel):
