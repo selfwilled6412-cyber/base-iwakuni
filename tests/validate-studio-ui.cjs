@@ -8,7 +8,7 @@ let downloads=0;const canvasCtx={setTransform(){},clearRect(){},fillRect(){},str
 function element(id){
  return {id,value:{bpm:'120',offset:'0',level:'normal',latency:'0'}[id]||'',files:[],checked:false,hidden:false,innerHTML:'',textContent:'',disabled:false,style:{},dataset:{},duration:15,currentTime:0,paused:true,ended:false,controls:true,
  getContext(){return canvasCtx},getBoundingClientRect(){return {width:800,height:320,left:0,top:0}},scrollIntoView(){},removeAttribute(){},focus(){},load(){},
- classList:{add(){},remove(){},toggle(){}},addEventListener(name,fn){handler.set(id+':'+name,fn)},replaceChildren(){},append(){},remove(){},pause(){this.paused=true},async play(){this.paused=false},click(){downloads++}};
+ classList:{add(){},remove(){},toggle(){}},addEventListener(name,fn){handler.set(id+':'+name,fn)},replaceChildren(){this.textContent=''},append(...parts){this.textContent+=parts.map(x=>x.textContent||'').join(' ')},remove(){},pause(){this.paused=true},async play(){this.paused=false},click(){downloads++}};
 }
 const get=id=>nodes.get(id)||(nodes.set(id,element(id)),nodes.get(id));
 const pads=Array.from({length:4},(_,i)=>{const p=element('pad'+i);p.dataset.lane=String(i);return p});
