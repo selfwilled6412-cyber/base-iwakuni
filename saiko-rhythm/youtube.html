@@ -115,7 +115,7 @@ main > .footer{order:3}
 <section class="layout" aria-label="音ゲー画面">
  <div class="videoPane">
   <div class="videoContainer" id="videoContainer"><div id="ytPlayer"><div class="videoPlaceholder"><span>▶ YouTube</span><span>動画を読み込むとここに表示</span></div></div></div>
-  <div class="dockControls"><button class="button" id="recordDock" type="button">● リズム記録</button><button class="button primary" id="tapDock" type="button" disabled>♪ ビート</button></div>
+  
   <div class="videoFooter"><a id="openOriginal" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" hidden>YouTubeで開く</a></div>
  </div>
  <div class="playPane">
@@ -133,7 +133,8 @@ main > .footer{order:3}
    <div class="row"><label class="field" style="flex:1;min-width:200px">同じ曲のMP3 / WAV等<input id="syncAudioFile" type="file" accept="audio/*,.mp3,.wav,.m4a,.ogg,.aac,.flac"></label><label class="field">開始位置の補正（秒）<input id="syncShift" type="number" min="-10" max="10" step="0.1" value="0"></label></div>
    <div class="row" style="margin-top:8px"><button class="button primary" id="analyzeAudio" type="button">音から譜面を作る</button><span id="audioAnalysisStatus">未解析</span></div>
   </div>
-  <div class="subpanel" id="recordPanel"><h3>自分で拍を記録</h3><p class="hint">動画を再生し、曲に合わせて「ビート」を押して記録します。</p>
+  <div class="subpanel" id="recordPanel"><h3>自分で拍を記録</h3>
+   <div class="dockControls"><button class="button" id="recordDock" type="button">● リズム記録</button><button class="button primary" id="tapDock" type="button" disabled>♪ ビート</button></div><p class="hint">動画を再生し、曲に合わせて「ビート」を押して記録します。</p>
    <div class="row"><button class="button" type="button" id="recordBeat">● 記録開始</button><button class="button" type="button" id="captureBeat" disabled>♪ ビート</button><button class="button" type="button" id="clearBeats">記録を消す</button><span id="captureCount">記録 0 個</span></div>
   </div>
   <div class="subpanel"><h3>判定と操作</h3>
