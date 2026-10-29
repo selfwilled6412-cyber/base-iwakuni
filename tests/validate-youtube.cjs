@@ -26,6 +26,10 @@ for(const url of [
  'https://www.youtube.com/watch?v=short','http://evil.com',
  'https://youtu.be/dQw4w9WgXcQ:1234'
 ])assert.equal(core.parseYouTube(url),null,'Reject spoofed or malformed URL: '+url);
+assert.equal(core.estimateTapBpm([0,500,1000,1500]),120);
+assert.equal(core.estimateTapBpm([0,333,666,999,1332]),180);
+assert.equal(core.estimateTapBpm([0,100,200,300]),null);
+assert.equal(core.estimateTapBpm([0,500,1000]),null);
 for(const lvl of ['easy','normal','hard']){
  const result=core.makeSyncChart(studio,{duration:125,bpm:128,offset:.5,level:lvl});
  assert(result.notes.length>10&&result.notes.length<900);
