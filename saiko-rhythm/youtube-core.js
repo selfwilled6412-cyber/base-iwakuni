@@ -52,7 +52,19 @@ function recordMisses(notes,time,done){
  }
  return missed;
 }
-const api=Object.freeze({parseYouTube,validateVideoDuration,makeSyncChart,selectHit,recordMisses});
+function estimateTapBpm(taps){
+ if(!Array.isArray(taps)||taps.length<4)return null;
+ const diffs=[];
+ for(let i=1;i<taps.length;i++){
+  const delta=taps[i]-taps[i-1];
+  if(!Number.isFinite(delta)||delta<273||delta>1000)return null;
+  diffs.push(delta);
+ }
+ diffs.sort((a,b)=>a-b);
+ const middle=diffs[Math.floor(diffs.length/2)],bpm=Math.round(60000/middle);
+ return bpm>=60&&bpm<=220?bpm:null;
+}
+const api=Object.freeze({parseYouTube,validateVideoDuration,makeSyncChart,selectHit,recordMisses,estimateTapBpm});
 if(typeof module==='object'&&module.exports)module.exports=api;
 if(root)root.SaikoYouTubeCore=api;
 })(typeof window!=='undefined'?window:null);
