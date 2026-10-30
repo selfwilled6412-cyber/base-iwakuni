@@ -60,7 +60,9 @@ assert(html.includes('puzzle-core.js')&&html.includes('app.js'));
 assert(html.includes('data-level="easy"')&&html.includes('data-level="normal"')&&html.includes('data-level="hard"'));
 const hub=fs.readFileSync('saiko-apps/index.html','utf8');
 assert(hub.includes('href="../saiko-spot-difference/"'),'Game must appear in central hub');
-assert(hub.includes('data-play="group solo"'),'Spot difference must appear in both play-mode filters');
+assert(hub.includes('href="../saiko-premium-spot/"'),'Approved illustrated version stays in main catalog');
+assert(hub.includes('data-view="all group solo"'),'Premium spot game remains visible to both group and solo audiences');
+assert(hub.includes('試作・旧バージョン・準備中'),'Old spot game is retained separately under experimental/legacy section');
 // Exercise the actual game controller in a mocked DOM, not only the puzzle generator.
 const elements=new Map(),handlers={};
 const node=id=>{

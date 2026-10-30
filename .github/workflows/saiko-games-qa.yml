@@ -1,7 +1,7 @@
 name: Saiko Games QA
 on:
   push:
-    branches: [main, feature/saiko-premium-spot-art-20261030]
+    branches: [main, feature/saiko-hub-cleanup-20261030]
     paths:
       - "saiko-adventure/**"
       - "saiko-kids/**"
@@ -31,4 +31,4 @@ jobs:
         with:
           node-version: "22"
       - name: Validate puzzle banks, routes, and all 30 maze stages
-        run: node tests/validate-premium-spot.cjs && node tests/validate-spot-difference.cjs && node tests/validate-app-integrity.cjs && node tests/validate-games.cjs && node tests/validate-game-audio.cjs && node tests/validate-bingo-voice.cjs && node tests/validate-rhythm.cjs && node tests/validate-studio.cjs && node tests/validate-beat-analyzer.cjs && node tests/validate-studio-ui.cjs && node tests/validate-youtube.cjs
+        run: node tests/validate-saiko-hub.cjs && node tests/validate-premium-spot.cjs && node tests/validate-spot-difference.cjs && node tests/validate-app-integrity.cjs && node tests/validate-games.cjs && node tests/validate-game-audio.cjs && node tests/validate-bingo-voice.cjs && node tests/validate-rhythm.cjs && node tests/validate-studio.cjs && node tests/validate-beat-analyzer.cjs && node tests/validate-studio-ui.cjs && node tests/validate-youtube.cjs
