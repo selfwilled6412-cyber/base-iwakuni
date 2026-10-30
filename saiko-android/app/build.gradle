@@ -1,0 +1,23 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'jp.base.saikobeat'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'jp.base.saikobeat'
+        minSdk 26
+        targetSdk 35
+        versionCode 4
+        versionName '0.4.0-local-audio'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    buildTypes { release { minifyEnabled false } }
+}
+dependencies {
+    implementation 'androidx.webkit:webkit:1.13.0'
+    implementation 'com.github.TeamNewPipe:NewPipeExtractor:v0.26.5'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+}

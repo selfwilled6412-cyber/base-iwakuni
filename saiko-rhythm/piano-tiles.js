@@ -6,6 +6,14 @@ const $=id=>document.getElementById(id), core=window.SaikoPianoCore, analyzer=wi
 if(!core||!analyzer){$('status').textContent='音声解析エンジンを読み込めませんでした';return}
 let level='easy',playing=false,paused=false,game=null,track=null,source=null,ctx=null,audioBuffer=null;
 let startClock=0,offset=0,raf=0,chartDuration=0,sourceMode='demo',nativePending=false,lastRender=0;
+let timingMs=0;
+try{timingMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('saiko-piano-timing-ms')||0)||0))}catch(e){}
+$('timingAdjust').value=String(timingMs);$('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
+$('timingAdjust').addEventListener('input',event=>{
+ timingMs=Number(event.target.value)||0;
+ $('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
+ try{localStorage.setItem('saiko-piano-timing-ms',String(timingMs))}catch(e){}
+});
 const canvas=$('tilesCanvas'),stage=$('stage'),g=canvas.getContext('2d',{alpha:false});
 const native=!!window.SaikoNativeAutoChart;
 $('youtubeMode').hidden=!native;
@@ -53,15 +61,26 @@ function render(time){
  for(const n of noteList){
   if(n.judged)continue;
   const y=target-(n.t-time)/lead*(target+tileHeight*.3)-tileHeight*.5;
-  if(y>h+80||y< -tileHeight-80)continue;
+  const tailY=n.hold>0?target-(n.t+n.hold-time)/lead*(target+tileHeight*.3)-tileHeight*.5:y;
+  if((y>h+80&&tailY>h+80)||(y< -tileHeight-80&&tailY< -tileHeight-80))continue;
   const x=n.lane*s+5*gScale(),ww=s-10*gScale();
+  if(n.hold>0){
+   const bottom=n.holding?target+tileHeight*.5:y+tileHeight;
+   const top=Math.max(-tileHeight,tailY);
+   if(bottom>top){
+    const body=g.createLinearGradient(x,top,x+ww,top);
+    body.addColorStop(0,'#6352d0');body.addColorStop(.5,colors[n.lane]);body.addColorStop(1,'#3a2877');
+    rounded(x+7*gScale(),top,ww-14*gScale(),bottom-top,8*gScale(),body,colors[n.lane]);
+   }
+  }
+  const headY=n.holding?target-tileHeight*.5:y;
   g.shadowBlur=16*gScale();g.shadowColor=colors[n.lane];
-  rounded(x,y,ww,tileHeight,13*gScale(),'#050716',colors[n.lane]);g.shadowBlur=0;
-  rounded(x+5*gScale(),y+5*gScale(),ww-10*gScale(),Math.max(9,tileHeight*.12),4*gScale(),colors[n.lane]);
-  const shine=g.createLinearGradient(x,y,x+ww,y);
+  rounded(x,headY,ww,tileHeight,13*gScale(),'#050716',colors[n.lane]);g.shadowBlur=0;
+  rounded(x+5*gScale(),headY+5*gScale(),ww-10*gScale(),Math.max(9,tileHeight*.12),4*gScale(),colors[n.lane]);
+  const shine=g.createLinearGradient(x,headY,x+ww,headY);
   shine.addColorStop(0,'#ffffff11');shine.addColorStop(.5,'#ffffff3e');shine.addColorStop(1,'#ffffff0c');
-  rounded(x+6*gScale(),y+17*gScale(),ww-12*gScale(),tileHeight*.37,8*gScale(),shine);
-  g.fillStyle='#ffffffb0';g.beginPath();g.arc(x+ww*.5,y+tileHeight*.75,Math.max(3,4*gScale()),0,Math.PI*2);g.fill();
+  rounded(x+6*gScale(),headY+17*gScale(),ww-12*gScale(),tileHeight*.37,8*gScale(),shine);
+  g.fillStyle='#ffffffb0';g.beginPath();g.arc(x+ww*.5,headY+tileHeight*.75,Math.max(3,4*gScale()),0,Math.PI*2);g.fill();
  }
  g.shadowColor='#fff9c0';g.shadowBlur=16*gScale();g.fillStyle='#fff3c1';g.fillRect(0,target+tileHeight*.5,w,4*gScale());g.shadowBlur=0;
  // Press region ends at the same target line used by the input engine.
@@ -73,7 +92,7 @@ function animate(){
  const time=now();
  if(!paused){
   game.tick(time);updateStats();render(time);
-  if(time>chartDuration+.45){finish();return;}
+  if(time>chartDuration+.45||(sourceMode==='native'&&native&&window.SaikoNativeAutoChart.isMusicFinished())){finish();return;}
  }else if(!lastRender){render(time);}
  lastRender=time;
  raf=requestAnimationFrame(animate);
@@ -81,21 +100,34 @@ function animate(){
 function showHit(text){
  const el=$('hitText');el.textContent=text;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
 }
-function tap(lane){
+function tap(lane,pointerId=null){
  if(!playing||paused||!game)return;
- const result=game.tap(lane,now());
- if(result)showHit(result.result==='perfect'?'PERFECT!':'GOOD!');
+ const result=game.press(lane,now()-timingMs/1000,pointerId);
+ if(result)showHit(result.result==='hold'?'HOLD!':result.result==='perfect'?'PERFECT!':'GOOD!');
  else showHit('KEEP GOING');
+ updateStats();
+}
+function release(pointerId,cancel=false){
+ if(!playing||paused||!game)return;
+ const result=game.release(pointerId,now()-timingMs/1000,cancel);
+ if(result)showHit(result.result==='miss'?'TOO SOON!':'GREAT HOLD!');
  updateStats();
 }
 canvas.addEventListener('pointerdown',event=>{
  event.preventDefault();
  const r=canvas.getBoundingClientRect();
- tap(Math.max(0,Math.min(3,Math.floor((event.clientX-r.left)/r.width*4))));
+ if(event.pointerId!==undefined&&canvas.setPointerCapture)try{canvas.setPointerCapture(event.pointerId)}catch(e){}
+ tap(Math.max(0,Math.min(3,Math.floor((event.clientX-r.left)/r.width*4))),event.pointerId);
 },{passive:false});
+canvas.addEventListener('pointerup',event=>{event.preventDefault();release(event.pointerId)},{passive:false});
+canvas.addEventListener('pointercancel',event=>{event.preventDefault();release(event.pointerId,true)},{passive:false});
 document.addEventListener('keydown',event=>{
  const index=['d','f','j','k'].indexOf(event.key.toLowerCase());
- if(index>=0){event.preventDefault();tap(index)}
+ if(index>=0){event.preventDefault();if(!event.repeat)tap(index,'key-'+index)}
+});
+document.addEventListener('keyup',event=>{
+ const index=['d','f','j','k'].indexOf(event.key.toLowerCase());
+ if(index>=0){event.preventDefault();release('key-'+index)}
 });
 function stopAudio(){
  if(source){try{source.stop();source.disconnect()}catch(e){}source=null}
@@ -143,22 +175,45 @@ function demoWaveform(){
  // no hidden YouTube player, no downloaded audio and no prewritten beatmap.
  const sr=22050,duration=34,buffer=ctx.createBuffer(1,sr*duration,sr),wave=buffer.getChannelData(0);
  const scale=[0,2,4,7,9,12,14,16,19,21,24],melody=[0,4,7,2,5,9,7,4,2,5,7,10,9,7,4,2];
- function note(start,freq,length,volume){
+ function note(start,freq,length,volume,decayRate=5.8){
   const begin=Math.floor(start*sr),end=Math.min(wave.length,begin+Math.floor(length*sr));
   for(let i=begin;i<end;i++){
    const dt=(i-begin)/sr;
-   const attack=1-Math.exp(-dt*180),decay=Math.exp(-dt*5.8);
+   const attack=1-Math.exp(-dt*180),decay=Math.exp(-dt*decayRate);
    wave[i]+=volume*attack*decay*(Math.sin(2*Math.PI*freq*dt)+.28*Math.sin(2*Math.PI*freq*2*dt)+.12*Math.sin(2*Math.PI*freq*3*dt));
+  }
+ }
+ // Original kick/snare/hat synthesis; no external samples or licensed tracks.
+ function drum(start,type){
+  const begin=Math.floor(start*sr);
+  const length=type==='kick'?.29:type==='snare'?.19:.07;
+  const end=Math.min(wave.length,begin+Math.floor(length*sr));
+  for(let i=begin;i<end;i++){
+   const dt=(i-begin)/sr;
+   const noise=((Math.sin(i*12.9898+type.length*78.233)*43758.5453)%1)*2-1;
+   if(type==='kick'){
+    const phase=2*Math.PI*(85*dt-105*dt*dt);
+    wave[i]+=.22*Math.exp(-dt*19)*Math.sin(phase);
+   }else if(type==='snare'){
+    wave[i]+=.082*Math.exp(-dt*24)*(noise*.85+Math.sin(2*Math.PI*180*dt)*.15);
+   }else{
+    wave[i]+=.045*Math.exp(-dt*54)*noise;
+   }
   }
  }
  const beat=.5357;
  for(let i=0;i<112;i++){
   const t=1.3+i*beat*.5;
-  const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0);
+  if([12,13,14].includes(i%16))continue; // Quiet gap after real sustained note.
+  if(i%2===0)drum(t,'hat');
+  if(i%8===0||i%8===6)drum(t,'kick');
+  if(i%8===4)drum(t,'snare');
+  const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0)+(i>=56?5:0);
   const hz=220*Math.pow(2,noteNo/12);
-  note(t,hz,.41,.34);
+  const sustained=i%16===11;
+  note(t,hz,sustained?1.05:.41,.34,sustained?1.05:5.8);
   if(i%4===0)note(t,110*Math.pow(2,(Math.floor(i/16)%4)*2/12),.70,.19);
-  if(i%8===4)note(t,155,.16,.18);
+  if(i%16===0)note(t,164.81,.65,.14,2.7);
  }
  // Hard limiter avoids browser distortion and preserves transient emphasis.
  let peak=0;for(let i=0;i<wave.length;i++)peak=Math.max(peak,Math.abs(wave[i]));
@@ -175,7 +230,8 @@ async function startDemo(){
   if(!ctx)ctx=new AC();if(ctx.state==='suspended')await ctx.resume();
   const buffer=demoWaveform();
   const times=analyzer.extractOnsets(buffer,{level});
-  const notes=core.chartFromOnsets(times,level);
+  const rawOnsets=level==='easy'?analyzer.extractOnsets(buffer,{level:'normal'}):times;
+  const notes=core.addHoldsFromWaveform(buffer,core.chartFromOnsets(times,level),rawOnsets);
   if(notes.length<8)throw Error('この音源の解析結果が少なすぎます');
   status('✅ 音声から'+notes.length+'個のタイルを検出');
   begin(notes,buffer.duration,'♫ SAIKO ORIGINAL MUSIC','demo',buffer);
@@ -183,6 +239,52 @@ async function startDemo(){
  finally{$('demo').disabled=false}
 }
 $('demo').addEventListener('click',startDemo);
+const localInput=$('localAudioFile'),localButton=$('localAudio');
+function localReady(){nativePending=false;localButton.disabled=false}
+localButton.addEventListener('click',()=>{
+ if(nativePending){status('別の曲を解析しています');return}
+ if(native){
+  nativePending=true;localButton.disabled=true;
+  status('📁 スマホ内の音楽ファイルを選択してね');
+  try{window.SaikoNativeAutoChart.chooseLocalAudio(level)}
+  catch(e){window.SaikoNativeLocalError('ファイル選択を開始できませんでした')}
+ }else{
+  localInput.value='';
+  localInput.click();
+ }
+});
+localInput.addEventListener('change',async()=>{
+ const file=localInput.files&&localInput.files[0];
+ if(!file)return;
+ localButton.disabled=true;
+ status('🎼 '+file.name+' の音声を解析しています…');
+ try{
+  if(file.size>48*1024*1024)throw Error('48MB以下の音楽ファイルを選んでね');
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)throw Error('このブラウザは音声に対応していません');
+  if(!ctx)ctx=new AC();
+  if(ctx.state==='suspended')await ctx.resume();
+  const encoded=await file.arrayBuffer();
+  const decoded=await ctx.decodeAudioData(encoded);
+  const times=analyzer.extractOnsets(decoded,{level});
+  const rawOnsets=level==='easy'?analyzer.extractOnsets(decoded,{level:'normal'}):times;
+  const notes=core.addHoldsFromWaveform(decoded,core.chartFromOnsets(times,level),rawOnsets);
+  status('✅ 実音声から'+notes.length+'個のタイルを検出');
+  begin(notes,decoded.duration,'♫ '+file.name,'demo',decoded);
+ }catch(e){status('⚠️ 音楽を解析できませんでした：'+String(e.message||e))}
+ finally{localButton.disabled=false;localInput.value=''}
+});
+window.SaikoNativeLocalCancelled=()=>{localReady();status('音楽の選択をキャンセルしました')};
+window.SaikoNativeLocalError=message=>{localReady();status('⚠️ 音楽を解析できませんでした：'+String(message).slice(0,160))};
+window.SaikoNativeLocalReady=json=>{
+ localReady();
+ try{
+  const result=JSON.parse(json);
+  const notes=core.prepare(result.notes);
+  status('✅ 実音声から'+notes.length+'個のタイルを検出');
+  begin(result.notes,Number(result.duration)||0,'♫ '+String(result.title||'選択した音楽'),'native',null);
+ }catch(e){status('⚠️ 譜面を読み込めませんでした：'+String(e.message||e))}
+};
 function videoId(value){
  const input=String(value||'').trim();
  if(/^[A-Za-z0-9_-]{11}$/.test(input))return input;
@@ -222,6 +324,7 @@ $('quit').addEventListener('click',()=>{
 $('pause').addEventListener('click',async()=>{
  if(!playing)return;
  if(!paused){
+  if(game)game.cancelHolds(); // A lost touch must never earn a free sustained note.
   if(sourceMode==='demo'){offset=now();if(source){source.stop();source=null}}
   else if(native)window.SaikoNativeAutoChart.pauseMusic();
   paused=true;$('pause').textContent='▶ 再開';
@@ -234,8 +337,9 @@ $('pause').addEventListener('click',async()=>{
 $('again').addEventListener('click',()=>{
  $('result').hidden=true;$('game').hidden=true;$('menu').hidden=false;$('pause').disabled=false;
 });
+window.SaikoPianoAutoPause=()=>{if(playing&&!paused)$('pause').click()};
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden&&playing&&!paused)$('pause').click();
+ if(document.hidden)window.SaikoPianoAutoPause();
 });
 window.addEventListener('pagehide',()=>{cleanup();if(ctx)ctx.close().catch(()=>{})});
 window.SaikoPianoGame=Object.freeze({videoId,chooseDifficulty,getState:()=>game?.state()||null});

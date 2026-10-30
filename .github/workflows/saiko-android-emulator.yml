@@ -1,0 +1,51 @@
+name: SAIKO Android Emulator UI Smoke
+on:
+  push:
+    branches: [feature/saiko-beat-native-android-20261030]
+    paths: [.github/workflows/saiko-android-emulator.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  launch-on-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Prepare packaged game and compile APK
+        run: |
+          mkdir -p saiko-android/app/src/main/assets
+          cp saiko-rhythm/youtube.html saiko-rhythm/youtube.js saiko-rhythm/youtube-core.js saiko-rhythm/studio-core.js saiko-rhythm/beat-analyzer.js saiko-android/app/src/main/assets/
+          cp saiko-rhythm/piano-tiles.html saiko-rhythm/piano-tiles.js saiko-rhythm/piano-core.js saiko-android/app/src/main/assets/
+          cd saiko-android
+          gradle :app:assembleDebug --no-daemon
+      - name: Enable KVM if available
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_4
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tests/saiko-emulator-smoke.sh
+      - name: Collect screenshot and crash logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: saiko-android-emulator-proof
+          path: |
+            saiko-android/emulator-screen.png
+            saiko-android/emulator-playing.png
+            saiko-android/emulator-playing.xml
+            saiko-android/emulator-errors.log
+          if-no-files-found: warn

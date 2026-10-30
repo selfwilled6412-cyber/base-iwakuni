@@ -1,0 +1,108 @@
+#!/usr/bin/env node
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs'),vm=require('node:vm');
+const piano=require('../saiko-rhythm/piano-core.js');
+assert.throws(()=>piano.prepare([]),/ノーツ/);
+assert.throws(()=>piano.prepare([{t:1,lane:7},{t:2,lane:0},{t:3,lane:0},{t:4,lane:0}]));
+assert.throws(()=>piano.prepare([{t:2,lane:0},{t:1,lane:1},{t:3,lane:2},{t:4,lane:3}]));
+const notes=[{t:.4,lane:0},{t:.8,lane:2},{t:1.2,lane:1},{t:1.6,lane:3},{t:2,lane:0}];
+const game=piano.engine(notes);
+assert.equal(game.state().score,0);
+assert.equal(game.tap(0,.4).result,'perfect');
+assert.equal(game.tap(0,.4),null,'Never double-score the same tile');
+assert.equal(game.tap(2,.95).result,'good');
+assert.equal(game.state().combo,2);
+game.tick(1.5);
+assert.equal(game.state().miss,1);
+assert.equal(game.state().combo,0,'Misses reset combo');
+assert.equal(game.tap(3,1.6).result,'perfect');
+game.end();
+assert.equal(game.state().done,5);
+assert.equal(game.state().perfect,2);
+assert.equal(game.state().good,1);
+assert.equal(game.state().miss,2);
+assert.equal(game.state().active,false);
+game.reset();assert.equal(game.state().done,0);
+const holdChart=[{t:.5,lane:0,hold:.7},{t:1.5,lane:1},{t:2,lane:2},{t:2.5,lane:3}];
+const holdGame=piano.engine(holdChart);
+assert.equal(holdGame.press(0,.5,101).result,'hold','Long note begins on measured onset');
+assert.equal(holdGame.state().score,0,'Hold must not award points on initial tap');
+assert.equal(holdGame.release(101,.75).result,'miss','Early release breaks hold');
+assert.equal(holdGame.state().miss,1);
+holdGame.reset();
+assert.equal(holdGame.press(0,.5,102).result,'hold');
+holdGame.tick(1.25);
+assert.equal(holdGame.state().perfect,1,'Continuous hold is scored after sustained duration');
+assert.equal(holdGame.release(102,1.3),null,'Hold must not score twice on release');
+holdGame.reset();
+assert.equal(holdGame.press(0,.51,103).result,'hold');
+assert.equal(holdGame.release(103,1.13).result,'perfect','Near-end release within 110ms succeeds');
+assert.equal(holdGame.state().perfect,1);
+holdGame.reset();
+assert.equal(holdGame.press(0,.5,104).result,'hold');
+assert.equal(holdGame.release(104,.8,true).result,'miss','Cancelled touch breaks hold');
+holdGame.reset();
+assert.equal(holdGame.press(0,.5,105).result,'hold');
+holdGame.cancelHolds();
+assert.equal(holdGame.state().miss,1,'Pause/background cancels held notes safely');
+const sr=16000,wave=new Float32Array(sr*4);
+for(let i=Math.floor(sr*.3);i<Math.floor(sr*1.5);i++)wave[i]=.3*Math.sin(2*Math.PI*220*i/sr);
+const measured=piano.addHoldsFromWaveform({sampleRate:sr,numberOfChannels:1,duration:4,getChannelData:()=>wave},
+ [{t:.3,lane:0},{t:1.8,lane:1},{t:2.3,lane:2},{t:2.8,lane:3}]);
+assert(measured[0].hold>.35,'Sustained PCM should generate a hold');
+assert(!measured[1].hold,'Short gaps should not invent holds');
+assert.throws(()=>piano.prepare([{t:1,lane:0,hold:9},{t:2,lane:1},{t:3,lane:2},{t:4,lane:3}]));
+// Regression: a fast but regular song must not collapse into only a few
+// notes because the suppression window keeps moving after replacements.
+const onsetAnalyzer=require('../saiko-rhythm/beat-analyzer.js');
+const rate=16000,samples=new Float32Array(rate*8);
+for(let j=0;j<14;j++){
+ const begin=Math.floor((.7+j*.4)*rate),length=Math.floor(.22*rate);
+ for(let k=0;k<length;k++){
+  const dt=k/rate;
+  samples[begin+k]+=.4*Math.sin(2*Math.PI*(220+j*19)*dt)*
+   (1-Math.exp(-dt*180))*Math.exp(-dt*8);
+ }
+}
+const testAudio={sampleRate:rate,duration:8,numberOfChannels:1,getChannelData:()=>samples};
+const beginner=onsetAnalyzer.extractOnsets(testAudio,{level:'easy'});
+const intermediate=onsetAnalyzer.extractOnsets(testAudio,{level:'normal'});
+assert(beginner.length>=6,'Easy difficulty lost too many regular PCM attacks: '+beginner.length);
+assert(intermediate.length>=10,'Normal difficulty lost regular PCM attacks: '+intermediate.length);
+const beginnerChart=piano.chartFromOnsets(beginner,'easy');
+const beginnerHolds=piano.addHoldsFromWaveform(testAudio,beginnerChart,intermediate);
+assert(beginnerHolds.every(n=>!n.hold),'Dropped beginner-mode attacks must not become false sustained tiles');
+const realOnsets=[.3,.55,.8,1.05,1.3,1.55,1.8,2.05,2.3];
+for(const level of ['easy','normal','hard']){
+ const n=piano.chartFromOnsets(realOnsets,level);
+ assert(n.length>=4);
+ assert(n.every((x,i)=>x.t>=.15&&[0,1,2,3].includes(x.lane)&&(!i||x.t>n[i-1].t)));
+}
+const html=fs.readFileSync('saiko-rhythm/piano-tiles.html','utf8');
+const js=fs.readFileSync('saiko-rhythm/piano-tiles.js','utf8');
+new vm.Script(js,{filename:'piano-tiles.js'});
+for(const value of ['id="demo"','id="game"','id="tilesCanvas"','id="videoUrl"','id="load"','id="status"','id="quit"','id="pause"','id="again"','id="score"','id="combo"']){
+ assert(html.includes(value),'Missing mobile component '+value);
+}
+assert(!/<iframe\b/i.test(html),'The user expressly does not want a video panel');
+assert(html.includes('piano-core.js')&&html.includes('beat-analyzer.js'));
+assert(js.includes('analyzer.extractOnsets(buffer,{level})'),'Actual waveform analysis must drive generated notes');
+assert(js.includes('source.buffer=audioBuffer'),'Analyze and play precisely the same source buffer');
+assert(js.includes('currentSeconds()'),'Use native decoded track playback clock for native charts');
+assert(js.includes('window.SaikoNativeChartReady'),'Native Android bridge should be handled');
+assert(js.includes('pointercancel')&&js.includes('setPointerCapture'),'Multitouch hold input and cancel handling required');
+assert(js.includes('core.addHoldsFromWaveform'),'Web audio-derived hold generation required');
+const java=fs.readFileSync('saiko-android/app/src/main/java/jp/base/saikobeat/MainActivity.java','utf8');
+assert(java.includes('assets/piano-tiles.html'),'Android app must launch new audio-first mode');
+assert(java.includes('MediaPlayer'),'Android must playback actual downloaded audio not a hidden iframe');
+assert(java.includes('prepareTrack(cache)'),'Audio must be playable before chart is accepted');
+assert(java.includes('getCurrentPosition()'),'Rendering must use true native playback position');
+assert(java.includes('releaseTrack()'),'Downloaded temporary tracks must be cleaned up');
+assert(java.includes('ACTION_OPEN_DOCUMENT'),'User-selected authorized audio should be supported');
+assert(java.includes('isMusicFinished'),'Native audio completion should be handled');
+const workflow=fs.readFileSync('.github/workflows/saiko-native-android.yml','utf8');
+assert(workflow.includes('cp saiko-rhythm/piano-tiles.html saiko-rhythm/piano-tiles.js saiko-rhythm/piano-core.js'));
+console.log('PASS: piano-tile perfect/good/miss, combo, no duplicate score, reset and audio-derived note transforms');
+console.log('PASS: measured sustained audio -> long holds; multi-pointer press/release/cancel, no double scoring');
+console.log('PASS: original audio buffer analysis/playback and Android MediaPlayer master clock; no video iframe');

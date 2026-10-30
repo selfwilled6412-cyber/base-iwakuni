@@ -61,6 +61,16 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   <h3>難易度を選ぶ</h3>
   <div class="levels" role="group" aria-label="難易度"><button type="button" data-level="easy" aria-pressed="true">🌱 初級</button><button type="button" data-level="normal" aria-pressed="false">⚡ 中級</button><button type="button" data-level="hard" aria-pressed="false">🔥 上級</button></div>
  </div>
+ <div class="section" id="localMode"><h3>🎼 好きな音楽ファイルで遊ぶ</h3>
+  <p class="hint" style="text-align:left">利用許可のあるMP3・M4A・WAVなどを選んでね。音声を解析して、同じ音源を再生します。端末外には送信しません。</p>
+  <input id="localAudioFile" type="file" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac" hidden aria-label="自分の音楽ファイル">
+  <button id="localAudio" class="btn secondary" type="button">📁 音楽ファイルを選んで遊ぶ</button>
+ </div>
+ <div class="section"><h3>🎯 タップ判定のタイミング調整</h3>
+  <label for="timingAdjust" class="hint">音が聞こえるタイミングに合わせて調整 <strong id="timingValue">0 ms</strong></label>
+  <input id="timingAdjust" type="range" min="-200" max="200" step="10" value="0" style="width:100%;accent-color:#6effe4" aria-label="タップ判定補正ミリ秒">
+  <p class="hint">音が遅れて聞こえる端末では＋方向に調整。タップ判定だけ補正し、音楽とタイルの描画時刻は変更しません。</p>
+ </div>
  <div class="section" id="youtubeMode"><h3>🔬 YouTube音声解析（Android実験版）</h3>
   <div class="field"><input id="videoUrl" type="url" inputmode="url" aria-label="YouTube URL" placeholder="YouTubeのURLを貼る"><button id="load" class="btn small secondary" type="button">解析</button></div>
   <p class="hint">映像は表示しません。YouTubeによるアクセス制限や利用条件の問題があり、曲によって動作しません。解析に失敗したらオリジナル楽曲で遊べます。</p>
@@ -71,7 +81,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
  <div class="gameTop"><div class="songLabel" id="songLabel">♪ SAIKO MUSIC</div><div class="gameActions"><button id="pause" class="btn flat small" type="button">⏸ 一時停止</button><button id="quit" class="btn flat small" type="button">✕ 戻る</button></div></div>
  <div class="scorebar"><div class="stat"><small>SCORE</small><b id="score">0</b></div><div class="stat"><small>COMBO</small><b id="combo">0</b></div><div class="stat"><small>PERFECT</small><b id="perfect">0</b></div></div>
  <div id="stage"><canvas id="tilesCanvas" aria-label="音楽に合わせて下へ落ちる4列のタイルをタップ" role="application"></canvas><div class="progress" id="progress"></div><div class="hitText" id="hitText"></div></div>
- <p class="hint">4列の光るタイルが下のラインに来た瞬間にタップ！</p>
+ <p class="hint">4列の光るタイルをタップ！長いタイルは最後まで押しっぱなし。</p>
  <div id="result" hidden><strong>🎉 RESULT</strong><p id="finalScores"></p><button type="button" id="again" class="btn primary">もう一度遊ぶ</button></div>
 </section>
 </main>

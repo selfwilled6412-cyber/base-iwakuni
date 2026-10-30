@@ -61,11 +61,18 @@ function extractOnsets(buffer,{level='normal',maxSeconds=600}={}){
  // Prefer stronger transients when two nearby peaks compete.
  const spacing=level==='easy'?.42:level==='hard'?.13:.24;
  const selected=[];
+ let windowStart=-Infinity;
  for(const p of candidates){
   const last=selected[selected.length-1];
-  if(last&&p.t-last.t<spacing){
+  // Anchor the suppression window at the first candidate, not the
+  // replacement. Otherwise a series of slightly stronger attacks can
+  // keep moving the window and accidentally erase an entire fast passage.
+  if(last&&p.t-windowStart<spacing){
    if(p.score>last.score)selected[selected.length-1]=p;
-  }else selected.push(p);
+  }else{
+   selected.push(p);
+   windowStart=p.t;
+  }
  }
  const limit=level==='easy'?350:level==='normal'?700:1100;
  if(selected.length>limit){
