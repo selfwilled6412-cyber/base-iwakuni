@@ -172,17 +172,17 @@ public final class NativeBeatAnalyzer {
       double availableGap=next-t;
       if(availableGap<.78)continue;
       double holdCandidate=Math.min(1.2,availableGap-.22);
-      // The difficulty filter may hide real attacks. An unselected onset
-      // inside the prospective hold means it is NOT a sustained note.
-      boolean interrupted=false;
-      int from=Math.max(radius+1,(int)Math.floor((t+.22)/hop));
-      int to=Math.min(n-1,(int)Math.ceil((t+holdCandidate+.12)/hop));
+      // Preserve a real sustained note, but shorten it before the next
+      // full-audio attack (including beats omitted by beginner filtering).
+      int from=Math.max(radius+1,(int)Math.floor((t+.20)/hop));
+      int to=Math.min(n-1,(int)Math.ceil((t+holdCandidate+.20)/hop));
       for(int p=from;p<to;p++){
         if(onset[p]>=threshold&&onset[p]>=onset[p-1]&&onset[p]>=onset[p+1]){
-          interrupted=true;break;
+          holdCandidate=Math.min(holdCandidate,p*hop-t-.16);
+          break;
         }
       }
-      if(interrupted)continue;
+      if(holdCandidate<.58)continue;
       double attack=meanEnergy(values,hop,t+.04,t+.16);
       double sustain=meanEnergy(values,hop,t+.37,t+.56);
       if(attack>.018&&sustain>Math.max(.018,attack*.26)){
