@@ -61,6 +61,7 @@
    else judge(note,note.startResult);
    return {result:note.result,lane:note.lane};
   }
+  function cancelHolds(){for(const n of notes)if(!n.judged&&n.holding)judge(n,'miss')}
   function tap(lane,time){return press(lane,time,'legacy-tap')}
   function end(){if(!active)return;active=false;for(const n of notes)if(!n.judged)judge(n,'miss')}
   function reset(){
@@ -68,7 +69,7 @@
    combo=0;best=0;score=0;perfect=0;good=0;miss=0;active=true;
   }
   function state(){return {notes,combo,best,score,perfect,good,miss,total:notes.length,done:notes.filter(n=>n.judged).length,active}}
-  return Object.freeze({tick,press,release,tap,end,reset,state});
+  return Object.freeze({tick,press,release,cancelHolds,tap,end,reset,state});
  }
  function chartFromOnsets(times,level='normal'){
   if(!Array.isArray(times)||times.length<4)throw Error('音声の変化を十分に検出できません');
