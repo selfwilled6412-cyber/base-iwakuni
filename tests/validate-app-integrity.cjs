@@ -9,14 +9,14 @@ const pages=[
  'saiko-rhythm/index.html','saiko-rhythm/studio.html','saiko-rhythm/youtube.html',
  'saiko-adventure/index.html','saiko-kids/index.html','saiko-draw/index.html',
  'saiko-solo-arcade/index.html','saiko-party-games/index.html','saiko-card-games/index.html',
- 'lumi-nazotoki/index.html','lumi-nazotoki/staff.html',
- 'lumi-escape/index.html','lumi-escape/staff.html',
- 'lumi-escape-2/index.html','lumi-escape-2/staff.html'
+ 'saiko-nazotoki/index.html','saiko-nazotoki/staff.html',
+ 'saiko-escape/index.html','saiko-escape/staff.html',
+ 'saiko-escape-2/index.html','saiko-escape-2/staff.html'
 ];
 const soundApps=[
  'saiko-adventure/index.html','saiko-kids/index.html','saiko-solo-arcade/index.html',
- 'saiko-party-games/index.html','saiko-card-games/index.html','lumi-nazotoki/index.html',
- 'lumi-escape/index.html','lumi-escape-2/index.html'
+ 'saiko-party-games/index.html','saiko-card-games/index.html','saiko-nazotoki/index.html',
+ 'saiko-escape/index.html','saiko-escape-2/index.html'
 ];
 let local=0;
 for(const file of pages){
@@ -42,6 +42,18 @@ for(const file of soundApps){
  const html=fs.readFileSync(path.join(root,file),'utf8');
  assert(html.includes('../saiko-apps/sound-feedback.js'),'Missing sound engine: '+file);
 }
+// Keep legacy URLs working with identical content and preserved saved sessions.
+for(const [oldName,newName] of [
+ ['lumi-nazotoki','saiko-nazotoki'],
+ ['lumi-escape','saiko-escape'],
+ ['lumi-escape-2','saiko-escape-2']
+]){
+ for(const entry of ['index.html','staff.html']){
+  const a=fs.readFileSync(path.join(root,oldName,entry),'utf8');
+  const b=fs.readFileSync(path.join(root,newName,entry),'utf8');
+  assert.equal(a,b,'Old and new SAIKO URLs must remain behaviorally identical: '+oldName+'/'+entry);
+ }
+}
 // Brand policy: No old name in any public game labels, narration or staff guides.
 // Internal localStorage keys and historical URL paths remain stable so saved
 // puzzles/bookmarks keep working; the mascot image must remain untouched.
@@ -52,10 +64,15 @@ const brandPaths=[
  'saiko-party-games/index.html','saiko-card-games/index.html','saiko-card-games/app.js',
  'saiko-solo-arcade/index.html','saiko-solo-arcade/app.js',
  'saiko-rhythm/index.html',
+ 'saiko-nazotoki/index.html','saiko-nazotoki/staff.html',
+ 'saiko-escape/index.html','saiko-escape/staff.html',
+ 'saiko-escape-2/index.html','saiko-escape-2/staff.html'
+];
+brandPaths.push(
  'lumi-nazotoki/index.html','lumi-nazotoki/staff.html',
  'lumi-escape/index.html','lumi-escape/staff.html',
  'lumi-escape-2/index.html','lumi-escape-2/staff.html'
-];
+);
 for(const file of brandPaths){
  const content=fs.readFileSync(path.join(root,file),'utf8');
  assert(!content.includes('ルミ'),'旧キャラクター名が表示文言に残っています: '+file);
@@ -64,7 +81,7 @@ for(const file of [
  'saiko-apps/index.html','saiko-adventure/index.html','saiko-kids/index.html',
  'saiko-draw/index.html','saiko-party-games/index.html','saiko-card-games/index.html',
  'saiko-solo-arcade/index.html','saiko-rhythm/index.html',
- 'lumi-nazotoki/index.html','lumi-escape/index.html','lumi-escape-2/index.html'
+ 'saiko-nazotoki/index.html','saiko-escape/index.html','saiko-escape-2/index.html'
 ]){
  const content=fs.readFileSync(path.join(root,file),'utf8');
  assert(content.includes('../assets/lumi-approved.webp'),'案内役のキャラクター画像を維持してください: '+file);
@@ -77,7 +94,7 @@ assert(bingo.includes('bingo-voice.js'),'Bingo voice asset missing');
 const games=fs.readFileSync(path.join(root,'saiko-apps/index.html'),'utf8');
 for(const file of pages.filter(x=>x.endsWith('/index.html')&&x!=='saiko-apps/index.html')){
  const dir=file.slice(0,-'index.html'.length);
- assert(games.includes('href="../'+dir+'"')||games.includes('href="../'+file+'"')||dir==='saiko-rhythm/'||dir==='lumi-nazotoki/'||dir==='lumi-escape/'||dir==='lumi-escape-2/',
+ assert(games.includes('href="../'+dir+'"')||games.includes('href="../'+file+'"')||dir==='saiko-rhythm/'||dir==='saiko-nazotoki/'||dir==='saiko-escape/'||dir==='saiko-escape-2/',
  'Game hub missing '+file);
 }
 console.log('PASS: '+pages.length+' smartphone-friendly pages, '+local+' local links/assets and '+soundApps.length+' game sound engines');
