@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.media.AudioAttributes;
 import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -57,6 +59,9 @@ public final class MainActivity extends Activity {
   private final ExecutorService worker=Executors.newSingleThreadExecutor();
   private final AtomicBoolean busy=new AtomicBoolean(false);
   private WebViewAssetLoader assetLoader;
+  private final Object musicLock = new Object();
+  private MediaPlayer musicPlayer;
+  private File musicFile;
   private static final OkHttpClient HTTP = new OkHttpClient.Builder()
     .connectTimeout(15, TimeUnit.SECONDS)
     .readTimeout(35, TimeUnit.SECONDS)
@@ -97,7 +102,7 @@ public final class MainActivity extends Activity {
       @Override public void onPermissionRequest(PermissionRequest req) {req.deny();}
     });
     view.addJavascriptInterface(new NativeAutoChart(),"SaikoNativeAutoChart");
-    view.loadUrl("https://appassets.androidplatform.net/assets/youtube.html");
+    view.loadUrl("https://appassets.androidplatform.net/assets/piano-tiles.html");
   }
 
   private void acceptSharedLink(Intent intent){
@@ -125,6 +130,28 @@ public final class MainActivity extends Activity {
   }
 
   public final class NativeAutoChart {
+    /** Audio drives the game position, never a simulated YouTube timer. */
+    @JavascriptInterface public double currentSeconds(){
+      synchronized(musicLock){
+        try {return musicPlayer==null?0:musicPlayer.getCurrentPosition()/1000.0;}
+        catch(IllegalStateException ignored){return 0;}
+      }
+    }
+    @JavascriptInterface public void playMusic(){
+      runOnUiThread(()->{synchronized(musicLock){
+        if(musicPlayer!=null)try{
+          if(musicPlayer.getCurrentPosition()>=musicPlayer.getDuration()-100)musicPlayer.seekTo(0);
+          musicPlayer.start();
+        }catch(IllegalStateException ignored){}
+      }});
+    }
+    @JavascriptInterface public void pauseMusic(){
+      runOnUiThread(()->{synchronized(musicLock){
+        if(musicPlayer!=null)try{
+          if(musicPlayer.isPlaying())musicPlayer.pause();
+        }catch(IllegalStateException ignored){}
+      }});
+    }
     @JavascriptInterface public void analyze(String videoId,String level){
       if(videoId==null||!VIDEO_ID.matcher(videoId).matches()){
         notifyJS("SaikoNativeChartError","YouTubeの動画URLが正しくありません");return;
@@ -156,6 +183,10 @@ public final class MainActivity extends Activity {
           stage="曲のリズム解析";
           notifyJS("SaikoNativeChartProgress","音楽のリズムを解析しています…");
           JSONObject chart=NativeBeatAnalyzer.analyze(cache,difficulty);
+          // The same decoded source now drives the game audio. Do not hand
+          // out a beatmap for a track we cannot actually play.
+          prepareTrack(cache);
+          cache=null; // Ownership transferred to the native music player.
           chart.put("video_id",id);
           notifyJS("SaikoNativeChartReady",chart.toString());
         } catch(Exception error) {
@@ -177,6 +208,31 @@ public final class MainActivity extends Activity {
       });
     }
   }
+
+  private void prepareTrack(File file) throws IOException {
+    synchronized(musicLock){
+      releaseTrackLocked();
+      MediaPlayer next = new MediaPlayer();
+      try {
+        next.setAudioAttributes(new AudioAttributes.Builder()
+          .setUsage(AudioAttributes.USAGE_MEDIA)
+          .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build());
+        next.setDataSource(file.getAbsolutePath());
+        next.prepare();
+        musicPlayer=next;
+        musicFile=file;
+      }catch(IOException|RuntimeException ex){next.release();throw ex;}
+    }
+  }
+  private void releaseTrackLocked(){
+    if(musicPlayer!=null){
+      try{musicPlayer.stop();}catch(Exception ignored){}
+      try{musicPlayer.release();}catch(Exception ignored){}
+      musicPlayer=null;
+    }
+    if(musicFile!=null){if(musicFile.exists())musicFile.delete();musicFile=null;}
+  }
+  private void releaseTrack(){synchronized(musicLock){releaseTrackLocked();}}
 
   private static void downloadAudio(String streamUrl, File out) throws IOException {
     URL u = new URL(streamUrl);
@@ -240,6 +296,7 @@ public final class MainActivity extends Activity {
   }
   @Override public void onDestroy() {
     worker.shutdownNow();
+    releaseTrack();
     if(view!=null){view.removeJavascriptInterface("SaikoNativeAutoChart");view.destroy();view=null;}
     super.onDestroy();
   }
