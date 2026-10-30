@@ -1,0 +1,79 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c0832"><title>SAIKO BEAT - PIANO RUSH</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:#fff;background:#0b0c30}
+*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0;min-height:100%;overscroll-behavior:none}
+body{background:radial-gradient(ellipse at 50% -10%,#6333a1 0,transparent 42%),linear-gradient(175deg,#080f3d,#141044 55%,#080b24);color:#fff}
+button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.48;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #ffe27e;outline-offset:3px}
+.top{height:63px;display:flex;align-items:center;justify-content:space-between;padding:6px 15px;border-bottom:1px solid #ffffff30}
+.logo{font-weight:1000;font-size:clamp(17px,4.7vw,27px);letter-spacing:-.05em}.logo b{color:#57ffee}.logo small{font-weight:800;font-size:11px;letter-spacing:.14em;color:#e4cfff;margin-left:8px}
+.mode{font-size:11px;border:1px solid #a995ff66;background:#a995ff22;border-radius:30px;padding:6px 10px;font-weight:900}
+.shell{max-width:620px;margin:auto;padding:12px 12px calc(13px + env(safe-area-inset-bottom))}
+#menu{display:grid;gap:14px}
+.intro{text-align:center;padding:18px 2px 3px}
+.intro .eyebrow{font-size:12px;letter-spacing:.2em;color:#82f7e9;font-weight:1000}
+.intro h1{font-size:clamp(35px,9vw,54px);margin:8px 0 7px;line-height:1.1;background:linear-gradient(95deg,#fff,#8affff,#ffbafa);background-clip:text;color:transparent;font-weight:1000}
+.intro p{color:#d9d5fb;font-size:14px;margin:0;line-height:1.65}
+.heroCard{position:relative;overflow:hidden;background:linear-gradient(130deg,#283f9f,#752eca 55%,#d45cb1);padding:22px;border:1px solid #bfa2ff;border-radius:24px;box-shadow:0 10px 32px #030222aa;min-height:170px}
+.heroCard:before{content:"♫ ✦ ♫";position:absolute;right:-19px;top:-15px;transform:rotate(-20deg);font-size:85px;color:#fff4;letter-spacing:-.09em}
+.heroCard h2{font-size:25px;margin:8px 0 6px;max-width:320px}.heroCard p{margin:0 0 14px;font-size:13px;line-height:1.55;color:#f4e9ff;max-width:320px}
+.btn{width:100%;border:0;border-radius:16px;min-height:54px;padding:12px 15px;font-weight:1000;box-shadow:0 5px 0 #0003}
+.btn.primary{color:#10234b;background:linear-gradient(100deg,#6effe4,#baffac)}
+.btn.secondary{color:#fff;background:#353b86;border:1px solid #8790f1;box-shadow:none}
+.btn.flat{background:#ffffff13;color:#fff;border:1px solid #ffffff35;box-shadow:none}
+.btn.small{width:auto;min-height:39px;padding:9px 13px;font-size:12px;box-shadow:none}
+.section{border-radius:18px;background:#18194b;border:1px solid #ffffff2c;padding:16px}
+.section h3{font-size:16px;margin:0 0 10px}.field{display:flex;gap:8px}
+.field input{flex:1;min-width:0;border:1px solid #9ea7fa55;border-radius:11px;background:#0b1544;color:#fff;padding:13px;font-size:13px}
+.levels{display:flex;gap:8px}
+.levels button{flex:1;background:#1c2154;color:#cbd8ff;border:1px solid #6f7eb06b;min-height:42px;border-radius:11px;font-weight:950}
+.levels button[aria-pressed="true"]{background:#6de8e8;color:#0b2548;border-color:#8effef}
+.message{font-size:13px;color:#fcdf9a;font-weight:850;line-height:1.6;min-height:20px;margin:3px 0 0}
+#game[hidden],#menu[hidden]{display:none!important}
+#game{display:flex;flex-direction:column;position:relative;gap:8px}
+.scorebar{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{background:#1a265b;border:1px solid #6570b5;border-radius:13px;padding:6px 4px;text-align:center}
+.stat small{display:block;color:#b8c8f6;font-size:10px;font-weight:950}
+.stat b{display:block;font-size:21px;color:#ffeda0;font-variant-numeric:tabular-nums;line-height:1.25}
+#stage{position:relative;overflow:hidden;background:linear-gradient(180deg,#100e39,#26166e 55%,#050e32);border:2px solid #a9beff;border-radius:16px;box-shadow:0 0 30px #946cff38;flex:1;min-height:380px;touch-action:none;user-select:none}
+#tilesCanvas{display:block;width:100%;height:100%;touch-action:none}
+.progress{position:absolute;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,#84ffe2,#ffea9b);box-shadow:0 0 12px #8effda;pointer-events:none}
+.hitText{position:absolute;top:45%;left:0;right:0;text-align:center;font-size:36px;font-weight:1000;color:#ffe6a2;text-shadow:0 0 20px #e948ff;pointer-events:none;opacity:0}
+.hitText.show{animation:flash .37s both}@keyframes flash{0%{opacity:0;transform:translateY(12px) scale(.8)}25%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:translateY(-15px)}}
+.gameTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.songLabel{min-width:0;font-weight:1000;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gameActions{display:flex;gap:6px}
+#result{background:#1b2a62;border:2px solid #89f8e7;border-radius:20px;padding:18px;text-align:center}
+#result strong{font-size:29px;color:#ffe7a1}#result p{line-height:1.7}
+.hint{font-size:11px;color:#b0b9da;text-align:center;line-height:1.5}
+@media(min-height:760px){#stage{height:min(62vh,690px)}}@media(max-height:759px){#stage{height:57vh;min-height:300px}}
+@media(max-height:590px){.top{height:46px}#stage{height:58vh;min-height:200px}.scorebar .stat b{font-size:17px}}
+@media(min-width:800px){#stage{height:66vh;min-height:550px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important}}
+</style></head><body>
+<header class="top"><div class="logo">♫ SAIKO <b>BEAT</b><small>PIANO RUSH</small></div><span class="mode">🎹 4レーン</span></header>
+<main class="shell">
+<section id="menu">
+ <div class="intro"><span class="eyebrow">PLAY THE BEAT</span><h1>音に合わせて<br>タイルを叩け！</h1><p>音楽を解析して、タイルが降ってくる。<br>画面下に来たらタップ！</p></div>
+ <div class="heroCard"><span class="mode">すぐ遊べる</span><h2>🎵 オリジナル楽曲で遊ぶ</h2><p>音の波形を実際に解析して譜面を作る、オフライン体験版。</p><button id="demo" class="btn primary" type="button">▶ すぐにプレイ！</button></div>
+ <div class="section">
+  <h3>難易度を選ぶ</h3>
+  <div class="levels" role="group" aria-label="難易度"><button type="button" data-level="easy" aria-pressed="true">🌱 初級</button><button type="button" data-level="normal" aria-pressed="false">⚡ 中級</button><button type="button" data-level="hard" aria-pressed="false">🔥 上級</button></div>
+ </div>
+ <div class="section" id="youtubeMode"><h3>🔬 YouTube音声解析（Android実験版）</h3>
+  <div class="field"><input id="videoUrl" type="url" inputmode="url" aria-label="YouTube URL" placeholder="YouTubeのURLを貼る"><button id="load" class="btn small secondary" type="button">解析</button></div>
+  <p class="hint">映像は表示しません。YouTubeによるアクセス制限や利用条件の問題があり、曲によって動作しません。解析に失敗したらオリジナル楽曲で遊べます。</p>
+ </div>
+ <p id="status" class="message" role="status" aria-live="polite"></p>
+</section>
+<section id="game" hidden aria-label="ピアノタイルゲーム">
+ <div class="gameTop"><div class="songLabel" id="songLabel">♪ SAIKO MUSIC</div><div class="gameActions"><button id="pause" class="btn flat small" type="button">⏸ 一時停止</button><button id="quit" class="btn flat small" type="button">✕ 戻る</button></div></div>
+ <div class="scorebar"><div class="stat"><small>SCORE</small><b id="score">0</b></div><div class="stat"><small>COMBO</small><b id="combo">0</b></div><div class="stat"><small>PERFECT</small><b id="perfect">0</b></div></div>
+ <div id="stage"><canvas id="tilesCanvas" aria-label="音楽に合わせて下へ落ちる4列のタイルをタップ" role="application"></canvas><div class="progress" id="progress"></div><div class="hitText" id="hitText"></div></div>
+ <p class="hint">4列の光るタイルが下のラインに来た瞬間にタップ！</p>
+ <div id="result" hidden><strong>🎉 RESULT</strong><p id="finalScores"></p><button type="button" id="again" class="btn primary">もう一度遊ぶ</button></div>
+</section>
+</main>
+<script src="beat-analyzer.js"></script><script src="piano-core.js"></script><script src="piano-tiles.js"></script>
+</body></html>
