@@ -6,6 +6,14 @@ const $=id=>document.getElementById(id), core=window.SaikoPianoCore, analyzer=wi
 if(!core||!analyzer){$('status').textContent='音声解析エンジンを読み込めませんでした';return}
 let level='easy',playing=false,paused=false,game=null,track=null,source=null,ctx=null,audioBuffer=null;
 let startClock=0,offset=0,raf=0,chartDuration=0,sourceMode='demo',nativePending=false,lastRender=0;
+let timingMs=0;
+try{timingMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('saiko-piano-timing-ms')||0)||0))}catch(e){}
+$('timingAdjust').value=String(timingMs);$('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
+$('timingAdjust').addEventListener('input',event=>{
+ timingMs=Number(event.target.value)||0;
+ $('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
+ try{localStorage.setItem('saiko-piano-timing-ms',String(timingMs))}catch(e){}
+});
 const canvas=$('tilesCanvas'),stage=$('stage'),g=canvas.getContext('2d',{alpha:false});
 const native=!!window.SaikoNativeAutoChart;
 $('youtubeMode').hidden=!native;
@@ -73,7 +81,7 @@ function animate(){
  const time=now();
  if(!paused){
   game.tick(time);updateStats();render(time);
-  if(time>chartDuration+.45){finish();return;}
+  if(time>chartDuration+.45||(sourceMode==='native'&&native&&window.SaikoNativeAutoChart.isMusicFinished())){finish();return;}
  }else if(!lastRender){render(time);}
  lastRender=time;
  raf=requestAnimationFrame(animate);
@@ -83,7 +91,7 @@ function showHit(text){
 }
 function tap(lane){
  if(!playing||paused||!game)return;
- const result=game.tap(lane,now());
+ const result=game.tap(lane,now()+timingMs/1000);
  if(result)showHit(result.result==='perfect'?'PERFECT!':'GOOD!');
  else showHit('KEEP GOING');
  updateStats();
@@ -183,6 +191,51 @@ async function startDemo(){
  finally{$('demo').disabled=false}
 }
 $('demo').addEventListener('click',startDemo);
+const localInput=$('localAudioFile'),localButton=$('localAudio');
+function localReady(){nativePending=false;localButton.disabled=false}
+localButton.addEventListener('click',()=>{
+ if(nativePending){status('別の曲を解析しています');return}
+ if(native){
+  nativePending=true;localButton.disabled=true;
+  status('📁 スマホ内の音楽ファイルを選択してね');
+  try{window.SaikoNativeAutoChart.chooseLocalAudio(level)}
+  catch(e){window.SaikoNativeLocalError('ファイル選択を開始できませんでした')}
+ }else{
+  localInput.value='';
+  localInput.click();
+ }
+});
+localInput.addEventListener('change',async()=>{
+ const file=localInput.files&&localInput.files[0];
+ if(!file)return;
+ localButton.disabled=true;
+ status('🎼 '+file.name+' の音声を解析しています…');
+ try{
+  if(file.size>48*1024*1024)throw Error('48MB以下の音楽ファイルを選んでね');
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)throw Error('このブラウザは音声に対応していません');
+  if(!ctx)ctx=new AC();
+  if(ctx.state==='suspended')await ctx.resume();
+  const encoded=await file.arrayBuffer();
+  const decoded=await ctx.decodeAudioData(encoded);
+  const times=analyzer.extractOnsets(decoded,{level});
+  const notes=core.chartFromOnsets(times,level);
+  status('✅ 実音声から'+notes.length+'個のタイルを検出');
+  begin(notes,decoded.duration,'♫ '+file.name,'demo',decoded);
+ }catch(e){status('⚠️ 音楽を解析できませんでした：'+String(e.message||e))}
+ finally{localButton.disabled=false;localInput.value=''}
+});
+window.SaikoNativeLocalCancelled=()=>{localReady();status('音楽の選択をキャンセルしました')};
+window.SaikoNativeLocalError=message=>{localReady();status('⚠️ 音楽を解析できませんでした：'+String(message).slice(0,160))};
+window.SaikoNativeLocalReady=json=>{
+ localReady();
+ try{
+  const result=JSON.parse(json);
+  const notes=core.prepare(result.notes);
+  status('✅ 実音声から'+notes.length+'個のタイルを検出');
+  begin(result.notes,Number(result.duration)||0,'♫ '+String(result.title||'選択した音楽'),'native',null);
+ }catch(e){status('⚠️ 譜面を読み込めませんでした：'+String(e.message||e))}
+};
 function videoId(value){
  const input=String(value||'').trim();
  if(/^[A-Za-z0-9_-]{11}$/.test(input))return input;
