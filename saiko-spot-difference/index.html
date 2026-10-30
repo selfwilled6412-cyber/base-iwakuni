@@ -41,6 +41,7 @@ main{max-width:1740px;margin:auto;padding:clamp(10px,2vw,24px)}
 .compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
 .puzzleBoard{min-width:0;overflow:auto;background:#0b1d45;border:3px solid #ffffff50;border-radius:18px;box-shadow:0 8px 30px #0006;scrollbar-color:#6fd6fa #162b54}
 .puzzleBoard h3{position:sticky;left:0;margin:0;padding:9px 12px;background:#192c55;color:white;font-weight:900;text-align:center;z-index:1;font-size:clamp(14px,2vw,19px)}
+.puzzleCanvas{background:#c6e2d9}.puzzleCanvas svg{border-radius:0 0 14px 14px}.puzzleCanvas .thing:hover .hitBox{stroke:#ffffff65;stroke-width:2}.puzzleCanvas .thing .hitBox{cursor:crosshair}
 .puzzleCanvas{width:100%;position:relative;line-height:0;touch-action:pan-x pan-y}
 .puzzleCanvas svg{width:100%;height:auto;min-width:0;display:block}
 .puzzleCanvas .thing{cursor:pointer;outline:none}
@@ -64,11 +65,11 @@ footer{text-align:center;color:#8198c5;font-size:12px;padding:19px}
 <a class="skip" href="#main">ゲームへ移動</a>
 <header><div class="brand">🔎 サイ校 <em>まちがいさがし</em></div><a class="homeLink" href="../saiko-apps/">⌂ ゲーム一覧</a></header>
 <main id="main">
-<section id="picker"><div class="hero"><span class="kicker">SAIKO SPOT THE DIFFERENCE</span><h1>ふたつの絵から<br><b>ちがいを見つけよう！</b></h1><p>左右のイラストには、ちょっと違うところがいっぱい。<br>初級・中級・上級、それぞれ30問ずつ遊べるよ！</p></div>
+<section id="picker"><div class="hero"><span class="kicker">SAIKO SPOT THE DIFFERENCE</span><h1>ふたつの絵から<br><b>ちがいを見つけよう！</b></h1><p>公園や海、街など、ひとつながりの風景画を左右で見比べよう。<br>初級・中級・上級、それぞれ30問ずつ遊べるよ！</p></div>
 <div class="levelGrid">
-<button class="levelCard" data-level="easy" type="button"><span class="icon">🌱</span><strong>初級</strong><span class="count">10個のちがい</span><small>じっくり見つけてみよう • 全30問</small><span class="record" id="doneEasy">0 / 30問クリア</span></button>
-<button class="levelCard" data-level="normal" type="button"><span class="icon">🌟</span><strong>中級</strong><span class="count">20個のちがい</span><small>よく見て見比べよう • 全30問</small><span class="record" id="doneNormal">0 / 30問クリア</span></button>
-<button class="levelCard" data-level="hard" type="button"><span class="icon">👑</span><strong>上級</strong><span class="count">30個のちがい</span><small>かなりの手ごたえ！ • 全30問</small><span class="record" id="doneHard">0 / 30問クリア</span></button>
+<button class="levelCard" data-level="easy" type="button"><span class="icon">🌱</span><strong>初級</strong><span class="count">5個のちがい</span><small>わかりやすい変化を見つけよう • 全30問</small><span class="record" id="doneEasy">0 / 30問クリア</span></button>
+<button class="levelCard" data-level="normal" type="button"><span class="icon">🌟</span><strong>中級</strong><span class="count">7個のちがい</span><small>絵の中の小さな変化も探そう • 全30問</small><span class="record" id="doneNormal">0 / 30問クリア</span></button>
+<button class="levelCard" data-level="hard" type="button"><span class="icon">👑</span><strong>上級</strong><span class="count">10個のちがい</span><small>背景の細かな変化を見つけよう！ • 全30問</small><span class="record" id="doneHard">0 / 30問クリア</span></button>
 </div><p class="how">🖼️ 左右どちらの絵をタップしてもOK！　✅ 正解した場所には丸が付くよ。<br>📱 スマホは上下に表示。画面拡大や横並び切り替えも使えるよ。</p></section>
 <section id="play" hidden>
 <div class="gameTop"><button id="home" class="backBtn" type="button">← 難易度を選ぶ</button><h1 class="headerTitle" id="questionTitle">初級｜第1問</h1><button id="next" class="action primary" type="button">別の問題 ▶</button></div>
@@ -84,7 +85,7 @@ footer{text-align:center;color:#8198c5;font-size:12px;padding:19px}
 </div>
 <div class="tipRow"><div id="message" role="status" aria-live="polite">違うところをタップしてね！</div><div class="actions"><button id="hint" class="action" type="button">💡 ヒント</button><button id="zoom" class="action" type="button" aria-pressed="false">🔍 拡大</button><button id="layout" class="action" type="button" aria-pressed="false">⇄ 横並び</button><button id="full" class="action" type="button">⛶ 全画面</button></div></div>
 <div id="result" hidden><strong>🎉 全部見つけた！</strong><p id="resultText"></p><button id="resultNext" class="action primary" type="button">次の問題へ ▶</button></div>
-<p class="note">ヒントはまだ見つけていない場所を1か所だけ光らせます。毎回違う問題を出し、同じ難易度で30問遊び終えるまで重複しません。絵はゲーム内で自動生成したオリジナルのイラストです。</p>
+<p class="note">オリジナルの風景イラストを左右で見比べてね。初級5個・中級7個・上級10個、各30問。ヒントはまだ見つけていない場所をひとつ示すよ。30問を一巡するまで同じ問題は出ません。</p>
 </section></main><footer>サイ校プロジェクト岩国 ｜ まちがいさがし</footer>
 <script src="puzzle-core.js"></script><script src="app.js"></script>
 </body></html>
