@@ -9,6 +9,7 @@ on:
       - 'saiko-rhythm/youtube-core.js'
       - 'saiko-rhythm/studio-core.js'
       - 'saiko-rhythm/beat-analyzer.js'
+      - 'saiko-rhythm/piano*'
       - '.github/workflows/saiko-native-android.yml'
   workflow_dispatch:
 permissions:
@@ -33,6 +34,9 @@ jobs:
         run: |
           mkdir -p saiko-android/app/src/main/assets
           cp saiko-rhythm/youtube.html saiko-rhythm/youtube.js saiko-rhythm/youtube-core.js saiko-rhythm/studio-core.js saiko-rhythm/beat-analyzer.js saiko-android/app/src/main/assets/
+          cp saiko-rhythm/piano-tiles.html saiko-rhythm/piano-tiles.js saiko-rhythm/piano-core.js saiko-android/app/src/main/assets/
+      - name: Verify Piano Tiles note engine and Android bridge
+        run: node tests/validate-piano.cjs
       - name: Compile Android debug APK
         working-directory: saiko-android
         run: gradle :app:assembleDebug --no-daemon --stacktrace
