@@ -16,6 +16,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: saiko-piano-android-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-apk:
     runs-on: ubuntu-latest
