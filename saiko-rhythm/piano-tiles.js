@@ -230,7 +230,8 @@ async function startDemo(){
   if(!ctx)ctx=new AC();if(ctx.state==='suspended')await ctx.resume();
   const buffer=demoWaveform();
   const times=analyzer.extractOnsets(buffer,{level});
-  const notes=core.addHoldsFromWaveform(buffer,core.chartFromOnsets(times,level));
+  const rawOnsets=level==='easy'?analyzer.extractOnsets(buffer,{level:'normal'}):times;
+  const notes=core.addHoldsFromWaveform(buffer,core.chartFromOnsets(times,level),rawOnsets);
   if(notes.length<8)throw Error('この音源の解析結果が少なすぎます');
   status('✅ 音声から'+notes.length+'個のタイルを検出');
   begin(notes,buffer.duration,'♫ SAIKO ORIGINAL MUSIC','demo',buffer);
@@ -266,7 +267,8 @@ localInput.addEventListener('change',async()=>{
   const encoded=await file.arrayBuffer();
   const decoded=await ctx.decodeAudioData(encoded);
   const times=analyzer.extractOnsets(decoded,{level});
-  const notes=core.addHoldsFromWaveform(decoded,core.chartFromOnsets(times,level));
+  const rawOnsets=level==='easy'?analyzer.extractOnsets(decoded,{level:'normal'}):times;
+  const notes=core.addHoldsFromWaveform(decoded,core.chartFromOnsets(times,level),rawOnsets);
   status('✅ 実音声から'+notes.length+'個のタイルを検出');
   begin(notes,decoded.duration,'♫ '+file.name,'demo',decoded);
  }catch(e){status('⚠️ 音楽を解析できませんでした：'+String(e.message||e))}
