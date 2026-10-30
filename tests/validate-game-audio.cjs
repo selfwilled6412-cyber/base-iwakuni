@@ -36,7 +36,7 @@ assert.equal(store['saiko-sfx-enabled-v1'],'on');status.feedback.textContent='å¤
 observers.feedback();assert(played>count+1,'Correct answer must make a win chime');
 menu.listeners.click({stopPropagation(){}});
 assert.equal(panel.hidden,true,'Sound panel must close without obstructing gameplay');
-for(const folder of ['saiko-adventure','saiko-kids','saiko-solo-arcade','saiko-party-games','saiko-card-games','lumi-escape','lumi-escape-2','lumi-nazotoki']){
+for(const folder of ['saiko-adventure','saiko-kids','saiko-solo-arcade','saiko-party-games','saiko-card-games','saiko-escape','saiko-escape-2','saiko-nazotoki']){
  const html=fs.readFileSync(path.join(root,folder,'index.html'),'utf8');
  assert(html.includes('../saiko-apps/sound-feedback.js'),folder+' missing sound module');
 }

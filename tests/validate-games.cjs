@@ -7,7 +7,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-const jsFiles=['saiko-adventure/app.js','saiko-kids/app.js','saiko-draw/app.js','lumi-nazotoki/index.html'];
+const jsFiles=['saiko-adventure/app.js','saiko-kids/app.js','saiko-draw/app.js','saiko-nazotoki/index.html'];
 for(const f of jsFiles){
  const source=read(f);
  if(f.endsWith('.js'))new vm.Script(source,{filename:f});
@@ -89,7 +89,7 @@ for(const lvl of ['easy','normal','hard']){
  assert.equal(titles.length,10,'Puzzle draw count incorrect');
  assert.equal(new Set(titles).size,10,'Repeated question in '+lvl);
 }
-const main=read('lumi-nazotoki/index.html');
+const main=read('saiko-nazotoki/index.html');
 const start=main.indexOf('const QUESTIONS=')+'const QUESTIONS='.length,end=main.indexOf('];',start)+1;
 assert(start>='const QUESTIONS='.length);
 const bank=JSON.parse(main.slice(start,end));
@@ -97,14 +97,14 @@ assert.equal(bank.length,150);
 assert.equal(new Set(bank.map(q=>q.key)).size,150);
 for(const lvl of [2,3,5])assert.equal(bank.filter(q=>q.level===lvl).length,50);
 assert(bank.every(q=>!q.stage.includes('{n//2+1}')&&!q.stage.includes('join(names)')));
-const staffHTML=read('lumi-nazotoki/staff.html');
+const staffHTML=read('saiko-nazotoki/staff.html');
 const staffStart=staffHTML.indexOf('const Q=')+'const Q='.length;
 const staffEnd=staffHTML.indexOf('];',staffStart)+1;
 const staffBank=JSON.parse(staffHTML.slice(staffStart,staffEnd));
 assert.equal(staffBank.length,150);
 assert.deepEqual(new Set(staffBank.map(q=>q.key)),new Set(bank.map(q=>q.key)));
 for(const q of staffBank)assert.equal(q.hints.length,3);
-for(const path of ['lumi-escape/index.html','lumi-escape-2/index.html']){
+for(const path of ['saiko-escape/index.html','saiko-escape-2/index.html']){
  const raw=read(path),match=raw.match(/<script>([\s\S]*?)<\/script>/);
  assert(match,'Missing escape script '+path);new vm.Script(match[1],{filename:path});
  const a=raw.indexOf('const CASES=')+'const CASES='.length,b=raw.indexOf(';const K=',a);
@@ -114,7 +114,7 @@ for(const path of ['lumi-escape/index.html','lumi-escape-2/index.html']){
  assert.equal((staff.match(/<article class="case"/g)||[]).length,50,'Staff guide mismatch '+path);
 }
 
-for(const file of ['lumi-escape/index.html','lumi-escape-2/index.html']){
+for(const file of ['saiko-escape/index.html','saiko-escape-2/index.html']){
  const raw=read(file),script=raw.match(/<script>([\s\S]*?)<\/script>/)[1];
  const elements=new Map();
  function elem(id){return{id,hidden:false,innerHTML:'',textContent:'',className:'',disabled:false,children:[],onclick:null,
@@ -138,16 +138,17 @@ for(const file of ['lumi-escape/index.html','lumi-escape-2/index.html']){
  assert(by('game').innerHTML.includes('脱出成功'));
 }
 const appHub=read('saiko-apps/index.html');
-for(const href of ['../lumi-nazotoki/','../lumi-escape/','../lumi-escape-2/','../saiko-adventure/','../saiko-kids/','../saiko-draw/','guide.html']){
+for(const href of ['../saiko-nazotoki/','../saiko-escape/','../saiko-escape-2/','../saiko-adventure/','../saiko-kids/','../saiko-draw/','guide.html']){
  assert(appHub.includes('href="'+href+'"'),'Missing hub link '+href);
 }
-const playCards=(appHub.match(/<article class="card"[^>]*data-play="(?:group|solo)(?: (?:group|solo))?"/g)||[]);
-const allCards=(appHub.match(/<article class="card"/g)||[]);
-assert.equal(playCards.length,allCards.length,'Every app card needs group or solo mode');
+const playCards=(appHub.match(/<article class="tile"[^>]*data-view="[^"]+"/g)||[]);
+assert.equal(playCards.length,15,'Active games should appear as compact tiles');
 assert(playCards.some(x=>x.includes('group'))&&playCards.some(x=>x.includes('solo')));
-assert(appHub.includes('data-play-filter="group"')&&appHub.includes('data-play-filter="solo"')&&appHub.includes('data-play-filter="all"'));
-assert(appHub.includes("const matchPlay="),'Group/solo selection not wired to card filter');
-assert(appHub.includes("card.dataset.play.split(' ').includes(selectedPlay)"),"Hybrid rhythm games must appear in both solo and group tabs");
+for(const mode of ['game','creative','utility','all','favorites'])assert(appHub.includes('data-view-filter="'+mode+'"'),'Missing category '+mode);
+for(const mode of ['group','solo','all'])assert(appHub.includes('data-players-filter="'+mode+'"'),'Missing optional play mode '+mode);
+assert(appHub.includes("card.dataset.kind===view"),'Top-level tabs should filter by game/creative/utility');
+assert(appHub.includes("card.dataset.view.split(' ').includes(players)"),'Play mode only filters inside Games');
+assert(appHub.includes('data-view="all group solo"'),'Hybrid games must appear under solo and group');
 assert(appHub.includes('href="../saiko-rhythm/"'),"Rhythm game must be reachable from main hub");
 const hubJS=appHub.match(/<script>([\s\S]*?)<\/script>/)?.[1];assert(hubJS,'App hub script missing');
 new vm.Script(hubJS,{filename:'saiko-apps/index.html'});
@@ -234,13 +235,34 @@ assert(read('saiko-apps/index.html').includes('href="../saiko-card-games/"'));
 const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,getTeams:()=>teams,beginTeamMemory,tapTeamMemory,beginTeam21,stay21,hit21,beginSymbolSpeed,awardSymbol,commonSymbol,speedDeck:SPEED_DECK,gestures:GESTURES,clues:CLUES,funny:FUNNY_CLUES,chaos:CHAOS_CLUES,facts:FACTS,two:TWO_CHOICES,tsuk:TSUKKOMI};})();');
 party.qa.start('teamMemory');
 assert.equal(party.qa.getState().phase,'setup');
+assert.equal(party.qa.getState().playKind,'individual','Individual mode should be offered first');
 party.get('memoryLaunch').onclick();
 assert.equal(party.qa.getState().faces.length,20);
 assert.equal(new Set(party.qa.getState().faces).size,10);
 assert.equal(party.qa.getState().members,4);
 assert.equal(party.qa.getState().phase,'play');
+// Individual: 1 person can solve alone, or 2–6 people compete for their own pair counts.
 party.qa.start('teamMemory');
-party.qa.beginTeamMemory(4,6,'coop');
+party.qa.beginTeamMemory(1,6,'battle','individual');
+const onePlayer=party.qa.getState();
+assert.equal(onePlayer.members,1);
+assert.equal(onePlayer.playKind,'individual');
+assert.equal(party.qa.getTeams().length,1);
+const individualPairs=new Map();
+onePlayer.faces.forEach((v,i)=>{const a=individualPairs.get(v)||[];a.push(i);individualPairs.set(v,a)});
+for(const pair of individualPairs.values()){
+ party.qa.tapTeamMemory(pair[0]);party.qa.tapTeamMemory(pair[1]);
+}
+assert.equal(onePlayer.completed,true,'Solo mode should reach a real win state');
+assert.equal(party.qa.getTeams()[0],6,'Each matched pair credits one individual player');
+assert(party.get('status').textContent.includes('ひとりで全ペア達成'));
+party.qa.start('teamMemory');
+party.qa.beginTeamMemory(6,10,'battle','individual');
+assert.equal(party.qa.getState().members,6);
+assert.equal(party.qa.getTeams().length,6);
+assert.equal(party.qa.getState().playKind,'individual');
+party.qa.start('teamMemory');
+party.qa.beginTeamMemory(4,6,'coop','team');
 const coop=party.qa.getState();
 assert.equal(coop.style,'coop');
 const pairIndices=new Map();

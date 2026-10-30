@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const SUITS=[{id:'H',symbol:'♥',name:'ハート',red:true},{id:'D',symbol:'♦',name:'ダイヤ',red:true},{id:'C',symbol:'♣',name:'クラブ',red:false},{id:'S',symbol:'♠',name:'スペード',red:false}];
 const RANKS=['','A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-const TITLES={memory:'🧠 神経衰弱',highlow:'⬆️⬇️ ハイ＆ロー',oldmaid:'🃏 ルミとババ抜き',sevens:'7️⃣ ルミと七並べ'};
+const TITLES={memory:'🧠 神経衰弱',highlow:'⬆️⬇️ ハイ＆ロー',oldmaid:'🃏 サイ校のババ抜き',sevens:'7️⃣ サイ校の七並べ'};
 const KEY='saiko-cardgames-records-v1';
 let records={};try{const r=JSON.parse(localStorage.getItem(KEY)||'{}');if(r&&typeof r==='object'&&!Array.isArray(r))records=r;}catch(e){}
 let game=null,st=null,run=0,tasks=[],clock=null;
@@ -63,7 +63,7 @@ function win(title,detail,subtitle='もう一度プレイする'){
  clearWork();
  info('✨ ミッション達成！');
  board('<div class="winner" role="status"><div class="emoji">🏆 ✨ 🎉</div><h3>'+title+'</h3><p>'+detail+'</p><button class="act gold" id="playAgain" type="button">'+subtitle+'</button></div>');
- foot('<button class="act" id="chooseGame">ゲームを選び直す</button>');$('playAgain').onclick=()=>start(game,st?.difficulty||0);$('chooseGame').onclick=home;message('ルミ：いい勝負だったね！');
+ foot('<button class="act" id="chooseGame">ゲームを選び直す</button>');$('playAgain').onclick=()=>start(game,st?.difficulty||0);$('chooseGame').onclick=home;message('サイ校キャラ：いい勝負だったね！');
 }
 document.querySelectorAll('[data-game]').forEach(el=>el.addEventListener('click',()=>start(el.dataset.game)));
 $('restart').onclick=()=>{if(game)start(game,st?.difficulty||0)};$('back').onclick=home;
@@ -136,33 +136,33 @@ function discardPairs(cards){
 function oldMaidDeck(){return shuffle([...Array.from({length:13},(_,i)=>[card('H',i+1),card('S',i+1)]).flat(),{suit:'J',rank:0,id:'J0'}]);}
 function startOldMaid(){
  const cards=oldMaidDeck(),p=[],ai=[];
- cards.forEach((c,i)=>(i%2?p:ai).push(c));st={player:discardPairs(p),ai:discardPairs(ai),phase:'choose',round:1,status:'ルミの伏せたカードから1枚選ぼう！'};
+ cards.forEach((c,i)=>(i%2?p:ai).push(c));st={player:discardPairs(p),ai:discardPairs(ai),phase:'choose',round:1,status:'サイ校キャラの伏せたカードから1枚選ぼう！'};
  if(st.player.length===0||st.ai.length===0){startOldMaid();return}
  renderOldMaid();
 }
 function renderOldMaid(){
  const s=st;
- info('第'+s.round+'ターン｜あなた '+s.player.length+'枚 ・ ルミ '+s.ai.length+'枚　｜　最後のジョーカーを残さないでね！');
- board('<div class="felt"><h3>🤖 ルミの手札（裏向き） '+s.ai.length+'枚</h3><div class="deckRow">'+s.ai.map((c,i)=>buttonCard(c,i,{back:true,small:true,disabled:s.phase!=='choose',aria:'ルミの伏せたカード '+(i+1)+' を引く'})).join('')+'</div><p class="tableLabel">'+s.status+'</p><h3>🙋 あなたの手札（同じ数字2枚で消える）</h3><div class="deckRow">'+s.player.map(c=>cardVisual(c,{small:true})).join('')+'</div></div>');
+ info('第'+s.round+'ターン｜あなた '+s.player.length+'枚 ・ サイ校キャラ '+s.ai.length+'枚　｜　最後のジョーカーを残さないでね！');
+ board('<div class="felt"><h3>🤖 サイ校キャラの手札（裏向き） '+s.ai.length+'枚</h3><div class="deckRow">'+s.ai.map((c,i)=>buttonCard(c,i,{back:true,small:true,disabled:s.phase!=='choose',aria:'サイ校キャラの伏せたカード '+(i+1)+' を引く'})).join('')+'</div><p class="tableLabel">'+s.status+'</p><h3>🙋 あなたの手札（同じ数字2枚で消える）</h3><div class="deckRow">'+s.player.map(c=>cardVisual(c,{small:true})).join('')+'</div></div>');
  if(s.phase==='choose')for(const b of $('board').querySelectorAll('[data-index]'))b.onclick=()=>pickOldMaid(Number(b.dataset.index));
- foot('<span class="scoreItem">🏆 ルミへの勝利 '+(records.oldmaid||0)+'回</span>');
+ foot('<span class="scoreItem">🏆 サイ校キャラへの勝利 '+(records.oldmaid||0)+'回</span>');
 }
 function endOldMaid(){
- if(st.player.length===0){setBest('oldmaid',(records.oldmaid||0)+1);win('あなたの勝ち！','最後のジョーカーはルミの手元に！ '+records.oldmaid+'勝目だよ！');return true}
- if(st.ai.length===0){win('ルミの勝ち！','ジョーカーが残っちゃった！ 次は勝とうね。');return true}
+ if(st.player.length===0){setBest('oldmaid',(records.oldmaid||0)+1);win('あなたの勝ち！','最後のジョーカーはサイ校キャラの手元に！ '+records.oldmaid+'勝目だよ！');return true}
+ if(st.ai.length===0){win('サイ校キャラの勝ち！','ジョーカーが残っちゃった！ 次は勝とうね。');return true}
  return false;
 }
 function pickOldMaid(i){
  const s=st;if(game!=='oldmaid'||s.phase!=='choose'||!s.ai[i])return;
  const drawn=s.ai.splice(i,1)[0];s.player=discardPairs([...s.player,drawn]);
  if(endOldMaid())return;
- s.phase='ai';s.status='あなたが '+(drawn.rank===0?'ジョーカー':RANKS[drawn.rank])+' を引いたよ。次はルミの番！';message('ルミがカードを選んでいるよ。');renderOldMaid();
+ s.phase='ai';s.status='あなたが '+(drawn.rank===0?'ジョーカー':RANKS[drawn.rank])+' を引いたよ。次はサイ校キャラの番！';message('サイ校キャラがカードを選んでいるよ。');renderOldMaid();
  later(()=>{
   if(game!=='oldmaid'||st!==s)return;
   const picked=s.player.splice(random(s.player.length),1)[0];
   s.ai=discardPairs([...s.ai,picked]);s.round++;
   if(endOldMaid())return;
-  s.phase='choose';s.status='ルミは '+(picked.rank===0?'ジョーカー':RANKS[picked.rank])+' を引いた！ あなたの番！';
+  s.phase='choose';s.status='サイ校キャラは '+(picked.rank===0?'ジョーカー':RANKS[picked.rank])+' を引いた！ あなたの番！';
   message('');renderOldMaid();
  },800);
 }
@@ -177,13 +177,13 @@ function sortCards(a,b){return SUITS.findIndex(s=>s.id===a.suit)-SUITS.findIndex
 function legalSevens(c,laid){if(laid.has(c.id))return false;return laid.has(c.suit+(c.rank-1))||laid.has(c.suit+(c.rank+1));}
 function renderSevens(){
  const s=st,canPlay=s.user.filter(c=>legalSevens(c,s.laid));
- info('第'+s.turn+'ターン　｜　🙋あなた '+s.user.length+'枚　🤖ルミ '+s.ai.length+'枚　｜　'+s.status);
+ info('第'+s.turn+'ターン　｜　🙋あなた '+s.user.length+'枚　🤖サイ校キャラ '+s.ai.length+'枚　｜　'+s.status);
  board('<div class="felt"><h3>🟢 場のカード｜7から左右へつなごう</h3>'+SUITS.map(suit=>'<div class="suitRow"><div class="suitTag" style="color:'+(suit.red?'#ff9ea5':'#dfebff')+'">'+suit.symbol+'</div><div class="slots">'+Array.from({length:13},(_,i)=>{const rank=i+1,on=s.laid.has(suit.id+rank);return '<div class="slot '+(on?'on '+(suit.red?'red':''):'')+'" aria-label="'+suit.name+' '+RANKS[rank]+' '+(on?'場に出ている':'未配置')+'">'+(on?RANKS[rank]:'·')+'</div>'}).join('')+'</div></div>').join('')+
  '<h3>🙋 あなたのカード（出せるカードだけ光るよ）</h3><div class="hand">'+s.user.map((c,i)=>buttonCard(c,i,{small:true,disabled:s.phase!=='user'||!legalSevens(c,s.laid),aria:SUITS.find(x=>x.id===c.suit).name+'の'+RANKS[c.rank]+(legalSevens(c,s.laid)?'・出せる':'・まだ出せない')})).join('')+'</div></div>');
  if(s.phase==='user')for(const b of $('board').querySelectorAll('[data-index]'))b.onclick=()=>playSevens(Number(b.dataset.index));
  if(s.phase==='user'&&!canPlay.length){
-  message('出せるカードがないよ。パスしてルミに交代しよう。',false);
-  foot('<button class="act gold" id="passSevens">⏭ パスしてルミの番へ</button>');$('passSevens').onclick=()=>{if(game!=='sevens')return;s.phase='ai';s.status='出せるカードがなかったのでパス！';renderSevens();later(turnSevensAI,550)};
+  message('出せるカードがないよ。パスしてサイ校キャラに交代しよう。',false);
+  foot('<button class="act gold" id="passSevens">⏭ パスしてサイ校キャラの番へ</button>');$('passSevens').onclick=()=>{if(game!=='sevens')return;s.phase='ai';s.status='出せるカードがなかったのでパス！';renderSevens();later(turnSevensAI,550)};
  }else foot('<span class="scoreItem">⚡ 出せるカード '+canPlay.length+' 枚</span>');
 }
 function playSevens(i){
@@ -191,8 +191,8 @@ function playSevens(i){
  const c=s.user[i];if(!c||!legalSevens(c,s.laid))return;
  s.user.splice(i,1);s.laid.add(c.id);
  if(s.user.length===0){setBest('sevens',(records.sevens||0)+1);win('七並べに勝利！','全部のカードを出せたよ！ 合計 '+records.sevens+' 勝！');return}
- s.phase='ai';s.status='あなたは '+SUITS.find(x=>x.id===c.suit).symbol+RANKS[c.rank]+' を出した！ ルミが考え中…';
- message('ルミの番だよ。');renderSevens();later(turnSevensAI,650);
+ s.phase='ai';s.status='あなたは '+SUITS.find(x=>x.id===c.suit).symbol+RANKS[c.rank]+' を出した！ サイ校キャラが考え中…';
+ message('サイ校キャラの番だよ。');renderSevens();later(turnSevensAI,650);
 }
 function turnSevensAI(){
  const s=st;if(game!=='sevens'||s.phase!=='ai')return;
@@ -201,9 +201,9 @@ function turnSevensAI(){
   // Prefer extending the shorter open run to keep the computer challenging but fair.
   const selected=options[random(options.length)];
   s.ai.splice(s.ai.indexOf(selected),1);s.laid.add(selected.id);
-  if(s.ai.length===0){win('ルミの勝ち！','ルミが先に全部出したよ！ もう一度挑戦！');return}
-  s.status='ルミは '+SUITS.find(x=>x.id===selected.suit).symbol+RANKS[selected.rank]+' を出した！ あなたの番！';
- }else s.status='ルミは出せるカードがないのでパス！ あなたの番！';
+  if(s.ai.length===0){win('サイ校キャラの勝ち！','サイ校キャラが先に全部出したよ！ もう一度挑戦！');return}
+  s.status='サイ校キャラは '+SUITS.find(x=>x.id===selected.suit).symbol+RANKS[selected.rank]+' を出した！ あなたの番！';
+ }else s.status='サイ校キャラは出せるカードがないのでパス！ あなたの番！';
  s.phase='user';s.turn++;message('');renderSevens();
 }
 })();

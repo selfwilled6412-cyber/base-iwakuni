@@ -1,0 +1,91 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1744"><meta name="description" content="サイ校プロジェクト岩国の間違い探し。初級・中級・上級、各30問。左右のイラストから10・20・30個の違いを見つけよう。">
+<title>サイ校・まちがいさがし｜90問</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;color:#f4fbff;background:#080e29}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 2% 8%,#344487aa,transparent 48%),radial-gradient(ellipse at 92% 25%,#5e2472a9,transparent 45%),#080e29}
+button{font:inherit;cursor:pointer}button:disabled{opacity:.5;cursor:default}a{color:#a4ffed}
+.skip{position:absolute;left:-999px}.skip:focus{left:12px;top:12px;z-index:99;background:#fff;color:#111;padding:12px}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px clamp(12px,3vw,35px);background:#091232bb;border-bottom:1px solid #ffffff24}
+.brand{font-weight:1000;font-size:clamp(19px,3vw,28px);letter-spacing:.03em}.brand em{color:#7efbe3;font-style:normal}
+.homeLink{text-decoration:none;border:1px solid #ffffff4a;border-radius:13px;padding:9px 12px;font-weight:850;font-size:13px}
+main{max-width:1740px;margin:auto;padding:clamp(10px,2vw,24px)}
+.hero{text-align:center;padding:clamp(25px,4vw,55px) 12px 18px}
+.kicker{display:inline-flex;border:1px solid #77edff77;color:#a6faff;background:#14274a;padding:7px 15px;border-radius:99px;letter-spacing:.16em;font-size:12px;font-weight:900}
+.hero h1{font-weight:1000;font-size:clamp(36px,7.5vw,76px);margin:14px 0 7px;line-height:1.16;text-shadow:0 6px 0 #1b1254}
+.hero h1 b{color:#ffe178}.hero p{color:#c5d7f0;font-size:clamp(14px,1.65vw,20px);line-height:1.7;margin:10px 0 22px}
+.levelGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(9px,2vw,23px);max-width:1170px;margin:12px auto 27px}
+.levelCard{text-align:left;border:2px solid #ffffff35;border-radius:26px;padding:clamp(15px,3vw,30px);position:relative;background:linear-gradient(145deg,#283564,#131d45);color:white;box-shadow:0 12px 32px #0004;transition:transform .16s,border-color .16s;min-height:210px}
+.levelCard:hover,.levelCard:focus-visible{transform:translateY(-4px);border-color:#a9fff2}
+.levelCard:nth-child(1){background:linear-gradient(145deg,#17636c,#173559)}
+.levelCard:nth-child(2){background:linear-gradient(145deg,#534287,#222d60)}
+.levelCard:nth-child(3){background:linear-gradient(145deg,#9a435b,#512663)}
+.levelCard .icon{font-size:clamp(34px,5vw,56px);display:block;margin-bottom:13px;filter:drop-shadow(0 4px 7px #0006)}
+.levelCard strong{display:block;font-size:clamp(19px,3vw,29px)}
+.levelCard .count{display:block;font-size:clamp(27px,4vw,45px);font-weight:1000;color:#fef5b5;margin:5px 0}
+.levelCard small{color:#d5e5f5;line-height:1.6}
+.levelCard .record{display:block;margin-top:15px;font-size:12px;font-weight:800;color:#a6ffee}
+.how{max-width:950px;margin:15px auto;color:#b9cce7;text-align:center;font-size:14px;line-height:1.8}
+#play[hidden],#picker[hidden],#result[hidden]{display:none}
+.gameTop{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.backBtn,.action{color:#f8fbff;background:#283767;border:1px solid #ffffff63;padding:11px 17px;border-radius:14px;font-weight:850;min-height:46px}
+.action.primary{background:linear-gradient(100deg,#64f5d9,#b6f9a0);border:0;color:#103b46}
+.action.warn{background:#563b72}
+.headerTitle{font-size:clamp(16px,2.2vw,23px);font-weight:1000;margin:0;color:#fcf6d1}
+.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:13px 0}
+.metric{background:#172952;border:1px solid #ffffff31;border-radius:14px;text-align:center;padding:10px 3px}
+.metric small{display:block;color:#b4c6f2;font-size:clamp(10px,1.1vw,13px);font-weight:900}
+.metric strong{font-size:clamp(20px,2.8vw,33px);font-weight:1000;color:#fff3b4;font-variant-numeric:tabular-nums}
+.progressTrack{height:12px;background:#27355b;border-radius:99px;overflow:hidden;border:1px solid #ffffff34;margin-bottom:10px}
+.progressFill{height:100%;background:linear-gradient(90deg,#45e2dd,#c1ff81);width:0;transition:width .22s}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.puzzleBoard{min-width:0;overflow:auto;background:#0b1d45;border:3px solid #ffffff50;border-radius:18px;box-shadow:0 8px 30px #0006;scrollbar-color:#6fd6fa #162b54}
+.puzzleBoard h3{position:sticky;left:0;margin:0;padding:9px 12px;background:#192c55;color:white;font-weight:900;text-align:center;z-index:1;font-size:clamp(14px,2vw,19px)}
+.puzzleCanvas{background:#c6e2d9}.puzzleCanvas svg{border-radius:0 0 14px 14px}.puzzleCanvas .thing:hover .hitBox{stroke:#ffffff65;stroke-width:2}.puzzleCanvas .thing .hitBox{cursor:crosshair}
+.puzzleCanvas{width:100%;position:relative;line-height:0;touch-action:pan-x pan-y}
+.puzzleCanvas svg{width:100%;height:auto;min-width:0;display:block}
+.puzzleCanvas .thing{cursor:pointer;outline:none}
+.puzzleCanvas .thing:focus-visible .hitBox{stroke:#fff;stroke-width:5}
+.puzzleCanvas .foundRing{filter:drop-shadow(0 0 8px #00edd5)}
+.puzzleCanvas .hintRing{animation:pulse 1s ease-in-out infinite alternate;filter:drop-shadow(0 0 10px #f8ff35)}
+@keyframes pulse{to{opacity:.35;stroke-width:13}}
+.compare.zoomed .puzzleCanvas svg{min-width:960px}
+.tipRow{background:#142753;border:1px solid #ffffff36;border-radius:15px;padding:13px 15px;margin-top:12px;display:flex;gap:11px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.tipRow strong{color:#fdf4a9}.tipRow .actions{display:flex;gap:8px;flex-wrap:wrap}
+#message{font-size:clamp(13px,1.5vw,17px);font-weight:850;color:#e4f5ff;min-height:27px}
+#result{margin:15px auto 8px;max-width:870px;border:2px solid #b2ffdb;background:#173e63;border-radius:22px;padding:25px;text-align:center;box-shadow:0 0 40px #63eac534}
+#result strong{display:block;font-size:clamp(23px,4vw,42px);color:#ffedac}
+#result p{color:#d7f6ff;font-weight:800}
+.note{font-size:13px;color:#b5c4e1;line-height:1.7;margin:14px 0;text-align:center}
+footer{text-align:center;color:#8198c5;font-size:12px;padding:19px}
+@media(max-width:760px){.levelGrid{grid-template-columns:1fr;max-width:510px}.levelCard{min-height:0;padding:17px 20px;display:grid;grid-template-columns:65px 1fr;align-items:center;gap:0 12px}.levelCard .icon{grid-row:span 3;margin:0}.levelCard .count{font-size:26px;margin:0}.levelCard small,.levelCard .record{grid-column:2;margin-top:2px}.compare{grid-template-columns:1fr}.gameTop{gap:8px}.hud{gap:5px}.metric{padding:6px 1px}.tipRow{align-items:start}.tipRow .actions{width:100%}.tipRow button{flex:1}.puzzleBoard h3{padding:8px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head><body>
+<a class="skip" href="#main">ゲームへ移動</a>
+<header><div class="brand">🔎 サイ校 <em>まちがいさがし</em></div><a class="homeLink" href="../saiko-apps/">⌂ ゲーム一覧</a></header>
+<main id="main">
+<section id="picker"><div class="hero"><span class="kicker">SAIKO SPOT THE DIFFERENCE</span><h1>ふたつの絵から<br><b>ちがいを見つけよう！</b></h1><p>公園や海、街など、ひとつながりの風景画を左右で見比べよう。<br>初級・中級・上級、それぞれ30問ずつ遊べるよ！</p></div>
+<div class="levelGrid">
+<button class="levelCard" data-level="easy" type="button"><span class="icon">🌱</span><strong>初級</strong><span class="count">5個のちがい</span><small>わかりやすい変化を見つけよう • 全30問</small><span class="record" id="doneEasy">0 / 30問クリア</span></button>
+<button class="levelCard" data-level="normal" type="button"><span class="icon">🌟</span><strong>中級</strong><span class="count">7個のちがい</span><small>絵の中の小さな変化も探そう • 全30問</small><span class="record" id="doneNormal">0 / 30問クリア</span></button>
+<button class="levelCard" data-level="hard" type="button"><span class="icon">👑</span><strong>上級</strong><span class="count">10個のちがい</span><small>背景の細かな変化を見つけよう！ • 全30問</small><span class="record" id="doneHard">0 / 30問クリア</span></button>
+</div><p class="how">🖼️ 左右どちらの絵をタップしてもOK！　✅ 正解した場所には丸が付くよ。<br>📱 スマホは上下に表示。画面拡大や横並び切り替えも使えるよ。</p></section>
+<section id="play" hidden>
+<div class="gameTop"><button id="home" class="backBtn" type="button">← 難易度を選ぶ</button><h1 class="headerTitle" id="questionTitle">初級｜第1問</h1><button id="next" class="action primary" type="button">別の問題 ▶</button></div>
+<div class="hud">
+<div class="metric"><small>見つけた！</small><strong id="found">0 / 10</strong></div>
+<div class="metric"><small>残り</small><strong id="remaining">10</strong></div>
+<div class="metric"><small>経過時間</small><strong id="elapsed">0:00</strong></div>
+<div class="metric"><small>ミスタップ</small><strong id="miss">0</strong></div>
+</div><div class="progressTrack"><div class="progressFill" id="progress" role="progressbar" aria-label="見つけた間違いの割合" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+<div class="compare" id="compare">
+<section class="puzzleBoard" id="boardLeft"><h3>🅰️ 左の絵（お手本）</h3><div class="puzzleCanvas" id="leftPicture" aria-label="左のイラスト"></div></section>
+<section class="puzzleBoard" id="boardRight"><h3>🅱️ 右の絵（間違い入り）</h3><div class="puzzleCanvas" id="rightPicture" aria-label="右のイラスト"></div></section>
+</div>
+<div class="tipRow"><div id="message" role="status" aria-live="polite">違うところをタップしてね！</div><div class="actions"><button id="hint" class="action" type="button">💡 ヒント</button><button id="zoom" class="action" type="button" aria-pressed="false">🔍 拡大</button><button id="layout" class="action" type="button" aria-pressed="false">⇄ 横並び</button><button id="full" class="action" type="button">⛶ 全画面</button></div></div>
+<div id="result" hidden><strong>🎉 全部見つけた！</strong><p id="resultText"></p><button id="resultNext" class="action primary" type="button">次の問題へ ▶</button></div>
+<p class="note">オリジナルの風景イラストを左右で見比べてね。初級5個・中級7個・上級10個、各30問。ヒントはまだ見つけていない場所をひとつ示すよ。30問を一巡するまで同じ問題は出ません。</p>
+</section></main><footer>サイ校プロジェクト岩国 ｜ まちがいさがし</footer>
+<script src="puzzle-core.js"></script><script src="app.js"></script>
+</body></html>
