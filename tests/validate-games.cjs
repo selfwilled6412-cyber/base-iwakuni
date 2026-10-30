@@ -234,13 +234,34 @@ assert(read('saiko-apps/index.html').includes('href="../saiko-card-games/"'));
 const party=suiteHarness('saiko-party-games/app.js','window.__qa={start,getState:()=>state,getTeams:()=>teams,beginTeamMemory,tapTeamMemory,beginTeam21,stay21,hit21,beginSymbolSpeed,awardSymbol,commonSymbol,speedDeck:SPEED_DECK,gestures:GESTURES,clues:CLUES,funny:FUNNY_CLUES,chaos:CHAOS_CLUES,facts:FACTS,two:TWO_CHOICES,tsuk:TSUKKOMI};})();');
 party.qa.start('teamMemory');
 assert.equal(party.qa.getState().phase,'setup');
+assert.equal(party.qa.getState().playKind,'individual','Individual mode should be offered first');
 party.get('memoryLaunch').onclick();
 assert.equal(party.qa.getState().faces.length,20);
 assert.equal(new Set(party.qa.getState().faces).size,10);
 assert.equal(party.qa.getState().members,4);
 assert.equal(party.qa.getState().phase,'play');
+// Individual: 1 person can solve alone, or 2–6 people compete for their own pair counts.
 party.qa.start('teamMemory');
-party.qa.beginTeamMemory(4,6,'coop');
+party.qa.beginTeamMemory(1,6,'battle','individual');
+const onePlayer=party.qa.getState();
+assert.equal(onePlayer.members,1);
+assert.equal(onePlayer.playKind,'individual');
+assert.equal(party.qa.getTeams().length,1);
+const individualPairs=new Map();
+onePlayer.faces.forEach((v,i)=>{const a=individualPairs.get(v)||[];a.push(i);individualPairs.set(v,a)});
+for(const pair of individualPairs.values()){
+ party.qa.tapTeamMemory(pair[0]);party.qa.tapTeamMemory(pair[1]);
+}
+assert.equal(onePlayer.completed,true,'Solo mode should reach a real win state');
+assert.equal(party.qa.getTeams()[0],6,'Each matched pair credits one individual player');
+assert(party.get('status').textContent.includes('ひとりで全ペア達成'));
+party.qa.start('teamMemory');
+party.qa.beginTeamMemory(6,10,'battle','individual');
+assert.equal(party.qa.getState().members,6);
+assert.equal(party.qa.getTeams().length,6);
+assert.equal(party.qa.getState().playKind,'individual');
+party.qa.start('teamMemory');
+party.qa.beginTeamMemory(4,6,'coop','team');
 const coop=party.qa.getState();
 assert.equal(coop.style,'coop');
 const pairIndices=new Map();
