@@ -144,8 +144,10 @@ for(const href of ['../saiko-nazotoki/','../saiko-escape/','../saiko-escape-2/',
 const playCards=(appHub.match(/<article class="tile"[^>]*data-view="[^"]+"/g)||[]);
 assert.equal(playCards.length,15,'Active games should appear as compact tiles');
 assert(playCards.some(x=>x.includes('group'))&&playCards.some(x=>x.includes('solo')));
-for(const mode of ['group','solo','all','creative','favorites'])assert(appHub.includes('data-view-filter="'+mode+'"'),'Missing filter '+mode);
-assert(appHub.includes("card.dataset.view.split(' ').includes(view)"),'Group/solo selection must filter app tiles');
+for(const mode of ['game','creative','utility','all','favorites'])assert(appHub.includes('data-view-filter="'+mode+'"'),'Missing category '+mode);
+for(const mode of ['group','solo','all'])assert(appHub.includes('data-players-filter="'+mode+'"'),'Missing optional play mode '+mode);
+assert(appHub.includes("card.dataset.kind===view"),'Top-level tabs should filter by game/creative/utility');
+assert(appHub.includes("card.dataset.view.split(' ').includes(players)"),'Play mode only filters inside Games');
 assert(appHub.includes('data-view="all group solo"'),'Hybrid games must appear under solo and group');
 assert(appHub.includes('href="../saiko-rhythm/"'),"Rhythm game must be reachable from main hub");
 const hubJS=appHub.match(/<script>([\s\S]*?)<\/script>/)?.[1];assert(hubJS,'App hub script missing');

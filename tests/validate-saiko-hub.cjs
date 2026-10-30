@@ -2,17 +2,27 @@
 'use strict';
 const fs=require('node:fs'),assert=require('node:assert/strict'),vm=require('node:vm');
 const html=fs.readFileSync('saiko-apps/index.html','utf8');
-const items=[...html.matchAll(/<article class="tile" data-app-id="(\d+)" data-view="([^"]+)" data-tags="([^"]+)">([\s\S]*?)<\/article>/g)];
+const items=[...html.matchAll(/<article class="tile" data-app-id="(\d+)" data-view="([^"]+)" data-kind="([^"]+)" data-tags="([^"]+)">([\s\S]*?)<\/article>/g)];
 assert.equal(items.length,15,'Ready-to-play main catalog should have 15 compact apps');
 assert.equal(new Set(items.map(x=>x[1])).size,15,'App IDs are unique');
-const hrefs=items.map(x=>(x[4].match(/<a class="tileLink" href="([^"]+)"/)||[])[1]);
+const hrefs=items.map(x=>(x[5].match(/<a class="tileLink" href="([^"]+)"/)||[])[1]);
 assert(hrefs.every(Boolean));
 assert.equal(new Set(hrefs).size,15,'No duplicates in main catalog');
 assert(items.every(x=>x[2].includes('all')),'All apps visible in all tab');
-for(const name of ['group','solo','creative']){
- assert(items.some(x=>x[2].split(' ').includes(name)),'Missing category '+name);
- assert(html.includes('data-view-filter="'+name+'"'),'Missing nav control '+name);
+const distribution={};
+for(const x of items)distribution[x[3]]=(distribution[x[3]]||0)+1;
+assert.deepEqual(distribution,{game:10,creative:4,utility:1},'All playable puzzles and escape rooms belong to Games');
+for(const url of ['../saiko-nazotoki/','../saiko-escape/','../saiko-escape-2/']){
+ const match=items.find(x=>x[5].includes('href="'+url+'"'));
+ assert(match&&match[3]==='game','Puzzle or escape incorrectly excluded from Games: '+url);
 }
+assert(html.includes("let view='game',players='all'"),'Game category with all play modes must be the default');
+assert(html.includes("view==='all'||card.dataset.kind===view"),'Filter must use main category');
+assert(html.includes("view!=='game'||players==='all'"),'All games visible independent of team/solo by default');
+for(const name of ['game','creative','utility','all','favorites']){
+ assert(html.includes('data-view-filter="'+name+'"'),'Missing main category '+name);
+}
+for(const mode of ['all','group','solo'])assert(html.includes('data-players-filter="'+mode+'"'),'Missing optional play mode '+mode);
 for(const href of ['../saiko-premium-spot/','../saiko-party-games/','../saiko-rhythm/']){
  assert(hrefs.includes(href),'Missing featured app from catalog '+href);
  assert(html.split('href="'+href+'"').length>=3,'Featured navigation not present '+href);

@@ -41,6 +41,11 @@ main{max-width:1110px;margin:auto;padding:16px 15px 28px}
 .devArea{margin-top:26px}.devArea details{background:#fff;border:1px solid #dfe5f1;border-radius:16px;padding:15px 17px}.devArea summary{cursor:pointer;font-weight:900;color:#424e76;min-height:28px}.devArea p{font-size:13px;line-height:1.6;color:#63708e}
 .labItem{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:13px 0;border-top:1px solid #edf0f9;color:#243e6c;text-decoration:none;font-size:14px}.labItem strong{font-size:14px}.labItem small{display:block;color:#73809b;margin-top:2px}.labItem>span:last-child{white-space:nowrap;color:#746d98;font-size:12px;font-weight:900}.labItem.muted{opacity:.7}
 footer{text-align:center;color:#7985a3;font-size:12px;padding:25px 10px;line-height:1.7}
+.playOptions{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:13px 0 2px;padding:11px 12px;background:#e9edfb;border-radius:13px}
+.playOptions[hidden]{display:none!important}
+.playLabel{color:#505f82;font-size:13px;font-weight:900}
+.playChip{border:1px solid #c8d4e9;border-radius:40px;background:white;color:#3e5379;padding:8px 12px;min-height:38px;font-weight:900;font-size:13px}
+.playChip[aria-pressed="true"]{background:#264f9e;color:#fff;border-color:#264f9e}
 @media(max-width:800px){.spotlight{grid-template-columns:1fr 1fr}.feature.premium{grid-column:span 2;min-height:180px}.feature{min-height:135px}.feature.party:before{font-size:75px}.feature.rhythm:before{font-size:95px}}
 @media(max-width:650px){.tiles{grid-template-columns:1fr}.tileLink{min-height:94px}.sectionHead{margin-top:24px}.brandLogo{width:70px}.staff{font-size:11px;padding:9px}.heroTitle{margin-top:13px}.tab{flex:1;padding:8px 9px;font-size:13px}.tab.starTab{margin-left:0}.spotlight{gap:9px}.feature{padding:15px}.feature strong{font-size:17px}.feature.premium strong{font-size:22px}}
 @media(max-width:380px){.tab{font-size:12px}.tileIcon{width:47px;height:47px}.feature strong{font-size:15px}}
@@ -55,87 +60,93 @@ footer{text-align:center;color:#7985a3;font-size:12px;padding:25px 10px;line-hei
 <a class="feature party" href="../saiko-party-games/"><span class="featureTag">📺 みんなで</span><strong>ゲーム大会</strong><small>ビンゴ・神経衰弱・対戦</small></a>
 <a class="feature rhythm" href="../saiko-rhythm/"><span class="featureTag">🎵 音ゲー</span><strong>BEAT RUSH</strong><small>オリジナル曲で遊ぼう</small></a>
 </div></section>
-<section class="browse" id="browse" aria-label="ゲームを探す"><div class="sectionHead"><h2>ゲームを選ぶ</h2><small>遊び方で絞り込める</small></div>
-<div class="tabs" role="group" aria-label="遊び方">
-<button class="tab" data-view-filter="group" aria-pressed="true" type="button">👥 みんな</button>
-<button class="tab" data-view-filter="solo" aria-pressed="false" type="button">📱 ひとり</button>
-<button class="tab" data-view-filter="creative" aria-pressed="false" type="button">🎨 つくる</button>
+<section class="browse" id="browse" aria-label="アプリを探す"><div class="sectionHead"><h2>遊びたいものを探す</h2><small>ゲームも謎解きもここから</small></div>
+<div class="tabs" role="group" aria-label="アプリのジャンル">
+<button class="tab" data-view-filter="game" aria-pressed="true" type="button">🎮 ゲーム</button>
+<button class="tab" data-view-filter="creative" aria-pressed="false" type="button">🎨 ものづくり</button>
+<button class="tab" data-view-filter="utility" aria-pressed="false" type="button">🧰 便利ツール</button>
 <button class="tab" data-view-filter="all" aria-pressed="false" type="button">📚 すべて</button>
 <button class="tab starTab" data-view-filter="favorites" aria-pressed="false" type="button">★ お気に入り</button></div>
+<div class="playOptions" id="playOptions" role="group" aria-label="ゲームの遊び方">
+<span class="playLabel">遊び方：</span>
+<button type="button" class="playChip" data-players-filter="all" aria-pressed="true">全ゲーム</button>
+<button type="button" class="playChip" data-players-filter="group" aria-pressed="false">👥 みんなで</button>
+<button type="button" class="playChip" data-players-filter="solo" aria-pressed="false">📱 ひとりで</button>
+</div>
 <div class="toolbar"><input id="appSearch" class="search" type="search" placeholder="🔎 ゲーム名で探す" aria-label="ゲーム名で検索" autocomplete="off"><span class="counter" id="appCount" aria-live="polite"></span></div>
 <p id="emptyResults" class="empty" hidden>見つからなかったよ。「すべて」か別の言葉で探してね。</p>
 <div class="tiles" id="gameCards">
-<article class="tile" data-app-id="0" data-view="all group solo" data-tags="recreation kids group solo">
+<article class="tile" data-app-id="0" data-view="all group solo" data-kind="game" data-tags="recreation kids group solo">
 <a class="tileLink" href="../saiko-premium-spot/"><span class="tileIcon" aria-hidden="true">🎨✨</span><span class="tileInfo"><strong>プレミアム間違い探し</strong><small>絵本みたいな3つの風景から違いを探そう</small><span class="smallTag">高品質版・体験3問</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="1" data-view="all group" data-tags="recreation kids group">
+<article class="tile" data-app-id="1" data-view="all group" data-kind="game" data-tags="recreation kids group">
 <a class="tileLink" href="../saiko-party-games/"><span class="tileIcon" aria-hidden="true">📺</span><span class="tileInfo"><strong>みんなでゲーム大会</strong><small>神経衰弱・ビンゴ・みんなで対戦</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="2" data-view="all group solo" data-tags="recreation kids solo group">
+<article class="tile" data-app-id="2" data-view="all group solo" data-kind="game" data-tags="recreation kids solo group">
 <a class="tileLink" href="../saiko-rhythm/"><span class="tileIcon" aria-hidden="true">🎵</span><span class="tileInfo"><strong>SAIKO BEAT RUSH</strong><small>オリジナル3曲でリズムゲーム</small><span class="smallTag">オリジナル曲</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="3" data-view="all solo" data-tags="recreation kids solo">
+<article class="tile" data-app-id="3" data-view="all solo" data-kind="game" data-tags="recreation kids solo">
 <a class="tileLink" href="../saiko-solo-arcade/"><span class="tileIcon" aria-hidden="true">🕹️</span><span class="tileInfo"><strong>ミニゲームセンター</strong><small>モグラたたきなど10種類のミニゲーム</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="4" data-view="all solo" data-tags="recreation kids solo">
+<article class="tile" data-app-id="4" data-view="all solo" data-kind="game" data-tags="recreation kids solo">
 <a class="tileLink" href="../saiko-card-games/"><span class="tileIcon" aria-hidden="true">🃏</span><span class="tileInfo"><strong>カードゲーム</strong><small>ババ抜き・七並べ・CPU対戦など</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="5" data-view="all group" data-tags="recreation group">
+<article class="tile" data-app-id="5" data-view="all group" data-kind="game" data-tags="recreation group">
 <a class="tileLink" href="../saiko-nazotoki/"><span class="tileIcon" aria-hidden="true">🧩</span><span class="tileInfo"><strong>謎解きゲーム</strong><small>初級〜上級のひらめきクイズ150問</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="6" data-view="all group" data-tags="recreation kids group">
+<article class="tile" data-app-id="6" data-view="all group" data-kind="game" data-tags="recreation kids group">
 <a class="tileLink" href="../saiko-escape/"><span class="tileIcon" aria-hidden="true">🔐</span><span class="tileInfo"><strong>脱出ミッション</strong><small>50ステージの謎をみんなで解こう</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="7" data-view="all group" data-tags="recreation group">
+<article class="tile" data-app-id="7" data-view="all group" data-kind="game" data-tags="recreation group">
 <a class="tileLink" href="../saiko-escape-2/"><span class="tileIcon" aria-hidden="true">🧠</span><span class="tileInfo"><strong>脱出ミッションⅡ</strong><small>難しい謎に挑む上級50ステージ</small><span class="smallTag">上級</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="8" data-view="all solo" data-tags="recreation kids solo">
+<article class="tile" data-app-id="8" data-view="all solo" data-kind="game" data-tags="recreation kids solo">
 <a class="tileLink" href="../saiko-adventure/"><span class="tileIcon" aria-hidden="true">🗺️</span><span class="tileInfo"><strong>宝さがし大冒険</strong><small>迷路を進んで宝を見つけよう</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="9" data-view="all creative" data-tags="creative kids solo">
+<article class="tile" data-app-id="9" data-view="all creative" data-kind="creative" data-tags="creative kids solo">
 <a class="tileLink" href="../saiko-draw/"><span class="tileIcon" aria-hidden="true">🎨</span><span class="tileInfo"><strong>おえかきアトリエ</strong><small>自由に描いて画像を保存</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="10" data-view="all solo" data-tags="kids solo">
+<article class="tile" data-app-id="10" data-view="all solo" data-kind="game" data-tags="kids solo">
 <a class="tileLink" href="../saiko-kids/"><span class="tileIcon" aria-hidden="true">🚀</span><span class="tileInfo"><strong>キッズゲームひろば</strong><small>子ども向けのゲーム入口</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="11" data-view="all creative" data-tags="creative solo">
+<article class="tile" data-app-id="11" data-view="all creative" data-kind="creative" data-tags="creative solo">
 <a class="tileLink" href="https://ai-badge-workshop.selfwilled6412.chatgpt.site/" target="_blank" rel="noopener noreferrer"><span class="tileIcon" aria-hidden="true">🎖️</span><span class="tileInfo"><strong>AI缶バッジ工房</strong><small>オリジナルの缶バッジをデザイン</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="12" data-view="all creative" data-tags="creative kids solo">
+<article class="tile" data-app-id="12" data-view="all creative" data-kind="creative" data-tags="creative kids solo">
 <a class="tileLink" href="https://selfwilled6412-cyber.github.io/ai-4koma-manga-kobo/" target="_blank" rel="noopener noreferrer"><span class="tileIcon" aria-hidden="true">📚</span><span class="tileInfo"><strong>AI4コマ漫画工房</strong><small>5つの質問から4コマ漫画を作ろう</small><span class="smallTag">試作</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 <div class="extraLink"><a href="https://selfwilled6412-cyber.github.io/ai-4koma-manga-kobo/quick.html" target="_blank" rel="noopener noreferrer">✨ かんたん完成モード　› ›</a></div>
 </article>
-<article class="tile" data-app-id="13" data-view="all group" data-tags="recreation group">
+<article class="tile" data-app-id="13" data-view="all group" data-kind="utility" data-tags="recreation group">
 <a class="tileLink" href="https://saikou-seat-concierge.selfwilled6412.chatgpt.site" target="_blank" rel="noopener noreferrer"><span class="tileIcon" aria-hidden="true">🪑</span><span class="tileInfo"><strong>席決めコンシェルジュ</strong><small>ランダムに座席を決める便利ツール</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="14" data-view="all solo creative" data-tags="creative recreation solo">
+<article class="tile" data-app-id="14" data-view="all solo creative" data-kind="creative" data-tags="creative recreation solo">
 <a class="tileLink" href="../saiko-rhythm/studio.html"><span class="tileIcon" aria-hidden="true">🎼</span><span class="tileInfo"><strong>音ゲー譜面工房</strong><small>自分の音楽で譜面を作る制作ツール</small><span class="smallTag">制作向け</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
@@ -149,11 +160,13 @@ footer{text-align:center;color:#7985a3;font-size:12px;padding:25px 10px;line-hei
 (()=>{'use strict';
 const cards=Array.from(document.querySelectorAll('.tile'));
 const tabs=Array.from(document.querySelectorAll('[data-view-filter]'));
+const playerButtons=Array.from(document.querySelectorAll('[data-players-filter]'));
+const playOptions=document.getElementById('playOptions');
 const input=document.getElementById('appSearch');
 const counter=document.getElementById('appCount');
 const empty=document.getElementById('emptyResults');
 const STORAGE='saiko-apps-favorites-v1';
-let view='group',favorites=[];
+let view='game',players='all',favorites=[];
 try{let list=JSON.parse(localStorage.getItem(STORAGE)||'[]');if(Array.isArray(list))favorites=list.filter(v=>typeof v==='string').slice(0,150)}catch(e){}
 const favoritesFor=card=>card.querySelector('.tileLink').href;
 const save=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(favorites))}catch(e){}};
@@ -162,9 +175,10 @@ function refresh(){
  const query=input.value.normalize('NFKC').toLocaleLowerCase('ja').trim();
  for(const card of cards){
   const starred=favorites.includes(favoritesFor(card));
-  const matchesView=view==='favorites'?starred:card.dataset.view.split(' ').includes(view);
+  const matchesView=view==='favorites'?starred:view==='all'||card.dataset.kind===view;
+  const matchesPlayers=view!=='game'||players==='all'||card.dataset.view.split(' ').includes(players);
   const matchesText=!query||card.textContent.normalize('NFKC').toLocaleLowerCase('ja').includes(query);
-  const show=matchesView&&matchesText;
+  const show=matchesView&&matchesPlayers&&matchesText;
   card.hidden=!show;
   if(show)visible++;
   card.style.order=starred?'-1':'0';
@@ -175,10 +189,16 @@ function refresh(){
  }
  counter.textContent=visible+' 件';
  empty.hidden=visible!==0;
+ playOptions.hidden=view!=='game';
 }
 tabs.forEach(tab=>tab.addEventListener('click',()=>{
  view=tab.dataset.viewFilter;
  tabs.forEach(b=>b.setAttribute('aria-pressed',String(b===tab)));
+ refresh();
+}));
+playerButtons.forEach(button=>button.addEventListener('click',()=>{
+ players=button.dataset.playersFilter;
+ playerButtons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
  refresh();
 }));
 cards.forEach(card=>card.querySelector('.favToggle').addEventListener('click',()=>{
@@ -187,6 +207,6 @@ cards.forEach(card=>card.querySelector('.favToggle').addEventListener('click',()
  save();refresh();
 }));
 input.addEventListener('input',refresh);refresh();
-window.SaikoHub={getView:()=>view,getVisibleCount:()=>cards.filter(c=>!c.hidden).length};
+window.SaikoHub={getView:()=>view,getPlayers:()=>players,getVisibleCount:()=>cards.filter(c=>!c.hidden).length};
 })();
 </script></body></html>
