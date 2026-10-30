@@ -376,6 +376,22 @@ public final class MainActivity extends Activity {
     }
   }
 
+  @Override protected void onPause(){
+    // Android may suspend WebView JS before visibilitychange is dispatched.
+    // Pause audio immediately and let the UI enter a paused state on resume.
+    synchronized(musicLock){
+      if(musicPlayer!=null)try{
+        if(musicPlayer.isPlaying())musicPlayer.pause();
+      }catch(IllegalStateException ignored){}
+    }
+    if(view!=null)view.evaluateJavascript("window.SaikoPianoAutoPause&&window.SaikoPianoAutoPause();",null);
+    super.onPause();
+  }
+  @Override protected void onResume(){
+    super.onResume();
+    if(view!=null)view.evaluateJavascript("window.SaikoPianoAutoPause&&window.SaikoPianoAutoPause();",null);
+  }
+
   @Override public void onBackPressed(){
     if(view!=null&&view.canGoBack())view.goBack();else super.onBackPressed();
   }
