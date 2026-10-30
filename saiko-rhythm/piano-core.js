@@ -104,11 +104,13 @@
   return notes.map((n,i)=>{
    const gap=(i+1<notes.length?notes[i+1].t:buffer.duration)-n.t;
    if(gap<.78)return n;
-   const candidate=Math.min(1.2,gap-.22);
-   // Easy mode drops some attacks for playability. Do not interpret those
-   // skipped musical attacks as sustained notes.
+   // Keep the hold's end before the next REAL detected attack, even if
+   // that attack was removed from the beginner chart.
    const reference=Array.isArray(rawOnsets)?rawOnsets:notes.map(x=>x.t);
-   if(reference.some(t=>t>n.t+.22&&t<n.t+candidate+.12))return n;
+   let nextAttack=Infinity;
+   for(const t of reference)if(t>n.t+.20)nextAttack=Math.min(nextAttack,t);
+   const candidate=Math.min(1.2,gap-.22,nextAttack-n.t-.16);
+   if(candidate<.58)return n;
    const attack=rms(n.t+.04,n.t+.16),sustain=rms(n.t+.37,n.t+.56);
    if(attack<.01||sustain<Math.max(.012,attack*.26))return n;
    return {...n,hold:Math.round(candidate*100)/100};
