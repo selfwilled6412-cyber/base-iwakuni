@@ -12,7 +12,7 @@ function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){
 function stop(){clearInterval(timer);clearTimeout(timer);timer=null}
 function show(t){$('status').textContent=t}function panel(h){$('board').innerHTML=h}
 function actions(arr){$('actions').innerHTML=arr.map(([id,v])=>'<button id="a_'+id+'" type="button">'+v+'</button>').join('')}
-function scores(){if(mode==='bingo'||mode==='two'){$('scores').replaceChildren();return}if(['teamMemory','teamHighLow','team21','symbolSpeed'].includes(mode)){if(!state||state.phase==='setup'){$('scores').replaceChildren();return}$('scores').innerHTML=teams.map((n,i)=>'<div class="teamStanding'+((mode==='teamMemory'||mode==='team21')&&state.turn===i?' current':'')+'">'+TEAM_BADGES[i]+' '+TEAM_COLORS[i]+' '+(n||0)+(mode==='teamMemory'?'組':'点')+'</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
+function scores(){if(mode==='bingo'||mode==='two'){$('scores').replaceChildren();return}if(['teamMemory','teamHighLow','team21','symbolSpeed'].includes(mode)){if(!state||state.phase==='setup'){$('scores').replaceChildren();return}$('scores').innerHTML=teams.map((n,i)=>'<div class="teamStanding'+((mode==='teamMemory'||mode==='team21')&&state.turn===i?' current':'')+'">'+(mode==='teamMemory'?memoryMemberLabel(i):TEAM_BADGES[i]+' '+TEAM_COLORS[i])+' '+(n||0)+(mode==='teamMemory'?'組':'点')+'</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
 function back(){stop();mode=null;state=null;$('home').hidden=false;$('game').hidden=true}
 function start(m){stop();mode=m;state=null;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 みんなで神経衰弱',teamHighLow:'🃏 みんなでハイ＆ロー',team21:'🎯 ぴったり21カード',symbolSpeed:'⚡ 同じ絵スピード',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='teamHighLow')startTeamHighLow();else if(m==='team21')startTeam21();else if(m==='symbolSpeed')startSymbolSpeed();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
 document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>start(b.dataset.game));$('back').onclick=back;$('restart').onclick=()=>{if(!mode||!confirm('最初からやり直す？'))return;if(mode==='bingo'){delete saved.bingo;persist()}start(mode)};
@@ -108,6 +108,7 @@ function oxShow(){if(state.pos>=50){show('50問完走！');panel('<div class="an
 /* 大型モニター用カードゲーム：2〜6人／チーム。手札の秘密が必要ない種目を採用 */
 const TEAM_BADGES=['🔴','🔵','🟡','🟢','🟣','🟠'];
 const TEAM_COLORS=['赤','青','黄','緑','紫','オレンジ'];
+function memoryMemberLabel(i){return state?.playKind==='individual'?'👤 プレイヤー'+(i+1):TEAM_BADGES[i]+' '+TEAM_COLORS[i]+'チーム'}
 const MEMORY_ICONS=['🍎','🌈','🐱','🐼','⭐','🎸','🚀','💎','🎂','🍀','🐬','👑','⚽','🌷','🎮','🍮'];
 function memberSelect(value,id){
  return '<label class="partySelectLabel" for="'+id+'">参加する人数・チーム数</label><select id="'+id+'" class="partySelect">'+
@@ -119,46 +120,61 @@ function teamSetupView(title,summary,extra,id,launch){
  actions([['home','← ほかのゲーム']]);$('a_home').onclick=back;
 }
 function startTeamMemory(){
- state={phase:'setup',members:4,pairs:10,style:'battle'};
+ state={phase:'setup',members:4,pairs:10,style:'battle',playKind:'individual'};
  teamMemorySetup();
 }
 function teamMemorySetup(){
  const s=state;teams=Array(s.members).fill(0);scores();
- const selects='<label class="partySelectLabel" for="memoryPairs">カードの枚数・難しさ</label>'+
+ const kindSelect='<label class="partySelectLabel" for="memoryKind">参加方法</label>'+
+ '<select id="memoryKind" class="partySelect"><option value="individual" '+(s.playKind==='individual'?'selected':'')+'>👤 個人戦（1〜6人・一人ずつ得点）</option><option value="team" '+(s.playKind==='team'?'selected':'')+'>👥 チーム戦（2〜6チーム）</option></select>';
+ const selects=kindSelect+'<label class="partySelectLabel" for="memoryPairs">カードの枚数・難しさ</label>'+
  '<select id="memoryPairs" class="partySelect">'+[[6,'🌱 12枚・かんたん'],[10,'🌟 20枚・ふつう'],[15,'👑 30枚・むずかしい']].map(([p,label])=>'<option value="'+p+'" '+(s.pairs===p?'selected':'')+'>'+label+'</option>').join('')+'</select>'+
  '<label class="partySelectLabel" for="memoryStyle">遊び方</label><select id="memoryStyle" class="partySelect"><option value="battle" '+(s.style==='battle'?'selected':'')+'>🏆 対戦・得点を競う</option><option value="coop" '+(s.style==='coop'?'selected':'')+'>🤝 協力・全員でクリア</option></select>';
- teamSetupView('みんなで神経衰弱','対戦モードは当てた人がもう1回。協力モードはペアが見つかっても次の人へ順番が回るよ！',selects,'memoryMembers','memoryLaunch');
+ teamSetupView('神経衰弱・個人戦／チーム戦','👤 個人戦は1〜6人が順番にめくって、見つけたペア数を個別に競うよ！ 👥 チーム戦も選べます。',selects,'memoryMembers','memoryLaunch');
+ // The legacy shared setup shell remains intact for other team games.
+ const participant=$('memoryMembers');if(participant){
+  const label=participant.previousElementSibling;
+  if(label)label.textContent=s.playKind==='individual'?'参加人数（1〜6人）':'参加チーム数（2〜6チーム）';
+  participant.innerHTML=Array.from({length:s.playKind==='individual'?6:5},(_,i)=>{
+   const n=i+(s.playKind==='individual'?1:2);
+   return '<option value="'+n+'" '+(s.members===n?'selected':'')+'>'+n+(s.playKind==='individual'?'人':'チーム')+'</option>';
+  }).join('');
+ }
+ const preview=document.querySelector('.teamPreview');
+ if(preview)preview.innerHTML=Array.from({length:s.members},(_,i)=>'<div>'+memoryMemberLabel(i)+'</div>').join('');
+ const launch=$('memoryLaunch');if(launch)launch.textContent='🎉 '+s.members+(s.playKind==='individual'?'人で個人戦スタート！':'チームでスタート！');
+ $('memoryKind').onchange=()=>{s.playKind=$('memoryKind').value;s.members=Math.max(s.playKind==='team'?2:1,s.members);s.style='battle';teamMemorySetup()};
  $('memoryMembers').onchange=()=>{s.members=Number($('memoryMembers').value);teamMemorySetup()};
  $('memoryPairs').onchange=()=>{s.pairs=Number($('memoryPairs').value);teamMemorySetup()};
  $('memoryStyle').onchange=()=>{s.style=$('memoryStyle').value;teamMemorySetup()};
- $('memoryLaunch').onclick=()=>beginTeamMemory(s.members,s.pairs,s.style);
+ $('memoryLaunch').onclick=()=>beginTeamMemory(s.members,s.pairs,s.style,s.playKind);
 }
-function beginTeamMemory(members=4,pairs=10,style='battle'){
+function beginTeamMemory(members=4,pairs=10,style='battle',playKind='individual'){
  if(mode!=='teamMemory')return;
- if(!Number.isInteger(members)||members<2||members>6||![6,10,15].includes(pairs)||!['battle','coop'].includes(style))return;
+ if(!Number.isInteger(members)||members<(playKind==='individual'?1:2)||members>6||![6,10,15].includes(pairs)||!['battle','coop'].includes(style)||!['individual','team'].includes(playKind))return;
  stop();const icons=shuffle(MEMORY_ICONS).slice(0,pairs);
  teams=Array(members).fill(0);
- state={phase:'play',members,pairs,style,faces:shuffle(icons.flatMap(v=>[v,v])),flipped:[],matched:new Set(),turn:0,locked:false,round:0,completed:false};
- show(TEAM_BADGES[0]+' '+TEAM_COLORS[0]+'の番！ カードを2枚めくってね。');
+ state={phase:'play',members,pairs,style,playKind,faces:shuffle(icons.flatMap(v=>[v,v])),flipped:[],matched:new Set(),turn:0,locked:false,round:0,completed:false};
+ show(memoryMemberLabel(0)+'の番！ カードを2枚めくってね。');
  teamMemoryShow();
 }
 function teamMemoryShow(){
  const s=state;if(!s||s.phase!=='play')return;
  scores();const columns=s.pairs===6?4:s.pairs===10?5:6;
- panel('<div class="turnBanner">'+TEAM_BADGES[s.turn]+' '+TEAM_COLORS[s.turn]+' の番 <span>'+(s.style==='coop'?'🤝 協力中！ ペアを取っても次の人へ':'✨ 対戦中！ ペアを取ったらもう一回')+'</span></div><div class="teamMemoryBoard" style="--memory-cols:'+columns+'">'+s.faces.map((v,i)=>{
+ panel('<div class="turnBanner">'+memoryMemberLabel(s.turn)+' の番 <span>'+(s.style==='coop'?'🤝 協力中！ ペアを取っても次の人へ':'✨ 対戦中！ ペアを取ったらもう一回')+'</span></div><div class="teamMemoryBoard" style="--memory-cols:'+columns+'">'+s.faces.map((v,i)=>{
  const opened=s.flipped.includes(i)||s.matched.has(i),matched=s.matched.has(i);
  return '<button type="button" class="memTile" data-mem="'+i+'" '+(s.locked||matched||s.completed?'disabled':'')+' aria-label="カード '+(i+1)+(opened?'：'+v:'：裏向き')+'"><span class="face'+(opened?' open':'')+(matched?' matched':'')+'">'+(opened?v:'')+'</span></button>';
  }).join('')+'</div>');
  for(const b of $('board').querySelectorAll('[data-mem]'))b.onclick=()=>tapTeamMemory(Number(b.dataset.mem));
  if(s.completed){
-  const highest=Math.max(...teams),winners=teams.map((v,i)=>v===highest?TEAM_BADGES[i]+' '+TEAM_COLORS[i]:null).filter(Boolean);
-  show(s.style==='coop'?'🤝 みんなで大成功！ 全'+s.pairs+'組完成！ 🎉':'🏆 '+(winners.length===teams.length?'全員同点！':winners.join('・')+' の勝ち！')+'　全'+s.pairs+'組完成！');
+  const highest=Math.max(...teams),winners=teams.map((v,i)=>v===highest?memoryMemberLabel(i):null).filter(Boolean);
+  show(s.style==='coop'?'🤝 みんなで大成功！ 全'+s.pairs+'組完成！ 🎉':s.members===1?'🏆 ひとりで全ペア達成！': '🏆 '+(winners.length===teams.length?'全員同点！':winners.join('・')+' の勝ち！')+'　全'+s.pairs+'組完成！');
   actions([['again','🔄 同じ設定で再戦'],['setup','⚙️ 人数・難易度・ルールを変更']]);
-  $('a_again').onclick=()=>beginTeamMemory(s.members,s.pairs,s.style);
-  $('a_setup').onclick=()=>{state={phase:'setup',members:s.members,pairs:s.pairs,style:s.style};teamMemorySetup()};
+  $('a_again').onclick=()=>beginTeamMemory(s.members,s.pairs,s.style,s.playKind);
+  $('a_setup').onclick=()=>{state={phase:'setup',members:s.members,pairs:s.pairs,style:s.style,playKind:s.playKind};teamMemorySetup()};
  }else{
   actions([['setup','⚙️ 人数・難易度・ルールを変更']]);
-  $('a_setup').onclick=()=>{if(!confirm('ゲームを中断して設定に戻る？'))return;stop();state={phase:'setup',members:s.members,pairs:s.pairs,style:s.style};teamMemorySetup()};
+  $('a_setup').onclick=()=>{if(!confirm('ゲームを中断して設定に戻る？'))return;stop();state={phase:'setup',members:s.members,pairs:s.pairs,style:s.style,playKind:s.playKind};teamMemorySetup()};
  }
 }
 function tapTeamMemory(i){
@@ -172,11 +188,11 @@ function tapTeamMemory(i){
    if(s.matched.size===s.faces.length){s.completed=true;teamMemoryShow();return}
    if(s.style==='coop'){
     s.turn=(s.turn+1)%s.members;
-    show('🌟 ペア成立！ みんなで'+Math.floor(s.matched.size/2)+'組見つけたよ。次は '+TEAM_BADGES[s.turn]+' '+TEAM_COLORS[s.turn]+'！');
-   }else show('🌟 ペア成立！ '+TEAM_BADGES[s.turn]+' '+TEAM_COLORS[s.turn]+'に1点！ 続けてもう1回！');
+    show('🌟 ペア成立！ みんなで'+Math.floor(s.matched.size/2)+'組見つけたよ。次は '+memoryMemberLabel(s.turn)+'！');
+   }else show('🌟 ペア成立！ '+memoryMemberLabel(s.turn)+'に1点！ 続けてもう1回！');
   }else{
    s.locked=true;const next=(s.turn+1)%s.members;
-   show('おしい！ 場所を覚えてね。次は '+TEAM_BADGES[next]+' '+TEAM_COLORS[next]+'！');
+   show('おしい！ 場所を覚えてね。次は '+memoryMemberLabel(next)+'！');
    timer=setTimeout(()=>{if(mode!=='teamMemory'||state!==s)return;s.flipped=[];s.locked=false;s.turn=next;show(TEAM_BADGES[next]+' '+TEAM_COLORS[next]+'の番！');teamMemoryShow()},1300);
   }
  }
