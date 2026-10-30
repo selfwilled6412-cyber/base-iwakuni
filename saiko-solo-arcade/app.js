@@ -106,7 +106,7 @@ function initRps(){state={round:0,win:0,draw:0,lose:0,result:null};drawRps();}
 function drawRps(){
  const s=state;
  info('第'+Math.min(s.round+1,10)+' / 10回戦　｜　勝ち '+s.win+'　あいこ '+s.draw+'　負け '+s.lose+'　｜　最高記録 '+(records.rps||0)+'勝');
- const result=s.result?'<div class="rpsDuel"><div class="rpsFighter"><span>あなた</span><strong>'+RPS[s.result.user][0]+'</strong></div><span class="rpsVs">VS</span><div class="rpsFighter"><span>ルミ</span><strong>'+RPS[s.result.cpu][0]+'</strong></div></div><div class="rpsResult">'+s.result.message+'</div>':'<div class="rpsIntro"><span>🎮</span><strong>じゃーんけーん…</strong><p>ルミと真剣勝負！</p></div>';
+ const result=s.result?'<div class="rpsDuel"><div class="rpsFighter"><span>あなた</span><strong>'+RPS[s.result.user][0]+'</strong></div><span class="rpsVs">VS</span><div class="rpsFighter"><span>サイ校キャラ</span><strong>'+RPS[s.result.cpu][0]+'</strong></div></div><div class="rpsResult">'+s.result.message+'</div>':'<div class="rpsIntro"><span>🎮</span><strong>じゃーんけーん…</strong><p>サイ校キャラと真剣勝負！</p></div>';
  board(result);
  if(s.result){
   board(result+'<button id="rpsNext" type="button" class="action good">'+(s.round>=10?'結果を見る 🏆':'次の勝負へ ▶')+'</button>');
@@ -122,7 +122,7 @@ function throwRps(hand){
  // 0=グー、1=チョキ、2=パー
  const win=diff===2,draw=diff===0;state.round++;
  if(win)state.win++;else if(draw)state.draw++;else state.lose++;
- state.result={user:hand,cpu,message:draw?'🤝 あいこ！':win?'🌟 あなたの勝ち！':'😆 ルミの勝ち！'};
+ state.result={user:hand,cpu,message:draw?'🤝 あいこ！':win?'🌟 あなたの勝ち！':'😆 サイ校キャラの勝ち！'};
  show(state.result.message,win||draw?'':'bad');drawRps();
 }
 /* スライドパズル: every layout is guaranteed solvable because it is scrambled via legal moves */
