@@ -1,5 +1,6 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
+if(window.SaikoNativeAutoChart)document.body.classList.add('native-app');
 const ytCore=window.SaikoYouTubeCore,studio=window.SaikoStudioCore,analyzer=window.SaikoBeatAnalyzer;
 if(!ytCore||!studio||!analyzer){$('status').textContent='譜面エンジンを読み込めません。再読み込みしてください。';return}
 const COLORS=['#ff87c4','#ffe393','#7ef1e8','#c1a2ff'];
@@ -121,7 +122,7 @@ function startNativeAnalysis(){
  if(nativeWorking)return;
  nativeWorking=true;
  $('nativeAuto').disabled=true;
- $('nativeAuto').textContent='🎼 自動解析中…';
+ $('nativeAuto').textContent='🎼 曲の音を解析中…';
  status('🎼 スマホ内で曲を解析しています。曲によっては音声を取得できない場合があります');
  try{window.SaikoNativeAutoChart.analyze(videoId,$('level').value)}
  catch(e){window.SaikoNativeChartError('Android解析処理を開始できません')}
@@ -129,12 +130,12 @@ function startNativeAnalysis(){
 window.SaikoNativeChartProgress=msg=>status('🎼 '+String(msg).slice(0,180));
 window.SaikoNativeChartError=msg=>{
  nativeWorking=false;
- $('nativeAuto').disabled=false;$('nativeAuto').textContent='⚡ 音を解析してあそぶ';
- status('⚠️ この動画は解析できませんでした：'+String(msg).slice(0,160));
+ $('nativeAuto').disabled=false;$('nativeAuto').textContent='↻ もう一度ためす';
+ status('⚠️ '+String(msg).slice(0,160));
  feedback('この動画では利用できません');
 };
 window.SaikoNativeChartReady=text=>{
- nativeWorking=false;$('nativeAuto').disabled=false;$('nativeAuto').textContent='⚡ 音を解析してあそぶ';
+ nativeWorking=false;$('nativeAuto').disabled=false;$('nativeAuto').textContent='🎵 この曲であそぶ';
  try{
   const data=JSON.parse(text);
   if(data.video_id!==videoId||!Array.isArray(data.notes)||data.notes.length<5)throw Error('再生可能な譜面ではありません');
@@ -375,7 +376,7 @@ function draw(){
  ctx.shadowColor='#ffe99e';ctx.shadowBlur=18*pulse;ctx.fillStyle='#fff6c3';ctx.fillRect(0,hitY-6,w,12);ctx.shadowBlur=0;
  for(let lane=0;lane<4;lane++){ctx.fillStyle=COLORS[lane];ctx.fillRect(lane*laneW+laneW*.2,hitY-10,laneW*.6,20)}
  if(chart){ctx.fillStyle='#82f7e7';ctx.fillRect(0,h-6,w*rnd(t/chart.duration,0,1),6)}
- if(!chart){ctx.textAlign='center';ctx.fillStyle='#e2d2ff';ctx.font='bold '+Math.round(rnd(w/17,17,30))+'px system-ui';ctx.fillText('譜面がまだありません',w/2,h*.38);ctx.fillText('詳細設定で曲の音を解析してね',w/2,h*.46);ctx.textAlign='left'}
+ if(!chart){ctx.textAlign='center';ctx.fillStyle='#e2d2ff';ctx.font='bold '+Math.round(rnd(w/17,17,30))+'px system-ui';ctx.fillText(window.SaikoNativeAutoChart?'音楽を準備しています':'譜面がまだありません',w/2,h*.38);ctx.fillText(window.SaikoNativeAutoChart?'上のボタンで解析してね':'詳細設定で曲の音を解析してね',w/2,h*.46);ctx.textAlign='left'}
  if(chart&&!playing&&!ended){ctx.fillStyle='#ffffffde';ctx.font='bold 20px system-ui';ctx.textAlign='center';ctx.fillText('⏸ YouTubeの再生待ち',w/2,h*.40);ctx.textAlign='left'}
  if(chart&&playing&&t>=chart.duration-.08&&!ended)finish();
  if(!document.hidden)frame=requestAnimationFrame(draw);
