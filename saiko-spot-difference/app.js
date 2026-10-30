@@ -2,7 +2,8 @@
  const core=window.SaikoSpotCore;
  const $=id=>document.getElementById(id);
  if(!core){$('picker').textContent='ゲームデータを読み込めませんでした。ページを再読み込みしてください。';return}
- const KEY='saiko-spot-difference-v1';
+ // Illustration edition is a new set of 90 puzzles. Do not reuse emoji-game completion records.
+ const KEY='saiko-spot-difference-scenes-v2';
  const record={completed:{easy:[],normal:[],hard:[]},visited:{easy:[],normal:[],hard:[]}};
  try{
   const old=JSON.parse(localStorage.getItem(KEY)||'null');
