@@ -169,12 +169,12 @@ public final class NativeBeatAnalyzer {
       JSONObject note=notes.getJSONObject(k);
       double t=note.getDouble("t");
       double next=k+1<notes.length()?notes.getJSONObject(k+1).getDouble("t"):n*hop;
-      double gap=next-t;
-      if(gap<.78)continue;
+      double availableGap=next-t;
+      if(availableGap<.78)continue;
       double attack=meanEnergy(values,hop,t+.04,t+.16);
       double sustain=meanEnergy(values,hop,t+.37,t+.56);
       if(attack>.018&&sustain>Math.max(.018,attack*.26)){
-        note.put("hold",Math.round(Math.min(1.2,gap-.22)*100.0)/100.0);
+        note.put("hold",Math.round(Math.min(1.2,availableGap-.22)*100.0)/100.0);
       }
     }
     JSONObject chart=new JSONObject();
