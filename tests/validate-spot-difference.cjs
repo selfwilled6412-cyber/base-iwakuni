@@ -57,5 +57,57 @@ assert(html.includes('data-level="easy"')&&html.includes('data-level="normal"')&
 const hub=fs.readFileSync('saiko-apps/index.html','utf8');
 assert(hub.includes('href="../saiko-spot-difference/"'),'Game must appear in central hub');
 assert(hub.includes('data-play="group solo"'),'Spot difference must appear in both play-mode filters');
+// Exercise the actual game controller in a mocked DOM, not only the puzzle generator.
+const elements=new Map(),handlers={};
+const node=id=>{
+ if(!elements.has(id)){
+  const o={id,textContent:'',innerHTML:'',hidden:false,style:{},disabled:false,
+   addEventListener(type,fn){(handlers[id]??={})[type]=fn},
+   setAttribute(name,value){this[name]=value},
+   scrollIntoView(){},classList:{toggle(){}},scrollLeft:0,scrollTop:0};
+  elements.set(id,o);
+ }
+ return elements.get(id);
+};
+const levelButtons=['easy','normal','hard'].map(level=>({dataset:{level},addEventListener(){}}));
+const saved={};
+const localStorage={getItem:key=>saved[key]??null,setItem:(key,value)=>{saved[key]=value}};
+const document={
+ getElementById:node,querySelectorAll:selector=>selector==='[data-level]'?levelButtons:[],
+ addEventListener(){},hidden:false,fullscreenElement:null
+};
+const window={SaikoSpotCore:core,scrollTo(){}};
+const gameScript=new vm.Script(app,{filename:'saiko-spot-difference/app.js'});
+gameScript.runInNewContext(vm.createContext({document,window,localStorage,Math,performance:{now:()=>200000},
+ setInterval:()=>1,clearInterval(){},console}),{timeout:10000});
+const game=window.SaikoSpotGame;
+assert(game,'Game controller must expose test state');
+game.open('easy');
+let state=game.getState();
+assert.equal(state.spots.length,10);
+assert.equal(node('picker').hidden,true);
+const invalid=Array.from({length:30},(_,i)=>i).find(i=>!state.spots.includes(i));
+game.selectSlot(invalid);
+assert.equal(game.getState().wrong,1);
+game.selectSlot(state.spots[0]);
+game.selectSlot(state.spots[0]);
+assert.equal(game.getState().found.length,1,'No double counting');
+game.hint();
+assert.equal(game.getState().hints,1);
+for(const slot of state.spots)game.selectSlot(slot);
+assert.equal(game.getState().finished,true,'Complete on last difference');
+assert.equal(game.getState().completed.length,1);
+assert.equal(node('result').hidden,false);
+const first=game.getState().puzzleId;
+const played=new Set([first]);
+for(let i=1;i<30;i++){
+ game.next();state=game.getState();
+ assert(!played.has(state.puzzleId),'A level cannot repeat before all 30 are seen');
+ played.add(state.puzzleId);
+}
+assert.equal(played.size,30);
+game.open('normal');assert.equal(game.getState().spots.length,20);
+game.open('hard');assert.equal(game.getState().spots.length,30);
+console.log('PASS: live game controller spots, hints, no duplicate score, win + save and 30-unique rotation');
 console.log('PASS: 90 distinct deterministic vector puzzles, 30 per difficulty, exactly 1,800 tappable differences');
 console.log('PASS: corresponding left/right hotspot counts, hints, accessible controls and app hub link');
