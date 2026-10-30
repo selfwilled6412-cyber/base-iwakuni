@@ -7,7 +7,7 @@ const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');
-const jsFiles=['saiko-adventure/app.js','saiko-kids/app.js','saiko-draw/app.js','lumi-nazotoki/index.html'];
+const jsFiles=['saiko-adventure/app.js','saiko-kids/app.js','saiko-draw/app.js','saiko-nazotoki/index.html'];
 for(const f of jsFiles){
  const source=read(f);
  if(f.endsWith('.js'))new vm.Script(source,{filename:f});
@@ -89,7 +89,7 @@ for(const lvl of ['easy','normal','hard']){
  assert.equal(titles.length,10,'Puzzle draw count incorrect');
  assert.equal(new Set(titles).size,10,'Repeated question in '+lvl);
 }
-const main=read('lumi-nazotoki/index.html');
+const main=read('saiko-nazotoki/index.html');
 const start=main.indexOf('const QUESTIONS=')+'const QUESTIONS='.length,end=main.indexOf('];',start)+1;
 assert(start>='const QUESTIONS='.length);
 const bank=JSON.parse(main.slice(start,end));
@@ -97,14 +97,14 @@ assert.equal(bank.length,150);
 assert.equal(new Set(bank.map(q=>q.key)).size,150);
 for(const lvl of [2,3,5])assert.equal(bank.filter(q=>q.level===lvl).length,50);
 assert(bank.every(q=>!q.stage.includes('{n//2+1}')&&!q.stage.includes('join(names)')));
-const staffHTML=read('lumi-nazotoki/staff.html');
+const staffHTML=read('saiko-nazotoki/staff.html');
 const staffStart=staffHTML.indexOf('const Q=')+'const Q='.length;
 const staffEnd=staffHTML.indexOf('];',staffStart)+1;
 const staffBank=JSON.parse(staffHTML.slice(staffStart,staffEnd));
 assert.equal(staffBank.length,150);
 assert.deepEqual(new Set(staffBank.map(q=>q.key)),new Set(bank.map(q=>q.key)));
 for(const q of staffBank)assert.equal(q.hints.length,3);
-for(const path of ['lumi-escape/index.html','lumi-escape-2/index.html']){
+for(const path of ['saiko-escape/index.html','saiko-escape-2/index.html']){
  const raw=read(path),match=raw.match(/<script>([\s\S]*?)<\/script>/);
  assert(match,'Missing escape script '+path);new vm.Script(match[1],{filename:path});
  const a=raw.indexOf('const CASES=')+'const CASES='.length,b=raw.indexOf(';const K=',a);
@@ -114,7 +114,7 @@ for(const path of ['lumi-escape/index.html','lumi-escape-2/index.html']){
  assert.equal((staff.match(/<article class="case"/g)||[]).length,50,'Staff guide mismatch '+path);
 }
 
-for(const file of ['lumi-escape/index.html','lumi-escape-2/index.html']){
+for(const file of ['saiko-escape/index.html','saiko-escape-2/index.html']){
  const raw=read(file),script=raw.match(/<script>([\s\S]*?)<\/script>/)[1];
  const elements=new Map();
  function elem(id){return{id,hidden:false,innerHTML:'',textContent:'',className:'',disabled:false,children:[],onclick:null,
@@ -138,7 +138,7 @@ for(const file of ['lumi-escape/index.html','lumi-escape-2/index.html']){
  assert(by('game').innerHTML.includes('脱出成功'));
 }
 const appHub=read('saiko-apps/index.html');
-for(const href of ['../lumi-nazotoki/','../lumi-escape/','../lumi-escape-2/','../saiko-adventure/','../saiko-kids/','../saiko-draw/','guide.html']){
+for(const href of ['../saiko-nazotoki/','../saiko-escape/','../saiko-escape-2/','../saiko-adventure/','../saiko-kids/','../saiko-draw/','guide.html']){
  assert(appHub.includes('href="'+href+'"'),'Missing hub link '+href);
 }
 const playCards=(appHub.match(/<article class="card"[^>]*data-play="(?:group|solo)(?: (?:group|solo))?"/g)||[]);
