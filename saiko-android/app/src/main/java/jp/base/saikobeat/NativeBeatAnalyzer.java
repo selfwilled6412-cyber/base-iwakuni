@@ -113,6 +113,15 @@ public final class NativeBeatAnalyzer {
     }
   }
 
+  private static double meanEnergy(double[] values,double hop,double start,double end){
+    int from=Math.max(0,(int)Math.floor(start/hop));
+    int to=Math.min(values.length,(int)Math.ceil(end/hop));
+    if(to<=from)return 0;
+    double sum=0;
+    for(int i=from;i<to;i++)sum+=values[i];
+    return sum/(to-from);
+  }
+
   public static JSONObject deriveChart(List<Double> envelope,int sampleRate,int samplesPerWindow,String difficulty)throws Exception{
     int n=envelope.size();
     final double hop=(double)samplesPerWindow/sampleRate;
@@ -153,6 +162,21 @@ public final class NativeBeatAnalyzer {
       if(notes.length()>=maxNotes)break;
     }
     if(notes.length()<5)throw new IOException("有効なビートを十分検出できませんでした");
+    // Long notes require measured sustained energy after the onset, plus
+    // enough space before the next detected attack. Never synthesize a hold
+    // from BPM alone or from the UI's rendering speed.
+    for(int k=0;k<notes.length();k++){
+      JSONObject note=notes.getJSONObject(k);
+      double t=note.getDouble("t");
+      double next=k+1<notes.length()?notes.getJSONObject(k+1).getDouble("t"):n*hop;
+      double gap=next-t;
+      if(gap<.78)continue;
+      double attack=meanEnergy(values,hop,t+.04,t+.16);
+      double sustain=meanEnergy(values,hop,t+.37,t+.56);
+      if(attack>.018&&sustain>Math.max(.018,attack*.26)){
+        note.put("hold",Math.round(Math.min(1.2,gap-.22)*100.0)/100.0);
+      }
+    }
     JSONObject chart=new JSONObject();
     chart.put("version",1);
     chart.put("duration",Math.round(n*hop*1000.0)/1000.0);
