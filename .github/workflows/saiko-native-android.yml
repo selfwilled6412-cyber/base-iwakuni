@@ -10,6 +10,7 @@ on:
       - 'saiko-rhythm/studio-core.js'
       - 'saiko-rhythm/beat-analyzer.js'
       - 'saiko-rhythm/piano*'
+      - 'tests/validate-piano.cjs'
       - '.github/workflows/saiko-native-android.yml'
   workflow_dispatch:
 permissions:
