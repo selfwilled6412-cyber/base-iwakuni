@@ -4,6 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
+import android.database.Cursor;
+import android.provider.OpenableColumns;
 import android.media.MediaPlayer;
 import android.media.AudioAttributes;
 import android.os.Bundle;
@@ -55,6 +58,7 @@ import java.util.regex.Pattern;
 public final class MainActivity extends Activity {
   private static final Pattern VIDEO_ID=Pattern.compile("^[A-Za-z0-9_-]{11}$");
   private static final int MAX_AUDIO_BYTES=48*1024*1024;
+  private static final int PICK_AUDIO_REQUEST=941;
   private WebView view;
   private final ExecutorService worker=Executors.newSingleThreadExecutor();
   private final AtomicBoolean busy=new AtomicBoolean(false);
@@ -62,6 +66,7 @@ public final class MainActivity extends Activity {
   private final Object musicLock = new Object();
   private MediaPlayer musicPlayer;
   private File musicFile;
+  private String localDifficulty="normal";
   private static final OkHttpClient HTTP = new OkHttpClient.Builder()
     .connectTimeout(15, TimeUnit.SECONDS)
     .readTimeout(35, TimeUnit.SECONDS)
@@ -86,6 +91,15 @@ public final class MainActivity extends Activity {
     settings.setAllowContentAccess(false);
     settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
     view.setWebViewClient(new WebViewClient(){
+      @Override public boolean shouldOverrideUrlLoading(WebView v,android.webkit.WebResourceRequest request){
+        Uri target=request.getUrl();
+        if("https".equals(target.getScheme())&&"appassets.androidplatform.net".equals(target.getHost())&&
+           target.getPath()!=null&&target.getPath().startsWith("/assets/"))return false;
+        if(request.isForMainFrame()&&"https".equals(target.getScheme())){
+          try{startActivity(new Intent(Intent.ACTION_VIEW,target));}catch(Exception ignored){}
+        }
+        return true; // Never expose the privileged native JS bridge to another origin.
+      }
       @Override public void onPageFinished(WebView v,String url){
         if(url.startsWith("https://appassets.androidplatform.net/assets/"))
           acceptSharedLink(getIntent());
@@ -130,6 +144,26 @@ public final class MainActivity extends Activity {
   }
 
   public final class NativeAutoChart {
+    /** Select an owned/licensed audio file without accessing device storage broadly. */
+    @JavascriptInterface public void chooseLocalAudio(String level){
+      final String difficulty=("easy".equals(level)||"hard".equals(level))?level:"normal";
+      if(!busy.compareAndSet(false,true)){
+        notifyJS("SaikoNativeLocalError","ほかの曲を解析しています");return;
+      }
+      runOnUiThread(()->{
+        try{
+          Intent pick=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+          pick.setType("audio/*");
+          pick.addCategory(Intent.CATEGORY_OPENABLE);
+          pick.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+          localDifficulty=difficulty;
+          startActivityForResult(pick,PICK_AUDIO_REQUEST);
+        }catch(Exception ex){
+          busy.set(false);
+          notifyJS("SaikoNativeLocalError","音楽ファイル選択画面を開けませんでした");
+        }
+      });
+    }
     /** Audio drives the game position, never a simulated YouTube timer. */
     @JavascriptInterface public double currentSeconds(){
       synchronized(musicLock){
@@ -207,6 +241,51 @@ public final class MainActivity extends Activity {
         }
       });
     }
+  }
+
+  @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){
+    super.onActivityResult(requestCode,resultCode,data);
+    if(requestCode!=PICK_AUDIO_REQUEST)return;
+    if(resultCode!=RESULT_OK||data==null||data.getData()==null){
+      busy.set(false);notifyJS("SaikoNativeLocalCancelled","");return;
+    }
+    final Uri selected=data.getData();
+    final String difficulty=localDifficulty;
+    worker.execute(()->{
+      File cache=null;
+      try{
+        notifyJS("SaikoNativeChartProgress","選択した音楽を端末内で解析しています…");
+        cache=File.createTempFile("saiko-local-", ".media",getCacheDir());
+        try(InputStream in=getContentResolver().openInputStream(selected);
+            FileOutputStream out=new FileOutputStream(cache)){
+          if(in==null)throw new IOException("ファイルを開けませんでした");
+          byte[] buffer=new byte[65536];int n;long total=0;
+          while((n=in.read(buffer))!=-1){
+            total+=n;
+            if(total>MAX_AUDIO_BYTES)throw new IOException("音源は48MB以下にしてください");
+            out.write(buffer,0,n);
+          }
+          if(total<3000)throw new IOException("音声ファイルが空です");
+        }
+        JSONObject chart=NativeBeatAnalyzer.analyze(cache,difficulty);
+        prepareTrack(cache);
+        cache=null;
+        String title="選択した音楽";
+        try(Cursor cursor=getContentResolver().query(selected,new String[]{OpenableColumns.DISPLAY_NAME},null,null,null)){
+          if(cursor!=null&&cursor.moveToFirst())title=cursor.getString(0);
+        }catch(Exception ignored){}
+        if(title==null||title.isEmpty())title="選択した音楽";
+        chart.put("title",title.substring(0,Math.min(90,title.length())));
+        notifyJS("SaikoNativeLocalReady",chart.toString());
+      }catch(Exception error){
+        android.util.Log.w("SAIKO","local audio failed",error);
+        String msg=error.getMessage()==null?"読み込みに失敗しました":error.getMessage();
+        notifyJS("SaikoNativeLocalError",msg.substring(0,Math.min(140,msg.length())));
+      }finally{
+        if(cache!=null&&cache.exists())cache.delete();
+        busy.set(false);
+      }
+    });
   }
 
   private void prepareTrack(File file) throws IOException {
