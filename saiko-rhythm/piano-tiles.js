@@ -322,6 +322,7 @@ $('quit').addEventListener('click',()=>{
 $('pause').addEventListener('click',async()=>{
  if(!playing)return;
  if(!paused){
+  if(game)game.cancelHolds(); // A lost touch must never earn a free sustained note.
   if(sourceMode==='demo'){offset=now();if(source){source.stop();source=null}}
   else if(native)window.SaikoNativeAutoChart.pauseMusic();
   paused=true;$('pause').textContent='▶ 再開';
