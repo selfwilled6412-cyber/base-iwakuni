@@ -183,16 +183,37 @@ function demoWaveform(){
    wave[i]+=volume*attack*decay*(Math.sin(2*Math.PI*freq*dt)+.28*Math.sin(2*Math.PI*freq*2*dt)+.12*Math.sin(2*Math.PI*freq*3*dt));
   }
  }
+ // Original kick/snare/hat synthesis; no external samples or licensed tracks.
+ function drum(start,type){
+  const begin=Math.floor(start*sr);
+  const length=type==='kick'?.29:type==='snare'?.19:.07;
+  const end=Math.min(wave.length,begin+Math.floor(length*sr));
+  for(let i=begin;i<end;i++){
+   const dt=(i-begin)/sr;
+   const noise=((Math.sin(i*12.9898+type.length*78.233)*43758.5453)%1)*2-1;
+   if(type==='kick'){
+    const phase=2*Math.PI*(85*dt-105*dt*dt);
+    wave[i]+=.22*Math.exp(-dt*19)*Math.sin(phase);
+   }else if(type==='snare'){
+    wave[i]+=.082*Math.exp(-dt*24)*(noise*.85+Math.sin(2*Math.PI*180*dt)*.15);
+   }else{
+    wave[i]+=.045*Math.exp(-dt*54)*noise;
+   }
+  }
+ }
  const beat=.5357;
  for(let i=0;i<112;i++){
   const t=1.3+i*beat*.5;
+  if(i%2===0)drum(t,'hat');
+  if(i%8===0||i%8===6)drum(t,'kick');
+  if(i%8===4)drum(t,'snare');
   if([12,13,14].includes(i%16))continue; // Intentional rests before sustained notes.
-  const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0);
+  const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0)+(i>=56?5:0);
   const hz=220*Math.pow(2,noteNo/12);
   const sustained=i%16===11;
   note(t,hz,sustained?1.05:.41,.34,sustained?1.05:5.8);
   if(i%4===0)note(t,110*Math.pow(2,(Math.floor(i/16)%4)*2/12),.70,.19);
-  if(i%8===4)note(t,155,.16,.18);
+  if(i%16===0)note(t,164.81,.65,.14,2.7);
  }
  // Hard limiter avoids browser distortion and preserves transient emphasis.
  let peak=0;for(let i=0;i<wave.length;i++)peak=Math.max(peak,Math.abs(wave[i]));
