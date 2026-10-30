@@ -53,6 +53,23 @@ const measured=piano.addHoldsFromWaveform({sampleRate:sr,numberOfChannels:1,dura
 assert(measured[0].hold>.35,'Sustained PCM should generate a hold');
 assert(!measured[1].hold,'Short gaps should not invent holds');
 assert.throws(()=>piano.prepare([{t:1,lane:0,hold:9},{t:2,lane:1},{t:3,lane:2},{t:4,lane:3}]));
+// Regression: a fast but regular song must not collapse into only a few
+// notes because the suppression window keeps moving after replacements.
+const onsetAnalyzer=require('../saiko-rhythm/beat-analyzer.js');
+const rate=16000,samples=new Float32Array(rate*8);
+for(let j=0;j<14;j++){
+ const begin=Math.floor((.7+j*.4)*rate),length=Math.floor(.22*rate);
+ for(let k=0;k<length;k++){
+  const dt=k/rate;
+  samples[begin+k]+=.4*Math.sin(2*Math.PI*(220+j*19)*dt)*
+   (1-Math.exp(-dt*180))*Math.exp(-dt*8);
+ }
+}
+const testAudio={sampleRate:rate,duration:8,numberOfChannels:1,getChannelData:()=>samples};
+const beginner=onsetAnalyzer.extractOnsets(testAudio,{level:'easy'});
+const intermediate=onsetAnalyzer.extractOnsets(testAudio,{level:'normal'});
+assert(beginner.length>=6,'Easy difficulty lost too many regular PCM attacks: '+beginner.length);
+assert(intermediate.length>=10,'Normal difficulty lost regular PCM attacks: '+intermediate.length);
 const realOnsets=[.3,.55,.8,1.05,1.3,1.55,1.8,2.05,2.3];
 for(const level of ['easy','normal','hard']){
  const n=piano.chartFromOnsets(realOnsets,level);
