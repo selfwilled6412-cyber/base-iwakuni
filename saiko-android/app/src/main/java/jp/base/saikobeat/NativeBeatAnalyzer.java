@@ -171,10 +171,22 @@ public final class NativeBeatAnalyzer {
       double next=k+1<notes.length()?notes.getJSONObject(k+1).getDouble("t"):n*hop;
       double availableGap=next-t;
       if(availableGap<.78)continue;
+      double holdCandidate=Math.min(1.2,availableGap-.22);
+      // The difficulty filter may hide real attacks. An unselected onset
+      // inside the prospective hold means it is NOT a sustained note.
+      boolean interrupted=false;
+      int from=Math.max(radius+1,(int)Math.floor((t+.22)/hop));
+      int to=Math.min(n-1,(int)Math.ceil((t+holdCandidate+.12)/hop));
+      for(int p=from;p<to;p++){
+        if(onset[p]>=threshold&&onset[p]>=onset[p-1]&&onset[p]>=onset[p+1]){
+          interrupted=true;break;
+        }
+      }
+      if(interrupted)continue;
       double attack=meanEnergy(values,hop,t+.04,t+.16);
       double sustain=meanEnergy(values,hop,t+.37,t+.56);
       if(attack>.018&&sustain>Math.max(.018,attack*.26)){
-        note.put("hold",Math.round(Math.min(1.2,availableGap-.22)*100.0)/100.0);
+        note.put("hold",Math.round(holdCandidate*100.0)/100.0);
       }
     }
     JSONObject chart=new JSONObject();
