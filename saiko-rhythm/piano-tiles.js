@@ -102,14 +102,14 @@ function showHit(text){
 }
 function tap(lane,pointerId=null){
  if(!playing||paused||!game)return;
- const result=game.press(lane,now()+timingMs/1000,pointerId);
+ const result=game.press(lane,now()-timingMs/1000,pointerId);
  if(result)showHit(result.result==='hold'?'HOLD!':result.result==='perfect'?'PERFECT!':'GOOD!');
  else showHit('KEEP GOING');
  updateStats();
 }
 function release(pointerId,cancel=false){
  if(!playing||paused||!game)return;
- const result=game.release(pointerId,now()+timingMs/1000,cancel);
+ const result=game.release(pointerId,now()-timingMs/1000,cancel);
  if(result)showHit(result.result==='miss'?'TOO SOON!':'GREAT HOLD!');
  updateStats();
 }
