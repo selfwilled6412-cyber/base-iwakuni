@@ -87,7 +87,7 @@
  }
  // Only create long notes where actual decoded audio remains sustained and
  // the next measured onset leaves enough room. Never invent timed grid holds.
- function addHoldsFromWaveform(buffer,notes){
+ function addHoldsFromWaveform(buffer,notes,rawOnsets=null){
   if(!buffer||!finite(buffer.sampleRate)||!Array.isArray(notes)||typeof buffer.getChannelData!=='function')return notes;
   const sr=buffer.sampleRate,channels=Math.max(1,Math.min(2,buffer.numberOfChannels||1));
   const waves=[];for(let c=0;c<channels;c++)waves.push(buffer.getChannelData(c));
@@ -104,9 +104,14 @@
   return notes.map((n,i)=>{
    const gap=(i+1<notes.length?notes[i+1].t:buffer.duration)-n.t;
    if(gap<.78)return n;
+   const candidate=Math.min(1.2,gap-.22);
+   // Easy mode drops some attacks for playability. Do not interpret those
+   // skipped musical attacks as sustained notes.
+   const reference=Array.isArray(rawOnsets)?rawOnsets:notes.map(x=>x.t);
+   if(reference.some(t=>t>n.t+.22&&t<n.t+candidate+.12))return n;
    const attack=rms(n.t+.04,n.t+.16),sustain=rms(n.t+.37,n.t+.56);
    if(attack<.01||sustain<Math.max(.012,attack*.26))return n;
-   return {...n,hold:Math.round(Math.min(1.2,gap-.22)*100)/100};
+   return {...n,hold:Math.round(candidate*100)/100};
   });
  }
  return Object.freeze({prepare,engine,chartFromOnsets,addHoldsFromWaveform});
