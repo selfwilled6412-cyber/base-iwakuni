@@ -1,7 +1,7 @@
 name: Saiko Games QA
 on:
   push:
-    branches: [main, feature/saiko-premium-spot-art-20261030]
+    branches: [main, feature/saiko-hub-cleanup-20261030]
     paths:
       - "saiko-adventure/**"
       - "saiko-kids/**"
