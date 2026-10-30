@@ -42,6 +42,34 @@ for(const file of soundApps){
  const html=fs.readFileSync(path.join(root,file),'utf8');
  assert(html.includes('../saiko-apps/sound-feedback.js'),'Missing sound engine: '+file);
 }
+// Brand policy: No old name in any public game labels, narration or staff guides.
+// Internal localStorage keys and historical URL paths remain stable so saved
+// puzzles/bookmarks keep working; the mascot image must remain untouched.
+const brandPaths=[
+ 'saiko-apps/index.html','saiko-apps/guide.html',
+ 'saiko-adventure/index.html','saiko-adventure/app.js',
+ 'saiko-kids/index.html','saiko-draw/index.html',
+ 'saiko-party-games/index.html','saiko-card-games/index.html','saiko-card-games/app.js',
+ 'saiko-solo-arcade/index.html','saiko-solo-arcade/app.js',
+ 'saiko-rhythm/index.html',
+ 'lumi-nazotoki/index.html','lumi-nazotoki/staff.html',
+ 'lumi-escape/index.html','lumi-escape/staff.html',
+ 'lumi-escape-2/index.html','lumi-escape-2/staff.html'
+];
+for(const file of brandPaths){
+ const content=fs.readFileSync(path.join(root,file),'utf8');
+ assert(!content.includes('ルミ'),'旧キャラクター名が表示文言に残っています: '+file);
+}
+for(const file of [
+ 'saiko-apps/index.html','saiko-adventure/index.html','saiko-kids/index.html',
+ 'saiko-draw/index.html','saiko-party-games/index.html','saiko-card-games/index.html',
+ 'saiko-solo-arcade/index.html','saiko-rhythm/index.html',
+ 'lumi-nazotoki/index.html','lumi-escape/index.html','lumi-escape-2/index.html'
+]){
+ const content=fs.readFileSync(path.join(root,file),'utf8');
+ assert(content.includes('../assets/lumi-approved.webp'),'案内役のキャラクター画像を維持してください: '+file);
+}
+console.log('PASS: SAIKO naming in '+brandPaths.length+' screens and scripts; original mascot images preserved');
 const sound=fs.readFileSync(path.join(root,'saiko-apps/sound-feedback.js'),'utf8');
 assert(sound.includes('saikoSoundTest')&&sound.includes("audio.state!=='running'"),'Sound test must report browser blockage accurately');
 const bingo=fs.readFileSync(path.join(root,'saiko-party-games/index.html'),'utf8');
