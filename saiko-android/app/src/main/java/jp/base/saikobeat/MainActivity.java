@@ -32,6 +32,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.concurrent.TimeUnit;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -51,6 +57,11 @@ public final class MainActivity extends Activity {
   private final ExecutorService worker=Executors.newSingleThreadExecutor();
   private final AtomicBoolean busy=new AtomicBoolean(false);
   private WebViewAssetLoader assetLoader;
+  private static final OkHttpClient HTTP = new OkHttpClient.Builder()
+    .connectTimeout(15, TimeUnit.SECONDS)
+    .readTimeout(35, TimeUnit.SECONDS)
+    .callTimeout(100, TimeUnit.SECONDS)
+    .retryOnConnectionFailure(true).build();
 
   @SuppressLint("SetJavaScriptEnabled")
   @Override public void onCreate(Bundle state) {
@@ -125,6 +136,7 @@ public final class MainActivity extends Activity {
       final String id=videoId,difficulty=level;
       worker.execute(()->{
         File cache=null;
+        String stage="動画情報の取得";
         try {
           notifyJS("SaikoNativeChartProgress","動画の音声情報を取得しています…");
           StreamInfo info=StreamInfo.getInfo("https://www.youtube.com/watch?v="+id);
@@ -138,18 +150,26 @@ public final class MainActivity extends Activity {
           }
           if(mediaUrl==null)throw new IOException("音声ストリームを取得できません");
           notifyJS("SaikoNativeChartProgress","スマホ内で音の波形を準備しています…");
+          stage="音声データの取得";
           cache=File.createTempFile("saiko-audio-", ".media", getCacheDir());
           downloadAudio(mediaUrl,cache);
+          stage="曲のリズム解析";
           notifyJS("SaikoNativeChartProgress","音楽のリズムを解析しています…");
           JSONObject chart=NativeBeatAnalyzer.analyze(cache,difficulty);
           chart.put("video_id",id);
           notifyJS("SaikoNativeChartReady",chart.toString());
         } catch(Exception error) {
           android.util.Log.w("SAIKO","native chart failed",error);
-          String type=error.getClass().getSimpleName();
-          String msg=error.getMessage()==null?"動画の音声を取得できませんでした":error.getMessage();
-          if(msg.toLowerCase().contains("bot")||msg.contains("Sign in"))msg="YouTubeがアクセスを制限しています";
-          notifyJS("SaikoNativeChartError",type+": "+msg.substring(0,Math.min(msg.length(),120)));
+          String msg=error.getMessage()==null?"アクセスに失敗しました":error.getMessage();
+          String lower=msg.toLowerCase(java.util.Locale.ROOT);
+          if(error instanceof SocketException||error instanceof SocketTimeoutException||
+             lower.contains("connection abort")||lower.contains("connection reset"))
+            msg="通信が途中で切断されました。Wi-Fi/4Gを切り替えて再試行してください";
+          else if(lower.contains("bot")||lower.contains("sign in"))
+            msg="YouTube側で自動取得が制限されています";
+          else if(lower.contains("403")||lower.contains("429"))
+            msg="YouTube側からアクセスを拒否されました";
+          notifyJS("SaikoNativeChartError",stage+"："+msg.substring(0,Math.min(msg.length(),130)));
         } finally {
           if(cache!=null&&cache.exists()&&!cache.delete())cache.deleteOnExit();
           busy.set(false);
@@ -158,56 +178,60 @@ public final class MainActivity extends Activity {
     }
   }
 
-  private static void downloadAudio(String streamUrl,File out) throws IOException {
-    URL url=new URL(streamUrl);
-    if(!url.getProtocol().equals("https"))throw new IOException("音声URLの形式が不正");
-    HttpURLConnection conn=(HttpURLConnection)url.openConnection();
-    conn.setConnectTimeout(12000);conn.setReadTimeout(20000);
-    conn.setRequestProperty("User-Agent","Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/132.0.0.0 Mobile Safari/537.36");
-    conn.setRequestProperty("Accept","*/*");
-    try {
-      if(conn.getResponseCode()<200||conn.getResponseCode()>299)
-        throw new IOException("音声のアクセスが拒否されました ("+conn.getResponseCode()+")");
-      if(conn.getContentLengthLong()>MAX_AUDIO_BYTES)throw new IOException("この音声はサイズ制限を超えます");
-      try(InputStream in=conn.getInputStream();FileOutputStream fout=new FileOutputStream(out)){
-        byte[] buffer=new byte[65536];int size,total=0;
-        while((size=in.read(buffer))!=-1){
-          total+=size;if(total>MAX_AUDIO_BYTES)throw new IOException("音声の最大容量を超えました");
-          fout.write(buffer,0,size);
+  private static void downloadAudio(String streamUrl, File out) throws IOException {
+    URL u = new URL(streamUrl);
+    if (!"https".equals(u.getProtocol())) throw new IOException("音声URLが不正です");
+    // Media endpoints can be on googlevideo.com. Use a streamed response and
+    // never follow non-HTTPS redirects or load the complete file into RAM.
+    okhttp3.Request request = new okhttp3.Request.Builder().url(streamUrl)
+      .header("User-Agent", "Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 Chrome/129.0.0.0 Mobile Safari/537.36")
+      .header("Accept", "*/*").build();
+    IOException last = null;
+    for (int attempt = 0; attempt < 2; attempt++) {
+      try (okhttp3.Response response=HTTP.newCall(request).execute()) {
+        if (!response.isSuccessful()) throw new IOException("音声取得 HTTP " + response.code());
+        if (!response.request().url().isHttps()) throw new IOException("安全でない転送先です");
+        okhttp3.ResponseBody body=response.body();
+        if (body==null) throw new IOException("音声データが空です");
+        if(body.contentLength()>MAX_AUDIO_BYTES) throw new IOException("音声が48MBを超えています");
+        try(InputStream in=body.byteStream(); FileOutputStream output=new FileOutputStream(out,false)){
+          byte[] buffer=new byte[65536]; int n, total=0;
+          while((n=in.read(buffer))!=-1){
+            total+=n;
+            if(total>MAX_AUDIO_BYTES)throw new IOException("音声が48MBを超えています");
+            output.write(buffer,0,n);
+          }
+          if(total<3000)throw new IOException("音声データを最後まで取得できませんでした");
+          return;
         }
-        if(total<3000)throw new IOException("音声データが不完全です");
+      }catch(SocketException|SocketTimeoutException error){
+        last=error;
+        if(attempt==1)throw error;
       }
-    }finally{conn.disconnect();}
+    }
+    if(last!=null)throw last;
   }
 
-  /** Metadata downloader required by NewPipeExtractor. */
+  /** Follow NewPipe's reference implementation: OkHttp handles HTTP/2, gzip,
+   * redirects and idle socket failures better than raw HttpURLConnection. */
   private static final class BasicDownloader extends Downloader {
     @Override public Response execute(Request req) throws IOException {
-      HttpURLConnection conn=(HttpURLConnection)new URL(req.url()).openConnection();
-      conn.setRequestMethod(req.httpMethod());
-      conn.setConnectTimeout(12000);
-      conn.setReadTimeout(20000);
-      conn.setInstanceFollowRedirects(true);
-      conn.setRequestProperty("User-Agent","Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/132.0.0.0 Mobile Safari/537.36");
-      if(req.headers()!=null)for(Map.Entry<String,List<String>> header:req.headers().entrySet())
-        if(header.getValue()!=null)for(String value:header.getValue())conn.addRequestProperty(header.getKey(),value);
-      if(req.dataToSend()!=null&&req.dataToSend().length>0){
-        conn.setDoOutput(true);
-        try(java.io.OutputStream stream=conn.getOutputStream()){stream.write(req.dataToSend());}
+      okhttp3.Request.Builder request=new okhttp3.Request.Builder().url(req.url())
+        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0");
+      byte[] payload=req.dataToSend();
+      RequestBody body=payload==null?null:RequestBody.create(payload);
+      request.method(req.httpMethod(),body);
+      if(req.headers()!=null)for(Map.Entry<String,List<String>> header:req.headers().entrySet()){
+        request.removeHeader(header.getKey());
+        if(header.getValue()!=null)for(String value:header.getValue())request.addHeader(header.getKey(),value);
       }
-      try {
-        int status=conn.getResponseCode();
-        InputStream input=(status>=400?conn.getErrorStream():conn.getInputStream());
-        ByteArrayOutputStream data=new ByteArrayOutputStream();
-        if(input!=null)try(InputStream in=input){
-          byte[] buf=new byte[8192];int n,total=0;
-          while((n=in.read(buf))!=-1){
-            total+=n;if(total>4*1024*1024)throw new IOException("Metadata too large");
-            data.write(buf,0,n);
-          }
-        }
-        return new Response(status,conn.getResponseMessage(),conn.getHeaderFields(),data.toString("UTF-8"),conn.getURL().toString());
-      }finally{conn.disconnect();}
+      try(okhttp3.Response response=HTTP.newCall(request.build()).execute()){
+        if(!response.request().url().isHttps())throw new IOException("安全でない動画情報URLです");
+        okhttp3.ResponseBody responseBody=response.body();
+        String text=responseBody==null?"":responseBody.string();
+        if(text.length()>4*1024*1024)throw new IOException("動画情報が大きすぎます");
+        return new Response(response.code(),response.message(),response.headers().toMultimap(),text,response.request().url().toString());
+      }
     }
   }
 
