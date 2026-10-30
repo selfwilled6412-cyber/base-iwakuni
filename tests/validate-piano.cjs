@@ -70,6 +70,9 @@ const beginner=onsetAnalyzer.extractOnsets(testAudio,{level:'easy'});
 const intermediate=onsetAnalyzer.extractOnsets(testAudio,{level:'normal'});
 assert(beginner.length>=6,'Easy difficulty lost too many regular PCM attacks: '+beginner.length);
 assert(intermediate.length>=10,'Normal difficulty lost regular PCM attacks: '+intermediate.length);
+const beginnerChart=piano.chartFromOnsets(beginner,'easy');
+const beginnerHolds=piano.addHoldsFromWaveform(testAudio,beginnerChart,intermediate);
+assert(beginnerHolds.every(n=>!n.hold),'Dropped beginner-mode attacks must not become false sustained tiles');
 const realOnsets=[.3,.55,.8,1.05,1.3,1.55,1.8,2.05,2.3];
 for(const level of ['easy','normal','hard']){
  const n=piano.chartFromOnsets(realOnsets,level);
