@@ -66,6 +66,7 @@ public final class MainActivity extends Activity {
   private final Object musicLock = new Object();
   private MediaPlayer musicPlayer;
   private File musicFile;
+  private volatile boolean musicCompleted=false;
   private String localDifficulty="normal";
   private static final OkHttpClient HTTP = new OkHttpClient.Builder()
     .connectTimeout(15, TimeUnit.SECONDS)
@@ -171,10 +172,12 @@ public final class MainActivity extends Activity {
         catch(IllegalStateException ignored){return 0;}
       }
     }
+    @JavascriptInterface public boolean isMusicFinished(){return musicCompleted;}
     @JavascriptInterface public void playMusic(){
       runOnUiThread(()->{synchronized(musicLock){
         if(musicPlayer!=null)try{
           if(musicPlayer.getCurrentPosition()>=musicPlayer.getDuration()-100)musicPlayer.seekTo(0);
+          musicCompleted=false;
           musicPlayer.start();
         }catch(IllegalStateException ignored){}
       }});
@@ -298,12 +301,15 @@ public final class MainActivity extends Activity {
           .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build());
         next.setDataSource(file.getAbsolutePath());
         next.prepare();
+        musicCompleted=false;
+        next.setOnCompletionListener(player->musicCompleted=true);
         musicPlayer=next;
         musicFile=file;
       }catch(IOException|RuntimeException ex){next.release();throw ex;}
     }
   }
   private void releaseTrackLocked(){
+    musicCompleted=false;
     if(musicPlayer!=null){
       try{musicPlayer.stop();}catch(Exception ignored){}
       try{musicPlayer.release();}catch(Exception ignored){}
