@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const core=require('../saiko-spot-difference/puzzle-core.js');
-const levels={easy:10,normal:20,hard:30};
+const levels={easy:5,normal:7,hard:10};
 let total=0,differences=0;
 const ids=new Set(),signatures=new Set();
 for(const [level,needed] of Object.entries(levels)){
@@ -14,23 +14,27 @@ for(const [level,needed] of Object.entries(levels)){
   const b=core.makePuzzle(level,index);
   assert.deepEqual(a,b,'Generation must be deterministic for '+level+'/'+index);
   assert.equal(a.count,needed);
-  assert.equal(a.objects.length,30);
+  assert.equal(a.objects.length,core.OBJECTS);
+  assert.equal(core.OBJECTS,18);
   assert.equal(a.spots.length,needed);
   assert.equal(new Set(a.spots).size,needed);
-  assert(a.spots.every(n=>n>=0&&n<30));
-  assert.equal(new Set(a.objects.map(x=>x.i)).size,30);
-  assert(a.objects.every(x=>x.alt!==x.icon));
+  assert(a.spots.every(n=>n>=0&&n<core.OBJECTS));
+  assert.equal(new Set(a.objects.map(x=>x.i)).size,core.OBJECTS);
+  assert(a.objects.every(x=>x.alt!==x.kind));
+  assert(a.objects.every(x=>['missing','color','type','size','detail'].includes(x.variation)));
   assert.equal(a.objects.filter(x=>x.different).length,needed);
   assert(a.objects.every(x=>x.different===a.spots.includes(x.i)));
-  const s=JSON.stringify(a.objects.map(x=>[x.icon,x.alt,x.x,x.y]));
+  const s=JSON.stringify(a.objects.map(x=>[x.kind,x.alt,x.x,x.y,x.scale,x.variation]));
   assert(!signatures.has(s),'Repeating illustration '+level+'/'+index);
   signatures.add(s);
   const left=core.render(a,'left'),right=core.render(a,'right');
-  assert.equal((left.match(/data-slot=/g)||[]).length,30);
-  assert.equal((right.match(/data-slot=/g)||[]).length,30);
+  assert.equal((left.match(/data-slot=/g)||[]).length,core.OBJECTS);
+  assert.equal((right.match(/data-slot=/g)||[]).length,core.OBJECTS);
   assert(left.includes('<svg ')&&right.includes('<svg '));
   assert(!left.includes('undefined')&&!right.includes('undefined'));
   assert(!left.includes('foundRing'),'Unplayed board should not pre-reveal answers');
+  assert(!/<text[^>]*>[^<]*[\u{1F300}-\u{1FAFF}]/u.test(left),'Scenes must not be emoji grids');
+  assert(left.includes('class="hitBox"'),'Natural objects must be tappable');
   assert(!right.includes('hintRing'),'Unplayed board should not pre-reveal hints');
   assert(!keys.has(a.id));
   keys.add(a.id);ids.add(a.id);
@@ -41,7 +45,7 @@ for(const [level,needed] of Object.entries(levels)){
  assert.equal(keys.size,30);
 }
 assert.equal(total,90);
-assert.equal(differences,1800);
+assert.equal(differences,660);
 assert.equal(ids.size,90);
 for(const [badLevel,badIndex] of [['easy',30],['none',0],['hard',-1]]){
  assert.throws(()=>core.makePuzzle(badLevel,badIndex));
@@ -84,9 +88,9 @@ const game=window.SaikoSpotGame;
 assert(game,'Game controller must expose test state');
 game.open('easy');
 let state=game.getState();
-assert.equal(state.spots.length,10);
+assert.equal(state.spots.length,5);
 assert.equal(node('picker').hidden,true);
-const invalid=Array.from({length:30},(_,i)=>i).find(i=>!state.spots.includes(i));
+const invalid=Array.from({length:core.OBJECTS},(_,i)=>i).find(i=>!state.spots.includes(i));
 game.selectSlot(invalid);
 assert.equal(game.getState().wrong,1);
 game.selectSlot(state.spots[0]);
@@ -106,8 +110,8 @@ for(let i=1;i<30;i++){
  played.add(state.puzzleId);
 }
 assert.equal(played.size,30);
-game.open('normal');assert.equal(game.getState().spots.length,20);
-game.open('hard');assert.equal(game.getState().spots.length,30);
+game.open('normal');assert.equal(game.getState().spots.length,7);
+game.open('hard');assert.equal(game.getState().spots.length,10);
 console.log('PASS: live game controller spots, hints, no duplicate score, win + save and 30-unique rotation');
-console.log('PASS: 90 distinct deterministic vector puzzles, 30 per difficulty, exactly 1,800 tappable differences');
+console.log('PASS: 90 distinct deterministic vector puzzles, 30 per difficulty, exactly 660 tappable differences');
 console.log('PASS: corresponding left/right hotspot counts, hints, accessible controls and app hub link');
