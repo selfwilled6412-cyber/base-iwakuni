@@ -42,6 +42,10 @@ assert.equal(holdGame.state().perfect,1);
 holdGame.reset();
 assert.equal(holdGame.press(0,.5,104).result,'hold');
 assert.equal(holdGame.release(104,.8,true).result,'miss','Cancelled touch breaks hold');
+holdGame.reset();
+assert.equal(holdGame.press(0,.5,105).result,'hold');
+holdGame.cancelHolds();
+assert.equal(holdGame.state().miss,1,'Pause/background cancels held notes safely');
 const sr=16000,wave=new Float32Array(sr*4);
 for(let i=Math.floor(sr*.3);i<Math.floor(sr*1.5);i++)wave[i]=.3*Math.sin(2*Math.PI*220*i/sr);
 const measured=piano.addHoldsFromWaveform({sampleRate:sr,numberOfChannels:1,duration:4,getChannelData:()=>wave},
