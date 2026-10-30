@@ -204,10 +204,10 @@ function demoWaveform(){
  const beat=.5357;
  for(let i=0;i<112;i++){
   const t=1.3+i*beat*.5;
+  if([12,13,14].includes(i%16))continue; // Quiet gap after real sustained note.
   if(i%2===0)drum(t,'hat');
   if(i%8===0||i%8===6)drum(t,'kick');
   if(i%8===4)drum(t,'snare');
-  if([12,13,14].includes(i%16))continue; // Intentional rests before sustained notes.
   const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0)+(i>=56?5:0);
   const hz=220*Math.pow(2,noteNo/12);
   const sustained=i%16===11;
