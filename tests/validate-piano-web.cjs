@@ -53,6 +53,7 @@ const sandbox={window,document:doc,localStorage,performance:{now(){return 0}},ca
  const state=window.SaikoPianoGame.getState();
  assert(state,'Actual synthesized waveform should yield playable notes: '+make('status').textContent);
  assert(state.notes.length>=8,'Detected too few waveform onsets: '+state.notes.length);
+ assert(state.notes.some(n=>n.hold>=.35),'Original demo should contain at least one actual PCM-derived long tile');
  assert(state.notes.every(n=>n.t>0&&n.lane>=0&&n.lane<4));
  assert.equal(player.started,1,'Must play exactly the AudioBuffer that was analyzed');
  assert.strictEqual(player.buffer,generatedBuffer,'Playback must use analyzed buffer');
@@ -75,6 +76,14 @@ const sandbox={window,document:doc,localStorage,performance:{now(){return 0}},ca
  assert.equal(player.started,2,'Local audio should start actual decoded audio playback');
  assert.strictEqual(player.buffer,generatedBuffer,'Local audio must play the same decoded waveform that was analyzed');
  assert(make('songLabel').textContent.includes('licensed-original.wav'));
+ const late=local.notes.find(n=>!n.hold);
+ assert(late,'Need a regular tile for latency calibration');
+ const beforeScore=local.score;
+ const audioStart=AudioContext.last.currentTime;
+ adjust.listeners.input({target:{value:'150'}});
+ AudioContext.last.currentTime=audioStart+late.t+.15;
+ make('tilesCanvas').listeners.pointerdown({pointerId:44,clientX:(late.lane+.5)*100,preventDefault(){}});
+ assert(window.SaikoPianoGame.getState().score>beforeScore,'+150 ms correction should forgive a 150ms-late physical tap');
  const java=fs.readFileSync('saiko-android/app/src/main/java/jp/base/saikobeat/MainActivity.java','utf8');
  for(const part of ['ACTION_OPEN_DOCUMENT','NativeLocalReady','SaikoNativeLocalReady','NativeBeatAnalyzer.analyze(cache,difficulty)','setOnCompletionListener','isMusicFinished','shouldOverrideUrlLoading']){
   if(part==='NativeLocalReady')continue;
