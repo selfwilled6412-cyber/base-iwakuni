@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..');
 const pages=[
  'saiko-apps/index.html','saiko-apps/guide.html',
  'saiko-rhythm/index.html','saiko-rhythm/studio.html','saiko-rhythm/youtube.html',
- 'saiko-adventure/index.html','saiko-kids/index.html','saiko-draw/index.html',
+ 'saiko-adventure/index.html','saiko-kids/index.html','saiko-draw/index.html','saiko-spot-difference/index.html',
  'saiko-solo-arcade/index.html','saiko-party-games/index.html','saiko-card-games/index.html',
  'saiko-nazotoki/index.html','saiko-nazotoki/staff.html',
  'saiko-escape/index.html','saiko-escape/staff.html',
