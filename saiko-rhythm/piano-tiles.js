@@ -61,15 +61,26 @@ function render(time){
  for(const n of noteList){
   if(n.judged)continue;
   const y=target-(n.t-time)/lead*(target+tileHeight*.3)-tileHeight*.5;
-  if(y>h+80||y< -tileHeight-80)continue;
+  const tailY=n.hold>0?target-(n.t+n.hold-time)/lead*(target+tileHeight*.3)-tileHeight*.5:y;
+  if((y>h+80&&tailY>h+80)||(y< -tileHeight-80&&tailY< -tileHeight-80))continue;
   const x=n.lane*s+5*gScale(),ww=s-10*gScale();
+  if(n.hold>0){
+   const bottom=n.holding?target+tileHeight*.5:y+tileHeight;
+   const top=Math.max(-tileHeight,tailY);
+   if(bottom>top){
+    const body=g.createLinearGradient(x,top,x+ww,top);
+    body.addColorStop(0,'#6352d0');body.addColorStop(.5,colors[n.lane]);body.addColorStop(1,'#3a2877');
+    rounded(x+7*gScale(),top,ww-14*gScale(),bottom-top,8*gScale(),body,colors[n.lane]);
+   }
+  }
+  const headY=n.holding?target-tileHeight*.5:y;
   g.shadowBlur=16*gScale();g.shadowColor=colors[n.lane];
-  rounded(x,y,ww,tileHeight,13*gScale(),'#050716',colors[n.lane]);g.shadowBlur=0;
-  rounded(x+5*gScale(),y+5*gScale(),ww-10*gScale(),Math.max(9,tileHeight*.12),4*gScale(),colors[n.lane]);
-  const shine=g.createLinearGradient(x,y,x+ww,y);
+  rounded(x,headY,ww,tileHeight,13*gScale(),'#050716',colors[n.lane]);g.shadowBlur=0;
+  rounded(x+5*gScale(),headY+5*gScale(),ww-10*gScale(),Math.max(9,tileHeight*.12),4*gScale(),colors[n.lane]);
+  const shine=g.createLinearGradient(x,headY,x+ww,headY);
   shine.addColorStop(0,'#ffffff11');shine.addColorStop(.5,'#ffffff3e');shine.addColorStop(1,'#ffffff0c');
-  rounded(x+6*gScale(),y+17*gScale(),ww-12*gScale(),tileHeight*.37,8*gScale(),shine);
-  g.fillStyle='#ffffffb0';g.beginPath();g.arc(x+ww*.5,y+tileHeight*.75,Math.max(3,4*gScale()),0,Math.PI*2);g.fill();
+  rounded(x+6*gScale(),headY+17*gScale(),ww-12*gScale(),tileHeight*.37,8*gScale(),shine);
+  g.fillStyle='#ffffffb0';g.beginPath();g.arc(x+ww*.5,headY+tileHeight*.75,Math.max(3,4*gScale()),0,Math.PI*2);g.fill();
  }
  g.shadowColor='#fff9c0';g.shadowBlur=16*gScale();g.fillStyle='#fff3c1';g.fillRect(0,target+tileHeight*.5,w,4*gScale());g.shadowBlur=0;
  // Press region ends at the same target line used by the input engine.
@@ -89,21 +100,34 @@ function animate(){
 function showHit(text){
  const el=$('hitText');el.textContent=text;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
 }
-function tap(lane){
+function tap(lane,pointerId=null){
  if(!playing||paused||!game)return;
- const result=game.tap(lane,now()+timingMs/1000);
- if(result)showHit(result.result==='perfect'?'PERFECT!':'GOOD!');
+ const result=game.press(lane,now()+timingMs/1000,pointerId);
+ if(result)showHit(result.result==='hold'?'HOLD!':result.result==='perfect'?'PERFECT!':'GOOD!');
  else showHit('KEEP GOING');
+ updateStats();
+}
+function release(pointerId,cancel=false){
+ if(!playing||paused||!game)return;
+ const result=game.release(pointerId,now()+timingMs/1000,cancel);
+ if(result)showHit(result.result==='miss'?'TOO SOON!':'GREAT HOLD!');
  updateStats();
 }
 canvas.addEventListener('pointerdown',event=>{
  event.preventDefault();
  const r=canvas.getBoundingClientRect();
- tap(Math.max(0,Math.min(3,Math.floor((event.clientX-r.left)/r.width*4))));
+ if(event.pointerId!==undefined&&canvas.setPointerCapture)try{canvas.setPointerCapture(event.pointerId)}catch(e){}
+ tap(Math.max(0,Math.min(3,Math.floor((event.clientX-r.left)/r.width*4))),event.pointerId);
 },{passive:false});
+canvas.addEventListener('pointerup',event=>{event.preventDefault();release(event.pointerId)},{passive:false});
+canvas.addEventListener('pointercancel',event=>{event.preventDefault();release(event.pointerId,true)},{passive:false});
 document.addEventListener('keydown',event=>{
  const index=['d','f','j','k'].indexOf(event.key.toLowerCase());
- if(index>=0){event.preventDefault();tap(index)}
+ if(index>=0){event.preventDefault();if(!event.repeat)tap(index,'key-'+index)}
+});
+document.addEventListener('keyup',event=>{
+ const index=['d','f','j','k'].indexOf(event.key.toLowerCase());
+ if(index>=0){event.preventDefault();release('key-'+index)}
 });
 function stopAudio(){
  if(source){try{source.stop();source.disconnect()}catch(e){}source=null}
@@ -151,20 +175,22 @@ function demoWaveform(){
  // no hidden YouTube player, no downloaded audio and no prewritten beatmap.
  const sr=22050,duration=34,buffer=ctx.createBuffer(1,sr*duration,sr),wave=buffer.getChannelData(0);
  const scale=[0,2,4,7,9,12,14,16,19,21,24],melody=[0,4,7,2,5,9,7,4,2,5,7,10,9,7,4,2];
- function note(start,freq,length,volume){
+ function note(start,freq,length,volume,decayRate=5.8){
   const begin=Math.floor(start*sr),end=Math.min(wave.length,begin+Math.floor(length*sr));
   for(let i=begin;i<end;i++){
    const dt=(i-begin)/sr;
-   const attack=1-Math.exp(-dt*180),decay=Math.exp(-dt*5.8);
+   const attack=1-Math.exp(-dt*180),decay=Math.exp(-dt*decayRate);
    wave[i]+=volume*attack*decay*(Math.sin(2*Math.PI*freq*dt)+.28*Math.sin(2*Math.PI*freq*2*dt)+.12*Math.sin(2*Math.PI*freq*3*dt));
   }
  }
  const beat=.5357;
  for(let i=0;i<112;i++){
   const t=1.3+i*beat*.5;
+  if([12,13,14].includes(i%16))continue; // Intentional rests before sustained notes.
   const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0);
   const hz=220*Math.pow(2,noteNo/12);
-  note(t,hz,.41,.34);
+  const sustained=i%16===11;
+  note(t,hz,sustained?1.05:.41,.34,sustained?1.05:5.8);
   if(i%4===0)note(t,110*Math.pow(2,(Math.floor(i/16)%4)*2/12),.70,.19);
   if(i%8===4)note(t,155,.16,.18);
  }
@@ -183,7 +209,7 @@ async function startDemo(){
   if(!ctx)ctx=new AC();if(ctx.state==='suspended')await ctx.resume();
   const buffer=demoWaveform();
   const times=analyzer.extractOnsets(buffer,{level});
-  const notes=core.chartFromOnsets(times,level);
+  const notes=core.addHoldsFromWaveform(buffer,core.chartFromOnsets(times,level));
   if(notes.length<8)throw Error('この音源の解析結果が少なすぎます');
   status('✅ 音声から'+notes.length+'個のタイルを検出');
   begin(notes,buffer.duration,'♫ SAIKO ORIGINAL MUSIC','demo',buffer);
@@ -219,7 +245,7 @@ localInput.addEventListener('change',async()=>{
   const encoded=await file.arrayBuffer();
   const decoded=await ctx.decodeAudioData(encoded);
   const times=analyzer.extractOnsets(decoded,{level});
-  const notes=core.chartFromOnsets(times,level);
+  const notes=core.addHoldsFromWaveform(decoded,core.chartFromOnsets(times,level));
   status('✅ 実音声から'+notes.length+'個のタイルを検出');
   begin(notes,decoded.duration,'♫ '+file.name,'demo',decoded);
  }catch(e){status('⚠️ 音楽を解析できませんでした：'+String(e.message||e))}
