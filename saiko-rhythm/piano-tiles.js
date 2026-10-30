@@ -335,8 +335,9 @@ $('pause').addEventListener('click',async()=>{
 $('again').addEventListener('click',()=>{
  $('result').hidden=true;$('game').hidden=true;$('menu').hidden=false;$('pause').disabled=false;
 });
+window.SaikoPianoAutoPause=()=>{if(playing&&!paused)$('pause').click()};
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden&&playing&&!paused)$('pause').click();
+ if(document.hidden)window.SaikoPianoAutoPause();
 });
 window.addEventListener('pagehide',()=>{cleanup();if(ctx)ctx.close().catch(()=>{})});
 window.SaikoPianoGame=Object.freeze({videoId,chooseDifficulty,getState:()=>game?.state()||null});
