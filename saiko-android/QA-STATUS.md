@@ -1,6 +1,14 @@
-# SAIKO BEAT PIANO RUSH – v0.4 QA and release gates
+# SAIKO BEAT PIANO RUSH – v0.5 QA and release gates
 
-Updated: 2026-10-31 (JST). This is an **Android debug prototype**, not a finished or commercially cleared product.
+Updated: 2026-11-01 (JST). This is an **Android debug prototype**, not a finished or commercially cleared product.
+
+## 2026-11-01 verified improvements
+
+- **Real Android decoder integration:** GitHub Actions emulator run [41252379034](https://github.com/selfwilled6412-cyber/base-iwakuni/actions/runs/41252379034) passed a deterministic **8-second original PCM WAV** test. Native WAV PCM16, PCM24 and IEEE float32 parsing each produced a valid waveform chart; the PCM16 track yielded **15 measured note attacks** and a real `MediaPlayer.getCurrentPosition()` value of **1049 ms** after playback started. This proves Android native decoding and playback-clock advancement in the emulator, **not audible output latency or Galaxy synchronization**. No physical audio-output measurement was made.
+- **WAV decoding repair:** `NativeBeatAnalyzer` now parses RIFF PCM 8/16/24/32-bit and float32 without asking `MediaCodec` for an unavailable `audio/raw` decoder. Compressed AAC/MP3 still use `MediaExtractor/MediaCodec`; float PCM decoder output is supported. MP3/M4A on a physical Galaxy remain unverified.
+- **Release separation:** Android CI run [41252378938](https://github.com/selfwilled6412-cyber/base-iwakuni/actions/runs/41252378938) built both debug and unsigned release APKs and confirmed that **releaseRuntimeClasspath excludes NewPipeExtractor and OkHttp**. The GPL-3.0 NewPipe extractor is confined to the `src/debug` source set. The `src/release` stub does not fetch YouTube audio; release UI hides the diagnostic, and release manifest does not advertise YouTube URL sharing.
+- **YouTube policy blocker:** Official [YouTube API Services Developer Policies](https://developers.google.com/youtube/terms/developer-policies) prohibit separation of audiovisual components and downloading/caching audiovisual content without prior written approval in covered API-client scenarios. Owning a song or video does **not** itself supply YouTube platform permission. No YouTube stream was extracted or tested in this run; the experimental extractor must not be enabled in commercial builds.
+- **Shipping status:** Debug v0.5 is a QA prototype. PR #17 remains draft, not merged. No store upload, paid feature or public release was performed.
 
 ## What CI actually proves
 
