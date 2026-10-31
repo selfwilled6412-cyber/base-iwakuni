@@ -101,8 +101,22 @@ assert(java.includes('getCurrentPosition()'),'Rendering must use true native pla
 assert(java.includes('releaseTrack()'),'Downloaded temporary tracks must be cleaned up');
 assert(java.includes('ACTION_OPEN_DOCUMENT'),'User-selected authorized audio should be supported');
 assert(java.includes('isMusicFinished'),'Native audio completion should be handled');
+assert(java.includes('youtubeDiagnosticEnabled'),'Release must reject unlicensed YouTube-only extraction');
+assert(!java.includes('org.schabi.newpipe'),'Main app must not directly import GPL extractor');
+assert(js.includes('youtubeDiagnosticEnabled()'),'YouTube debug-only mode must be hidden in release UI');
+const gradle=fs.readFileSync('saiko-android/app/build.gradle','utf8');
+assert(gradle.includes("debugImplementation 'com.github.TeamNewPipe:NewPipeExtractor"),'GPL dependency must be debug-only');
+assert(!gradle.includes("implementation 'com.github.TeamNewPipe:NewPipeExtractor"),'No release GPL dependency');
+const releaseStub=fs.readFileSync('saiko-android/app/src/release/java/jp/base/saikobeat/DebugYoutubeExtractor.java','utf8');
+assert(!releaseStub.includes('org.schabi'),'Release extractor stub must be clean');
+const manifest=fs.readFileSync('saiko-android/app/src/main/AndroidManifest.xml','utf8');
+assert(!manifest.includes('android.intent.action.SEND'),'YouTube sharing must not be advertised by release');
+const debugManifest=fs.readFileSync('saiko-android/app/src/debug/AndroidManifest.xml','utf8');
+assert(debugManifest.includes('android.intent.action.SEND'),'Debug build may accept diagnostic URL sharing');
+
 const workflow=fs.readFileSync('.github/workflows/saiko-native-android.yml','utf8');
 assert(workflow.includes('cp saiko-rhythm/piano-tiles.html saiko-rhythm/piano-tiles.js saiko-rhythm/piano-core.js'));
 console.log('PASS: piano-tile perfect/good/miss, combo, no duplicate score, reset and audio-derived note transforms');
 console.log('PASS: measured sustained audio -> long holds; multi-pointer press/release/cancel, no double scoring');
 console.log('PASS: original audio buffer analysis/playback and Android MediaPlayer master clock; no video iframe');
+console.log('PASS: YouTube extraction and GPL library are debug-only; release local audio is independent');
