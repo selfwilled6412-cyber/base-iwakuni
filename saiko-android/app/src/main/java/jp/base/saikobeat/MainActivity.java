@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CountDownLatch;
 import java.util.regex.Pattern;
 
 /** Native on-device YouTube audio analysis; never sends audio to a cloud API. */
@@ -118,6 +119,10 @@ public final class MainActivity extends Activity {
     });
     view.addJavascriptInterface(new NativeAutoChart(),"SaikoNativeAutoChart");
     view.loadUrl("https://appassets.androidplatform.net/assets/piano-tiles.html");
+    // Explicit opt-in, debuggable APK only. Never runs in a production build.
+    if((getApplicationInfo().flags & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE)!=0
+       && getIntent().getBooleanExtra("saiko_native_audio_self_test",false))
+      runNativeAudioSelfTest();
   }
 
   private void acceptSharedLink(Intent intent){
@@ -287,6 +292,52 @@ public final class MainActivity extends Activity {
       }finally{
         if(cache!=null&&cache.exists())cache.delete();
         busy.set(false);
+      }
+    });
+  }
+
+  /** Emulator-only integration test: decode an actual WAV fixture and advance
+   * the real MediaPlayer clock. This is not a claim about physical audio output
+   * latency or about successful YouTube streaming.
+   */
+  private void runNativeAudioSelfTest(){
+    worker.execute(()->{
+      File temp=null;
+      try{
+        temp=File.createTempFile("saiko-qa-pcm-", ".wav",getCacheDir());
+        try(InputStream in=getAssets().open("qa/fixture.wav");
+            FileOutputStream out=new FileOutputStream(temp)){
+          byte[] buf=new byte[32768];int n;
+          while((n=in.read(buf))!=-1)out.write(buf,0,n);
+        }
+        JSONObject chart=NativeBeatAnalyzer.analyze(temp,"normal");
+        int notes=chart.getJSONArray("notes").length();
+        if(notes<8)throw new IOException("PCM waveform created too few notes: "+notes);
+        if(!"android-native-wav-pcm".equals(chart.getString("source")))
+          throw new IOException("Native WAV parser was not used");
+        prepareTrack(temp);temp=null;
+        CountDownLatch latch=new CountDownLatch(1);
+        runOnUiThread(()->{
+          try{synchronized(musicLock){if(musicPlayer!=null)musicPlayer.start();}}
+          finally{latch.countDown();}
+        });
+        if(!latch.await(5,TimeUnit.SECONDS))throw new IOException("MediaPlayer start timed out");
+        Thread.sleep(1250);
+        int position;
+        synchronized(musicLock){
+          if(musicPlayer==null)throw new IOException("MediaPlayer missing");
+          position=musicPlayer.getCurrentPosition();
+          if(musicPlayer.isPlaying())musicPlayer.pause();
+        }
+        if(position<550||position>2600)
+          throw new IOException("MediaPlayer clock did not advance: "+position+"ms");
+        android.util.Log.i("SAIKO-NATIVE-QA",
+          "PASS real WAV PCM analysis notes="+notes+" and MediaPlayer clock="+position+"ms");
+      }catch(Exception error){
+        android.util.Log.e("SAIKO-NATIVE-QA","FAIL native PCM playback test",error);
+      }finally{
+        releaseTrack();
+        if(temp!=null&&temp.exists())temp.delete();
       }
     });
   }
