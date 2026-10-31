@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -22,6 +23,9 @@ public final class NativeBeatAnalyzer {
   private NativeBeatAnalyzer(){}
 
   public static JSONObject analyze(File file,String difficulty) throws Exception {
+    // Android MediaCodec does not reliably expose a decoder for audio/raw.
+    // Parse RIFF/WAVE PCM directly; never require a nonexistent PCM codec.
+    if(isRiffWave(file))return analyzeWavPcm(file,difficulty);
     MediaExtractor extractor=new MediaExtractor();
     MediaCodec decoder=null;
     try {
@@ -45,6 +49,7 @@ public final class NativeBeatAnalyzer {
       int channels=format.containsKey(MediaFormat.KEY_CHANNEL_COUNT)?format.getInteger(MediaFormat.KEY_CHANNEL_COUNT):2;
       int rate=format.containsKey(MediaFormat.KEY_SAMPLE_RATE)?format.getInteger(MediaFormat.KEY_SAMPLE_RATE):44100;
       int framesPerWindow=Math.max(256,rate/45); // about 22 ms per onset window
+      int pcmEncoding=AudioFormat.ENCODING_PCM_16BIT;
       double sum=0;
       int frames=0;
       boolean inputDone=false,outputDone=false;
@@ -75,7 +80,8 @@ public final class NativeBeatAnalyzer {
           if(output.containsKey(MediaFormat.KEY_SAMPLE_RATE))rate=output.getInteger(MediaFormat.KEY_SAMPLE_RATE);
           if(output.containsKey(MediaFormat.KEY_CHANNEL_COUNT))channels=output.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
           framesPerWindow=Math.max(256,rate/45);
-          if(output.containsKey(MediaFormat.KEY_PCM_ENCODING)&&output.getInteger(MediaFormat.KEY_PCM_ENCODING)!=AudioFormat.ENCODING_PCM_16BIT)
+          if(output.containsKey(MediaFormat.KEY_PCM_ENCODING))pcmEncoding=output.getInteger(MediaFormat.KEY_PCM_ENCODING);
+          if(pcmEncoding!=AudioFormat.ENCODING_PCM_16BIT&&pcmEncoding!=AudioFormat.ENCODING_PCM_FLOAT)
             throw new IOException("この端末のPCM音声形式に未対応");
         } else if(outIndex>=0){
           ByteBuffer b=decoder.getOutputBuffer(outIndex);
@@ -83,11 +89,12 @@ public final class NativeBeatAnalyzer {
             b.order(ByteOrder.LITTLE_ENDIAN);
             b.position(bufferInfo.offset);
             b.limit(bufferInfo.offset+bufferInfo.size);
-            while(b.remaining()>=2*Math.max(1,channels)){
+            int frameBytes=(pcmEncoding==AudioFormat.ENCODING_PCM_FLOAT?4:2)*Math.max(1,channels);
+            while(b.remaining()>=frameBytes){
               double level=0;
               for(int ch=0;ch<channels;ch++){
-                short pcm=b.getShort();
-                double sample=pcm/32768.0;
+                double sample=pcmEncoding==AudioFormat.ENCODING_PCM_FLOAT?b.getFloat():b.getShort()/32768.0;
+                if(!Double.isFinite(sample))sample=0;
                 level+=sample*sample;
               }
               sum+=level/channels;
@@ -110,6 +117,107 @@ public final class NativeBeatAnalyzer {
         decoder.release();
       }
       extractor.release();
+    }
+  }
+
+  /** Read RIFF/WAVE directly. MediaCodec has no guaranteed audio/raw decoder.
+   * Supports ordinary 8/16/24/32-bit PCM and IEEE float32, mono/stereo.
+   * No external file access or network, and no need to retain decoded PCM.
+   */
+  private static boolean isRiffWave(File file) throws IOException {
+    try(RandomAccessFile raf=new RandomAccessFile(file,"r")){
+      if(raf.length()<12)return false;
+      byte[] magic=new byte[12];raf.readFully(magic);
+      return magic[0]=='R'&&magic[1]=='I'&&magic[2]=='F'&&magic[3]=='F'
+        &&magic[8]=='W'&&magic[9]=='A'&&magic[10]=='V'&&magic[11]=='E';
+    }
+  }
+  private static int readLE16(RandomAccessFile f)throws IOException{
+    return f.readUnsignedByte()|(f.readUnsignedByte()<<8);
+  }
+  private static long readLE32(RandomAccessFile f)throws IOException{
+    return ((long)f.readUnsignedByte())|((long)f.readUnsignedByte()<<8)
+      |((long)f.readUnsignedByte()<<16)|((long)f.readUnsignedByte()<<24);
+  }
+  private static int pcmInt(byte[] bytes,int pos,int count){
+    int v=0;
+    for(int k=0;k<count;k++)v|=(bytes[pos+k]&255)<<(8*k);
+    if(count==3&&(v&0x800000)!=0)v|=0xff000000;
+    return v;
+  }
+  private static JSONObject analyzeWavPcm(File file,String difficulty)throws Exception{
+    try(RandomAccessFile raf=new RandomAccessFile(file,"r")){
+      long length=raf.length();
+      if(length>48L*1024*1024)throw new IOException("音声が48MBを超えています");
+      int tag=0,channels=0,rate=0,bits=0,blockAlign=0;
+      long dataStart=-1,dataBytes=0;
+      long cursor=12;
+      while(cursor+8<=length){
+        raf.seek(cursor);
+        int id=raf.readInt();
+        long size=readLE32(raf),start=cursor+8;
+        if(size>length-start)throw new IOException("WAVのチャンクが破損しています");
+        if(id==0x666d7420){ // "fmt "
+          if(size<16)throw new IOException("WAVのfmtが破損しています");
+          tag=readLE16(raf);channels=readLE16(raf);rate=(int)readLE32(raf);
+          readLE32(raf);blockAlign=readLE16(raf);bits=readLE16(raf);
+          if(tag==0xfffe&&size>=40){
+            raf.seek(start+24);tag=readLE16(raf); // extensible SubFormat GUID
+          }
+        }else if(id==0x64617461&&dataStart<0){ // "data"
+          dataStart=start;dataBytes=size;
+        }
+        cursor=start+size+(size&1);
+      }
+      if(dataStart<0||channels<1||channels>2||rate<8000||rate>192000)
+        throw new IOException("WAV音声の形式を確認してください");
+      if((tag!=1&&tag!=3)||(tag==3&&bits!=32)||
+         (tag==1&&bits!=8&&bits!=16&&bits!=24&&bits!=32))
+        throw new IOException("WAVはPCM 8/16/24/32bitまたは32bit floatに対応しています");
+      int bytesPerSample=bits/8;
+      if(blockAlign!=channels*bytesPerSample)throw new IOException("WAVのチャンネル情報が不正です");
+      long totalFrames=dataBytes/blockAlign;
+      if(totalFrames<rate*5L||totalFrames>rate*600L)
+        throw new IOException("音楽ファイルは5秒〜10分に対応しています");
+      int window=Math.max(256,rate/45);
+      ArrayList<Double> energies=new ArrayList<>();
+      double sum=0;int frames=0;
+      int blockFrames=Math.max(1,65536/blockAlign);
+      byte[] bytes=new byte[blockFrames*blockAlign];
+      raf.seek(dataStart);
+      for(long remaining=totalFrames;remaining>0;){
+        int count=(int)Math.min(remaining,blockFrames);
+        raf.readFully(bytes,0,count*blockAlign);
+        for(int f=0;f<count;f++){
+          double energy=0;
+          for(int ch=0;ch<channels;ch++){
+            int p=f*blockAlign+ch*bytesPerSample;
+            double sample;
+            if(tag==3){
+              sample=Float.intBitsToFloat(pcmInt(bytes,p,4));
+            }else if(bits==8){
+              sample=((bytes[p]&255)-128)/128.0;
+            }else if(bits==16){
+              sample=(short)pcmInt(bytes,p,2)/32768.0;
+            }else if(bits==24){
+              sample=pcmInt(bytes,p,3)/8388608.0;
+            }else{
+              sample=pcmInt(bytes,p,4)/2147483648.0;
+            }
+            if(!Double.isFinite(sample))sample=0;
+            energy+=sample*sample;
+          }
+          sum+=energy/channels;
+          if(++frames>=window){
+            energies.add(Math.sqrt(sum/frames));sum=0;frames=0;
+          }
+        }
+        remaining-=count;
+      }
+      if(energies.size()<150)throw new IOException("リズム解析には音声が短すぎます");
+      JSONObject chart=deriveChart(energies,rate,window,difficulty);
+      chart.put("source","android-native-wav-pcm");
+      return chart;
     }
   }
 
