@@ -16,7 +16,9 @@ $('timingAdjust').addEventListener('input',event=>{
 });
 const canvas=$('tilesCanvas'),stage=$('stage'),g=canvas.getContext('2d',{alpha:false});
 const native=!!window.SaikoNativeAutoChart;
-$('youtubeMode').hidden=!native;
+const youtubeDiagnostic=native&&typeof window.SaikoNativeAutoChart.youtubeDiagnosticEnabled==='function'&&
+  window.SaikoNativeAutoChart.youtubeDiagnosticEnabled();
+$('youtubeMode').hidden=!youtubeDiagnostic;
 const colors=['#f6a5ff','#64f0ee','#fbe795','#95bbff'];
 const now=()=>sourceMode==='native'?(native?Number(window.SaikoNativeAutoChart.currentSeconds())||0:0):
   playing&&ctx?Math.max(0,(paused?offset:ctx.currentTime-startClock+offset)):offset;
@@ -298,7 +300,7 @@ function videoId(value){
 }
 let requestedId=null;
 $('load').addEventListener('click',()=>{
- if(!native){status('YouTube音声解析はAndroid実験版専用です');return}
+ if(!youtubeDiagnostic){status('YouTube音声解析は許諾確認前のデバッグ版でのみ利用できます');return}
  const id=videoId($('videoUrl').value);
  if(!id){status('YouTubeのURLを確認してね');return}
  if(nativePending){status('前の曲を解析しています');return}
