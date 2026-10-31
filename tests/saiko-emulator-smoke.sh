@@ -32,6 +32,30 @@ if [ -f /tmp/saiko-play-tap.txt ]; then
 else
   echo "WARN: Play button inaccessible to uiautomator; screenshot must be reviewed."
 fi
+# Actual Android decoder + MediaPlayer clock, not a JS mock:
+# launch a DEBUG-only integration test using original PCM WAV fixtures.
+adb shell am force-stop jp.base.saikobeat
+adb logcat -c
+adb shell am start -n jp.base.saikobeat/.MainActivity --ez saiko_native_audio_self_test true
+native_ok=0
+for attempt in $(seq 1 35); do
+  sleep 1
+  adb logcat -d -s SAIKO-NATIVE-QA:I > saiko-android/emulator-native-audio.log
+  if grep -q 'PASS real WAV PCM16/24/float32 analysis' saiko-android/emulator-native-audio.log; then
+    native_ok=1
+    break
+  fi
+  if grep -q 'FAIL native PCM playback test' saiko-android/emulator-native-audio.log; then
+    break
+  fi
+done
+if [ "$native_ok" -ne 1 ]; then
+  echo "FAIL: Android PCM16/24/float32 analysis + MediaPlayer clock integration"
+  cat saiko-android/emulator-native-audio.log
+  exit 1
+fi
+cat saiko-android/emulator-native-audio.log
+
 adb logcat -d -s AndroidRuntime:E SAIKO:E SAIKO-Web:E > saiko-android/emulator-errors.log
 if grep -q 'FATAL EXCEPTION' saiko-android/emulator-errors.log; then
   cat saiko-android/emulator-errors.log
