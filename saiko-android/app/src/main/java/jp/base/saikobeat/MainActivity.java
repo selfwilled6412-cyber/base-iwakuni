@@ -331,8 +331,11 @@ public final class MainActivity extends Activity {
         }
         if(position<550||position>2600)
           throw new IOException("MediaPlayer clock did not advance: "+position+"ms");
+        verifyNativeWavFixture("qa/fixture-24.wav");
+        verifyNativeWavFixture("qa/fixture-float.wav");
         android.util.Log.i("SAIKO-NATIVE-QA",
-          "PASS real WAV PCM analysis notes="+notes+" and MediaPlayer clock="+position+"ms");
+          "PASS real WAV PCM16/24/float32 analysis notes="+notes+
+          " and PCM16 MediaPlayer clock="+position+"ms");
       }catch(Exception error){
         android.util.Log.e("SAIKO-NATIVE-QA","FAIL native PCM playback test",error);
       }finally{
@@ -340,6 +343,20 @@ public final class MainActivity extends Activity {
         if(temp!=null&&temp.exists())temp.delete();
       }
     });
+  }
+
+  private void verifyNativeWavFixture(String assetName)throws Exception{
+    File temp=File.createTempFile("saiko-qa-variant-", ".wav",getCacheDir());
+    try{
+      try(InputStream in=getAssets().open(assetName);FileOutputStream out=new FileOutputStream(temp)){
+        byte[] buf=new byte[32768];int n;
+        while((n=in.read(buf))!=-1)out.write(buf,0,n);
+      }
+      JSONObject chart=NativeBeatAnalyzer.analyze(temp,"normal");
+      if(chart.getJSONArray("notes").length()<8||
+         !"android-native-wav-pcm".equals(chart.getString("source")))
+        throw new IOException("Native PCM WAV analysis failed: "+assetName);
+    }finally{if(temp.exists())temp.delete();}
   }
 
   private void prepareTrack(File file) throws IOException {
