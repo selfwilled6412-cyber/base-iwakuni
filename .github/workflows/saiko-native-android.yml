@@ -42,9 +42,17 @@ jobs:
           cp saiko-rhythm/piano-tiles.html saiko-rhythm/piano-tiles.js saiko-rhythm/piano-core.js saiko-android/app/src/main/assets/
       - name: Verify Piano Tiles note engine and Android bridge
         run: node tests/validate-piano.cjs && node tests/validate-piano-web.cjs
-      - name: Compile Android debug APK
+      - name: Compile debug and unsigned release APKs; verify release has no GPL extractor
         working-directory: saiko-android
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        run: |
+          gradle :app:assembleDebug :app:assembleRelease --no-daemon --stacktrace
+          gradle :app:dependencies --configuration releaseRuntimeClasspath --no-daemon > release-deps.txt
+          if grep -Eiq 'NewPipeExtractor|com[.]squareup[.]okhttp3' release-deps.txt; then
+            echo 'FAIL: YouTube extractor or HTTP extraction stack leaked into release build'
+            cat release-deps.txt
+            exit 1
+          fi
+          echo 'PASS: release build excludes NewPipeExtractor and OkHttp'
       - uses: actions/upload-artifact@v4
         with:
           name: saiko-beat-android-debug
