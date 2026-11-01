@@ -8,6 +8,8 @@ let level='easy',playing=false,paused=false,game=null,track=null,source=null,ctx
 let startClock=0,offset=0,raf=0,chartDuration=0,sourceMode='demo',nativePending=false,lastRender=0;
 let timingMs=0;
 let hitPulse=[0,0,0,0],hitStreak=0;
+const PRE_ROLL_MS=2200;
+let musicStarted=false,countdownEnd=0,countdownRemaining=0;
 try{timingMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('saiko-piano-timing-ms')||0)||0))}catch(e){}
 $('timingAdjust').value=String(timingMs);$('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
 $('timingAdjust').addEventListener('input',event=>{
@@ -21,7 +23,7 @@ const youtubeDiagnostic=native&&typeof window.SaikoNativeAutoChart.youtubeDiagno
   window.SaikoNativeAutoChart.youtubeDiagnosticEnabled();
 $('youtubeMode').hidden=!youtubeDiagnostic;
 const colors=['#f6a5ff','#64f0ee','#fbe795','#95bbff'];
-const now=()=>sourceMode==='native'?(native?Number(window.SaikoNativeAutoChart.currentSeconds())||0:0):
+const now=()=>!musicStarted?-Math.max(0,(paused?countdownRemaining:countdownEnd-performance.now())/1000):sourceMode==='native'?(native?Number(window.SaikoNativeAutoChart.currentSeconds())||0:0):
   playing&&ctx?Math.max(0,(paused?offset:ctx.currentTime-startClock+offset)):offset;
 function status(message){$('status').textContent=message}
 function updateStats(){
@@ -94,19 +96,30 @@ function render(time){
 }
 function animate(){
  if(!playing)return;
- const time=now();
  if(!paused){
+  if(!musicStarted){
+   const remaining=countdownEnd-performance.now();
+   if(remaining<=0){
+    try{startAudio(0);musicStarted=true;countdownRemaining=0;}
+    catch(e){cleanup();$('game').hidden=true;$('menu').hidden=false;status('音声が再生できません: '+e.message);return;}
+    $('countdown').textContent='GO!';
+   }else{
+    const digit=String(Math.max(1,Math.ceil(remaining/1000)));
+    if($('countdown').textContent!==digit){$('countdown').textContent=digit;$('countdown').style.animation='none';void $('countdown').offsetWidth;$('countdown').style.animation='';}
+   }
+  }else if(performance.now()-countdownEnd>400){$('countdown').hidden=true;}
+  const time=now();
   game.tick(time);updateStats();render(time);
   if(time>chartDuration+.45||(sourceMode==='native'&&native&&window.SaikoNativeAutoChart.isMusicFinished())){finish();return;}
- }else if(!lastRender){render(time);}
- lastRender=time;
+ }else if(!lastRender){render(now());}
+ lastRender=now();
  raf=requestAnimationFrame(animate);
 }
 function showHit(text){
  const el=$('hitText');el.textContent=text;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
 }
 function tap(lane,pointerId=null){
- if(!playing||paused||!game)return;
+ if(!playing||paused||!game||!musicStarted)return;
  const result=game.press(lane,now()-timingMs/1000,pointerId);
  if(result){hitPulse[lane]=performance.now();hitStreak++;showHit(result.result==='hold'?'HOLD!':result.result==='perfect'?'PERFECT!':'GOOD!');}
  else {hitStreak=0;showHit('KEEP GOING');}
@@ -146,6 +159,7 @@ function startAudio(from=0){
 }
 function cleanup(){
  cancelAnimationFrame(raf);playing=false;paused=false;stopAudio();game=null;
+ musicStarted=false;countdownRemaining=0;$('countdown').hidden=true;
 }
 function begin(rawNotes,duration,title,mode,buffer){
  cleanup(); sourceMode=mode;audioBuffer=buffer||null;
@@ -155,8 +169,9 @@ function begin(rawNotes,duration,title,mode,buffer){
  $('pause').textContent='⏸ 一時停止';
  $('stage').scrollIntoView({block:'nearest'});
  playing=true;paused=false;lastRender=0;hitStreak=0;hitPulse=[0,0,0,0];
- try{startAudio(0)}catch(e){cleanup();$('game').hidden=true;$('menu').hidden=false;status('音声が再生できません: '+e.message);return}
- updateStats();raf=requestAnimationFrame(animate);
+ musicStarted=false;countdownRemaining=PRE_ROLL_MS;countdownEnd=performance.now()+PRE_ROLL_MS;
+ $('countdown').textContent=String(Math.ceil(PRE_ROLL_MS/1000));$('countdown').hidden=false;
+ updateStats();render(now());raf=requestAnimationFrame(animate);
 }
 function finish(){
  if(!game||!playing)return;
@@ -330,11 +345,13 @@ $('pause').addEventListener('click',async()=>{
  if(!playing)return;
  if(!paused){
   if(game)game.cancelHolds(); // A lost touch must never earn a free sustained note.
-  if(sourceMode==='demo'){offset=now();if(source){source.stop();source=null}}
+  if(!musicStarted)countdownRemaining=Math.max(0,countdownEnd-performance.now());
+  else if(sourceMode==='demo'){offset=now();if(source){source.stop();source=null}}
   else if(native)window.SaikoNativeAutoChart.pauseMusic();
   paused=true;$('pause').textContent='▶ 再開';
  }else{
-  if(sourceMode==='demo'){if(ctx.state==='suspended')await ctx.resume();startAudio(offset)}
+  if(!musicStarted)countdownEnd=performance.now()+countdownRemaining;
+  else if(sourceMode==='demo'){if(ctx.state==='suspended')await ctx.resume();startAudio(offset)}
   else if(native)window.SaikoNativeAutoChart.playMusic();
   paused=false;$('pause').textContent='⏸ 一時停止';
  }
