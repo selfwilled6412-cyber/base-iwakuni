@@ -2,6 +2,13 @@
 
 Updated: 2026-11-01 (JST). This is an **Android debug prototype**, not a finished or commercially cleared product.
 
+## 2026-11-02 ongoing improvements (CI verification pending)
+
+- Added a **2.2-second playable pre-roll**: falling tiles appear before the analyzed music begins. Countdown pauses/resumes without starting audio early. The Web/Android shared game code and browser integration test were updated; the Galaxy's audio output delay is still unmeasured.
+- Expanded the emulator audio QA to transcode the same original WAV fixture into **AAC/M4A and MP3** using FFmpeg, then exercise Android's actual `MediaExtractor/MediaCodec` decoding. This test has been committed but its new CI run has not yet been verified; do not count it as a pass yet.
+- YouTube debug diagnostics now distinguish **metadata lookup**, **audio-stream retrieval**, **rhythm analysis**, and **playback preparation**. Real YouTube extraction remains untested on a physical Galaxy.
+- No main merge, paid release or public deployment.
+
 ## 2026-11-01 verified improvements
 
 - **Real Android decoder integration:** GitHub Actions emulator run [41252379034](https://github.com/selfwilled6412-cyber/base-iwakuni/actions/runs/41252379034) passed a deterministic **8-second original PCM WAV** test. Native WAV PCM16, PCM24 and IEEE float32 parsing each produced a valid waveform chart; the PCM16 track yielded **15 measured note attacks** and a real `MediaPlayer.getCurrentPosition()` value of **1049 ms** after playback started. This proves Android native decoding and playback-clock advancement in the emulator, **not audible output latency or Galaxy synchronization**. No physical audio-output measurement was made.
