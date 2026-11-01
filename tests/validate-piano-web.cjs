@@ -60,6 +60,10 @@ const sandbox={window,document:doc,localStorage,performance:{now(){return clockM
  assert.equal(make('countdown').hidden,false,'Countdown must be visible before the first tile');
  advance(1100);
  assert.equal(player.started,0,'Music must not start before countdown finishes');
+ await make('pause').listeners.click();
+ advance(3000);
+ assert.equal(player.started,0,'Paused countdown must not start audio');
+ await make('pause').listeners.click();
  advance(1200);
  assert.equal(player.started,1,'Must play exactly the AudioBuffer that was analyzed');
  assert.strictEqual(player.buffer,generatedBuffer,'Playback must use analyzed buffer');
