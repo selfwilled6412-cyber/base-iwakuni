@@ -7,6 +7,7 @@ if(!core||!analyzer){$('status').textContent='音声解析エンジンを読み�
 let level='easy',playing=false,paused=false,game=null,track=null,source=null,ctx=null,audioBuffer=null;
 let startClock=0,offset=0,raf=0,chartDuration=0,sourceMode='demo',nativePending=false,lastRender=0;
 let timingMs=0;
+let hitPulse=[0,0,0,0],hitStreak=0;
 try{timingMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('saiko-piano-timing-ms')||0)||0))}catch(e){}
 $('timingAdjust').value=String(timingMs);$('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
 $('timingAdjust').addEventListener('input',event=>{
@@ -56,6 +57,8 @@ function render(time){
   g.beginPath();g.arc(x,y,Math.max(2,w*.008),0,Math.PI*2);g.fill();
  }
  for(let lane=0;lane<4;lane++){
+  const pulse=Math.max(0,1-(performance.now()-hitPulse[lane])/180);
+  if(pulse){g.fillStyle=`rgba(130,255,238,${(pulse*.22).toFixed(3)})`;g.fillRect(lane*s,0,s,h);}
   g.fillStyle=lane%2?'#ffffff09':'#03071c28';g.fillRect(lane*s,0,s,h);
   if(lane){g.fillStyle='#b4c8fc55';g.fillRect(lane*s-1.1,0,2.2,h)}
  }
@@ -105,8 +108,8 @@ function showHit(text){
 function tap(lane,pointerId=null){
  if(!playing||paused||!game)return;
  const result=game.press(lane,now()-timingMs/1000,pointerId);
- if(result)showHit(result.result==='hold'?'HOLD!':result.result==='perfect'?'PERFECT!':'GOOD!');
- else showHit('KEEP GOING');
+ if(result){hitPulse[lane]=performance.now();hitStreak++;showHit(result.result==='hold'?'HOLD!':result.result==='perfect'?'PERFECT!':'GOOD!');}
+ else {hitStreak=0;showHit('KEEP GOING');}
  updateStats();
 }
 function release(pointerId,cancel=false){
@@ -151,7 +154,7 @@ function begin(rawNotes,duration,title,mode,buffer){
  $('menu').hidden=true;$('game').hidden=false;$('result').hidden=true;
  $('pause').textContent='⏸ 一時停止';
  $('stage').scrollIntoView({block:'nearest'});
- playing=true;paused=false;lastRender=0;
+ playing=true;paused=false;lastRender=0;hitStreak=0;hitPulse=[0,0,0,0];
  try{startAudio(0)}catch(e){cleanup();$('game').hidden=true;$('menu').hidden=false;status('音声が再生できません: '+e.message);return}
  updateStats();raf=requestAnimationFrame(animate);
 }
