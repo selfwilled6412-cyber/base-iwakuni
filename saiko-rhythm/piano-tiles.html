@@ -51,6 +51,19 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 @media(max-height:590px){.top{height:46px}#stage{height:58vh;min-height:200px}.scorebar .stat b{font-size:17px}}
 @media(min-width:800px){#stage{height:66vh;min-height:550px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important}}
+
+/* v0.6: immersive four-lane playfield and thumb-friendly mobile layout */
+body:has(#game:not([hidden])){background:#050611}
+body:has(#game:not([hidden])) .top{height:48px;background:#090b1b;border-bottom:1px solid #ffffff16}
+body:has(#game:not([hidden])) .shell{max-width:560px;padding:5px 6px calc(5px + env(safe-area-inset-bottom))}
+#game{gap:5px}#game .gameTop{min-height:37px}#game .scorebar{gap:4px}
+#game .stat{background:#0c1025;border-color:#343e66;border-radius:7px;padding:3px}
+#game .stat b{font-size:clamp(18px,5vw,27px);color:#fff}
+#stage{border:1px solid #505b8a;border-radius:5px;background:#090d1b;box-shadow:0 0 28px #446eff24;height:calc(100dvh - 205px);min-height:260px;max-height:none}
+#game .hint{margin:1px 0;font-size:10px}
+#game .songLabel{font-size:12px}
+@media(max-height:650px){#stage{height:calc(100dvh - 175px);min-height:190px}#game .hint{display:none}}
+@media(min-width:800px){#stage{height:min(76dvh,820px)}}
 </style></head><body>
 <header class="top"><div class="logo">♫ SAIKO <b>BEAT</b><small>PIANO RUSH</small></div><span class="mode">🎹 4レーン</span></header>
 <main class="shell">
