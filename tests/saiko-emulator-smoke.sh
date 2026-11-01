@@ -41,7 +41,7 @@ native_ok=0
 for attempt in $(seq 1 35); do
   sleep 1
   adb logcat -d -s SAIKO-NATIVE-QA:I > saiko-android/emulator-native-audio.log
-  if grep -q 'PASS real WAV PCM16/24/float32 analysis' saiko-android/emulator-native-audio.log; then
+  if grep -q 'PASS real WAV PCM16/24/float32 + AAC/MP3 analysis' saiko-android/emulator-native-audio.log; then
     native_ok=1
     break
   fi
