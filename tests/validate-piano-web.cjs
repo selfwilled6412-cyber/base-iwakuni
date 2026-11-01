@@ -38,12 +38,13 @@ class AudioContext {
  resume(){return Promise.resolve()}
  close(){return Promise.resolve()}
 }
-let animation=0;
+let animation=0,clockMs=0;let scheduled=[];
+function advance(ms){clockMs+=ms;const frames=scheduled.splice(0);for(const frame of frames)frame();}
 const window={SaikoPianoCore:core,SaikoBeatAnalyzer:analyzer,AudioContext,devicePixelRatio:1,
  addEventListener(){}};
 const localStorage={getItem(){return null},setItem(){}};
-const sandbox={window,document:doc,localStorage,performance:{now(){return 0}},cancelAnimationFrame(){},
- requestAnimationFrame(){return ++animation},Math,Number,Set,URL,console};
+const sandbox={window,document:doc,localStorage,performance:{now(){return clockMs}},cancelAnimationFrame(){scheduled=[]},
+ requestAnimationFrame(fn){scheduled.push(fn);return ++animation},Math,Number,Set,URL,console};
 (async()=>{
  vm.runInNewContext(js,sandbox,{filename:'piano-tiles.js'});
  assert.equal(make('youtubeMode').hidden,true,'Browser demo must not promise unsupported YouTube audio access');
@@ -55,11 +56,16 @@ const sandbox={window,document:doc,localStorage,performance:{now(){return 0}},ca
  assert(state.notes.length>=8,'Detected too few waveform onsets: '+state.notes.length);
  assert(state.notes.some(n=>n.hold>=.35),'Original demo should contain at least one actual PCM-derived long tile');
  assert(state.notes.every(n=>n.t>0&&n.lane>=0&&n.lane<4));
+ assert.equal(player.started,0,'Music must wait for the visible 3-2-1 lead-in');
+ assert.equal(make('countdown').hidden,false,'Countdown must be visible before the first tile');
+ advance(1100);
+ assert.equal(player.started,0,'Music must not start before countdown finishes');
+ advance(1200);
  assert.equal(player.started,1,'Must play exactly the AudioBuffer that was analyzed');
  assert.strictEqual(player.buffer,generatedBuffer,'Playback must use analyzed buffer');
  assert.equal(make('menu').hidden,true);
  assert.equal(make('game').hidden,false);
- assert(html.includes('id="tilesCanvas"'));
+ assert(html.includes('id="tilesCanvas"')&&html.includes('id="countdown"'));
  console.log('PASS: real generated original music -> PCM waveform -> beat analyzer -> '+state.notes.length+' synchronized falling tiles');
  const first=state.notes[0];
  AudioContext.last.currentTime=8+first.t;
@@ -73,6 +79,8 @@ const sandbox={window,document:doc,localStorage,performance:{now(){return 0}},ca
  await file.listeners.change();
  const local=window.SaikoPianoGame.getState();
  assert(local&&local.notes.length>=8,'Local audio file must produce an actual playable chart');
+ assert.equal(player.started,1,'Local audio must wait for its own countdown');
+ advance(2200);
  assert.equal(player.started,2,'Local audio should start actual decoded audio playback');
  assert.strictEqual(player.buffer,generatedBuffer,'Local audio must play the same decoded waveform that was analyzed');
  assert(make('songLabel').textContent.includes('licensed-original.wav'));
