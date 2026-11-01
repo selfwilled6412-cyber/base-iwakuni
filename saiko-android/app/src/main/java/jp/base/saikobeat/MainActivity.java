@@ -192,15 +192,16 @@ public final class MainActivity extends Activity {
       final String id=videoId,difficulty=level;
       worker.execute(()->{
         File cache=null;
-        String stage="動画情報の取得";
+        final java.util.concurrent.atomic.AtomicReference<String> stage=new java.util.concurrent.atomic.AtomicReference<>("動画情報の取得");
         try {
           notifyJS("SaikoNativeChartProgress","動画の音声情報を取得しています…");
           cache=File.createTempFile("saiko-audio-", ".media", getCacheDir());
           DebugYoutubeExtractor.loadAudio(id,cache,
-            message->notifyJS("SaikoNativeChartProgress",message));
-          stage="曲のリズム解析";
+            message->{stage.set("音声ストリームの取得");notifyJS("SaikoNativeChartProgress",message);});
+          stage.set("曲のリズム解析");
           notifyJS("SaikoNativeChartProgress","音楽のリズムを解析しています…");
           JSONObject chart=NativeBeatAnalyzer.analyze(cache,difficulty);
+          stage.set("音声の再生準備");
           // The same decoded source now drives the game audio. Do not hand
           // out a beatmap for a track we cannot actually play.
           prepareTrack(cache);
@@ -208,7 +209,7 @@ public final class MainActivity extends Activity {
           chart.put("video_id",id);
           notifyJS("SaikoNativeChartReady",chart.toString());
         } catch(Exception error) {
-          android.util.Log.w("SAIKO","native chart failed",error);
+          android.util.Log.w("SAIKO-YT-DIAG","stage="+stage.get()+" failure="+error.getClass().getSimpleName(),error);
           String msg=error.getMessage()==null?"アクセスに失敗しました":error.getMessage();
           String lower=msg.toLowerCase(java.util.Locale.ROOT);
           if(error instanceof SocketException||error instanceof SocketTimeoutException||
@@ -218,7 +219,7 @@ public final class MainActivity extends Activity {
             msg="YouTube側で自動取得が制限されています";
           else if(lower.contains("403")||lower.contains("429"))
             msg="YouTube側からアクセスを拒否されました";
-          notifyJS("SaikoNativeChartError",stage+"："+msg.substring(0,Math.min(msg.length(),130)));
+          notifyJS("SaikoNativeChartError",stage.get()+"："+msg.substring(0,Math.min(msg.length(),130)));
         } finally {
           if(cache!=null&&cache.exists()&&!cache.delete())cache.deleteOnExit();
           busy.set(false);
@@ -309,8 +310,10 @@ public final class MainActivity extends Activity {
           throw new IOException("MediaPlayer clock did not advance: "+position+"ms");
         verifyNativeWavFixture("qa/fixture-24.wav");
         verifyNativeWavFixture("qa/fixture-float.wav");
+        verifyNativeCompressedFixture("qa/fixture-aac.m4a");
+        verifyNativeCompressedFixture("qa/fixture-mp3.mp3");
         android.util.Log.i("SAIKO-NATIVE-QA",
-          "PASS real WAV PCM16/24/float32 analysis notes="+notes+
+          "PASS real WAV PCM16/24/float32 + AAC/MP3 analysis notes="+notes+
           " and PCM16 MediaPlayer clock="+position+"ms");
       }catch(Exception error){
         android.util.Log.e("SAIKO-NATIVE-QA","FAIL native PCM playback test",error);
@@ -332,6 +335,24 @@ public final class MainActivity extends Activity {
       if(chart.getJSONArray("notes").length()<8||
          !"android-native-wav-pcm".equals(chart.getString("source")))
         throw new IOException("Native PCM WAV analysis failed: "+assetName);
+    }finally{if(temp.exists())temp.delete();}
+  }
+
+  /** Exercise Android's actual MediaExtractor/MediaCodec on compressed songs,
+   * using deterministic original-audio fixtures produced by CI.
+   */
+  private void verifyNativeCompressedFixture(String assetName)throws Exception{
+    String suffix=assetName.endsWith(".m4a")?".m4a":".mp3";
+    File temp=File.createTempFile("saiko-qa-compressed-",suffix,getCacheDir());
+    try{
+      try(InputStream in=getAssets().open(assetName);FileOutputStream out=new FileOutputStream(temp)){
+        byte[] buf=new byte[32768];int n;
+        while((n=in.read(buf))!=-1)out.write(buf,0,n);
+      }
+      JSONObject chart=NativeBeatAnalyzer.analyze(temp,"normal");
+      if(chart.getJSONArray("notes").length()<8||
+         !"android-native-waveform-onsets".equals(chart.getString("source")))
+        throw new IOException("Native compressed-audio analysis failed: "+assetName);
     }finally{if(temp.exists())temp.delete();}
   }
 
