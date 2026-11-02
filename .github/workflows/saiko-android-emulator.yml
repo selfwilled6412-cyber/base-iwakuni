@@ -33,7 +33,13 @@ jobs:
         run: python3 tests/make-saiko-wav.py saiko-android/app/src/main/assets/qa
       - name: Encode original WAV as AAC/M4A and MP3 for native decoder regression
         run: |
-          command -v ffmpeg
+          # ubuntu-latest no longer guarantees ffmpeg is preinstalled.
+          # Install it explicitly so compressed-codec emulator QA actually runs.
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -version | head -n 1
           ffmpeg -hide_banner -loglevel error -y -i saiko-android/app/src/main/assets/qa/fixture.wav -c:a aac -b:a 128k saiko-android/app/src/main/assets/qa/fixture-aac.m4a
           ffmpeg -hide_banner -loglevel error -y -i saiko-android/app/src/main/assets/qa/fixture.wav -c:a libmp3lame -b:a 160k saiko-android/app/src/main/assets/qa/fixture-mp3.mp3
       - name: Prepare packaged game and compile APK
