@@ -353,7 +353,30 @@ public final class MainActivity extends Activity {
       if(chart.getJSONArray("notes").length()<8||
          !"android-native-waveform-onsets".equals(chart.getString("source")))
         throw new IOException("Native compressed-audio analysis failed: "+assetName);
-    }finally{if(temp.exists())temp.delete();}
+      // A decoded chart alone is not sufficient: verify that the same AAC/MP3
+      // fixture can actually start in MediaPlayer and advance its audio clock.
+      prepareTrack(temp);
+      CountDownLatch started=new CountDownLatch(1);
+      runOnUiThread(()->{
+        try{synchronized(musicLock){if(musicPlayer!=null)musicPlayer.start();}}
+        finally{started.countDown();}
+      });
+      if(!started.await(5,TimeUnit.SECONDS))
+        throw new IOException("Compressed MediaPlayer start timed out: "+assetName);
+      Thread.sleep(650);
+      int position;
+      synchronized(musicLock){
+        if(musicPlayer==null)throw new IOException("Compressed MediaPlayer missing: "+assetName);
+        position=musicPlayer.getCurrentPosition();
+        if(musicPlayer.isPlaying())musicPlayer.pause();
+      }
+      if(position<150||position>2500)
+        throw new IOException("Compressed MediaPlayer clock did not advance: "+assetName+" "+position+"ms");
+      android.util.Log.i("SAIKO-NATIVE-QA","PASS "+assetName+" decoded and MediaPlayer clock="+position+"ms");
+    }finally{
+      releaseTrack();
+      if(temp.exists())temp.delete();
+    }
   }
 
   private void prepareTrack(File file) throws IOException {
