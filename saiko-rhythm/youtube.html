@@ -103,13 +103,15 @@ main > .footer{order:3}
  .dockControls .button{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.button,.pad{transition:none!important}}
+.quickTools .button{font-size:14px;min-height:44px}
+@media(max-width:420px){.quickTools .button{font-size:13px}}
 </style></head>
 <body>
 <header class="topbar"><div class="brand">♫ SAIKO <em>BEAT</em></div><a href="./">オリジナル曲で遊ぶ</a></header>
 <main>
 <section class="quickLaunch" aria-label="YouTube動画を読み込む">
  <div class="quickRow"><label for="videoUrl" class="visuallyHidden">YouTube動画URL</label><input id="videoUrl" type="text" inputmode="url" autocomplete="url" placeholder="YouTube動画URLを貼り付け"><button id="load" class="button primary" type="button">読み込む</button></div>
- <div class="quickTools"><p>譜面を作成した曲でプレイできます</p><button id="openStudioSettings" type="button">⚙ 譜面・設定</button></div>
+ <div class="quickTools"><button class="button primary" id="autoChart" type="button" style="flex:1;min-width:0">⚡ この曲を自動採譜（試作）</button><button id="openStudioSettings" type="button">⚙ 詳細</button></div>
  <p class="status" id="status" role="status">曲を読み込んでね</p>
 </section>
 <section class="layout" aria-label="音ゲー画面">
@@ -127,6 +129,12 @@ main > .footer{order:3}
 </section>
 <details id="studioSettings" class="compactSettings"><summary>譜面・詳細設定</summary>
  <div class="settingsInside"><h2>🎼 音に合わせる譜面を作る</h2>
+ <div class="subpanel"><h3>⚡ URLだけで自動採譜（非公開テスト）</h3>
+ <p class="hint">音声解析サーバーを接続した開発者テスト用です。URLを入れるだけで譜面を生成し、曲に合わせてノーツを配置します。YouTubeの曲や動画を端末に保存する必要はありません。</p>
+ <div class="fields"><label class="field" style="grid-column:span 2">解析サーバーURL（HTTPS）<input id="chartEndpoint" type="url" placeholder="https://your-private-server.example"></label>
+ <label class="field">接続キー（保存しません）<input id="chartKey" type="password" autocomplete="off" placeholder="試作サーバーのキー"></label></div>
+ <p class="hint" id="chartGatewayStatus">サーバー未接続。この画面は先に実装した試作版で、接続先がなければ自動採譜は実行されません。</p>
+ </div>
   <p>YouTube動画だけでは曲の音は解析できません。音に合うノーツを作るには、同じ曲の権利を持つ音声ファイルを解析するか、曲を聴いてリズムを記録します。</p>
   <div class="subpanel">
    <h3>音源を解析（おすすめ）</h3>
