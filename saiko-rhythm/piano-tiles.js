@@ -259,6 +259,22 @@ async function startDemo(){
  finally{$('demo').disabled=false}
 }
 $('demo').addEventListener('click',startDemo);
+const songSearch=$('songSearch'),songButtons=Array.from(document.querySelectorAll('[data-song-action]'));
+songSearch.addEventListener('input',()=>{
+ const query=songSearch.value.trim().toLocaleLowerCase('ja-JP');
+ let visible=0;
+ for(const button of songButtons){
+  const match=(button.dataset.search+' '+button.textContent).toLocaleLowerCase('ja-JP').includes(query);
+  button.hidden=!match;
+  if(match)visible++;
+ }
+ $('songEmpty').hidden=visible!==0;
+});
+songButtons.forEach(button=>button.addEventListener('click',()=>{
+ if(button.dataset.songAction==='demo')startDemo();
+ else if(button.dataset.songAction==='local')$('localAudio').click();
+}));
+
 const localInput=$('localAudioFile'),localButton=$('localAudio');
 function localReady(){nativePending=false;localButton.disabled=false}
 localButton.addEventListener('click',()=>{
