@@ -47,6 +47,10 @@
    const target=candidates[0],delta=Math.abs(target.t-time);
    const result=delta<=.095?'perfect':'good';
    if(target.hold>0){
+    // One physical finger/key may sustain only one note at a time.
+    // Otherwise the same pointer can claim multiple simultaneous holds and
+    // release() would free only the first, awarding the other for free.
+    if(pointerId!==null&&notes.some(n=>!n.judged&&n.holding&&n.pointerId===pointerId))return null;
     target.holding=true;target.pointerId=pointerId;target.startResult=result;
     return {result:'hold',delta,t:target.t,lane,hold:target.hold};
    }
