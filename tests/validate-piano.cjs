@@ -46,6 +46,17 @@ holdGame.reset();
 assert.equal(holdGame.press(0,.5,105).result,'hold');
 holdGame.cancelHolds();
 assert.equal(holdGame.state().miss,1,'Pause/background cancels held notes safely');
+// Regression: one finger cannot own two overlapping holds on different lanes.
+const overlap=piano.engine([
+ {t:.5,lane:0,hold:1},{t:.55,lane:1,hold:1},
+ {t:2,lane:2},{t:2.5,lane:3}
+]);
+assert.equal(overlap.press(0,.5,77).result,'hold');
+assert.equal(overlap.press(1,.55,77),null,'Same touch cannot claim a second hold');
+assert.equal(overlap.press(1,.55,78).result,'hold','Different fingers can hold both lanes');
+assert.equal(overlap.release(77,.8).result,'miss');
+assert.equal(overlap.release(78,.9).result,'miss');
+assert.equal(overlap.state().perfect,0,'Overlapping holds must not score after release');
 const sr=16000,wave=new Float32Array(sr*4);
 for(let i=Math.floor(sr*.3);i<Math.floor(sr*1.5);i++)wave[i]=.3*Math.sin(2*Math.PI*220*i/sr);
 const measured=piano.addHoldsFromWaveform({sampleRate:sr,numberOfChannels:1,duration:4,getChannelData:()=>wave},
