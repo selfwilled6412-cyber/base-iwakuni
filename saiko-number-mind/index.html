@@ -28,6 +28,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
 @keyframes revealPop{0%{transform:scale(.83);opacity:.4}65%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
 @media(max-width:730px){.clue{grid-template-columns:31px minmax(0,1fr) 91px}.orderSelect{max-width:91px;font-size:11px;padding:2px}.orderActions .move button{width:33px;min-height:32px;font-size:17px}.orderActions .move{gap:2px}.clue input{min-height:48px}.resultItem{padding:10px}.number{width:60px;min-height:63px}}
 @media(max-width:730px){#soundBtn{display:inline-block;font-size:11px;padding:8px 9px}.nav a:first-child{display:none}.nav{gap:5px}.nav a{padding:8px 9px;font-size:11px}}
+.voiceTools{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;align-items:center;margin:14px auto}.voiceStatus{font-size:14px;color:#d2fffc;font-weight:900;text-align:center}.voiceBtn{border-color:#8ef8e8;background:linear-gradient(115deg,#195981,#374a99)}@media(max-width:730px){#voiceBtn{display:inline-block;padding:8px 9px;font-size:11px}.bar{flex-wrap:wrap}.nav{width:100%;justify-content:flex-end}.nav a{display:none}.voiceTools .btn{font-size:15px;min-height:45px;padding:9px 12px}}
 @media print {
 @page{size:A4 portrait;margin:12mm}
 body{background:white!important;color:#111!important}
@@ -40,7 +41,7 @@ body{background:white!important;color:#111!important}
 </style>
 </head>
 <body>
-<header class="header"><div class="bar"><div class="logo">🃏 サイ校 数字の以心伝心<small>SAIKO PROJECT IWAKUNI</small></div><nav class="nav"><a href="../saiko-party-games/">📺 ゲーム大会へ</a><a href="../saiko-apps/">⌂ ゲームひろば</a><button type="button" data-action="sound" id="soundBtn" aria-pressed="false">🔇 効果音OFF</button><button type="button" data-action="fullscreen">⛶ 全画面</button></nav></div></header>
+<header class="header"><div class="bar"><div class="logo">🃏 サイ校 数字の以心伝心<small>SAIKO PROJECT IWAKUNI</small></div><nav class="nav"><a href="../saiko-party-games/">📺 ゲーム大会へ</a><a href="../saiko-apps/">⌂ ゲームひろば</a><button type="button" data-action="voice" id="voiceBtn" aria-pressed="false">🎙️ 音声司会OFF</button><button type="button" data-action="sound" id="soundBtn" aria-pressed="false">🔇 効果音OFF</button><button type="button" data-action="fullscreen">⛶ 全画面</button></nav></div></header>
 <main class="wrap"><div class="hero"><span class="tag">🌈 みんなで協力！ 数字と言葉のゲーム</span><h1>数字の<em>以心伝心</em>！</h1><p>「そのヒント、そんなに強い!?」 みんなの感覚が試される！</p></div><div id="app" aria-live="polite"></div></main>
 <footer class="footer">サイ校プロジェクト岩国オリジナルレクリエーション｜登録・課金なし／オンライン対戦機能なし</footer>
 <script>
@@ -140,9 +141,38 @@ const randomInt=n=>{if(globalThis.crypto&&crypto.getRandomValues){const a=new Ui
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){let j=randomInt(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
 let phase='setup',players=[],entries=[],usedTopics=[],topic=null,round=1,rounds=3,dealAt=0,successes=0,won=false,category='all',revealed=0,accuracy=0,totalAccuracy=0,awarded=false,soundOn=false;
 const settingsKey='saiko-number-mind-options-v2';
+let voiceOn=false;
 let saved={};try{saved=JSON.parse(localStorage.getItem(settingsKey)||'{}');if(!saved||typeof saved!=='object')saved={}}catch(e){saved={}}
-function savePrefs(count,rounds,category){try{localStorage.setItem(settingsKey,JSON.stringify({count,rounds,category,soundOn}))}catch(e){}}
+function savePrefs(count,rounds,category){try{localStorage.setItem(settingsKey,JSON.stringify({count,rounds,category,soundOn,voiceOn}))}catch(e){}}
 soundOn=saved.soundOn===true;
+voiceOn=saved.voiceOn===true;
+const voiceSupported=typeof window.speechSynthesis!=='undefined'&&typeof window.SpeechSynthesisUtterance==='function';
+const voiceButton=document.getElementById('voiceBtn');
+function updateVoiceButton(){if(!voiceButton)return;voiceButton.textContent=voiceSupported?(voiceOn?'🎙️ 音声司会ON':'🔇 音声司会OFF'):'🔇 この端末は読み上げ非対応';voiceButton.setAttribute('aria-pressed',String(voiceOn));voiceButton.disabled=!voiceSupported}
+function voiceTools(){return '<div class="voiceTools"><button type="button" class="btn voiceBtn" data-action="readTopic"'+(!voiceSupported?' disabled':'')+'>🔊 お題を読み上げる</button><span class="voiceStatus" id="voiceStatus" role="status">'+(voiceSupported?(voiceOn?'🎙️ 音声司会モード ON':'音声司会は上のボタンでONにできるよ'):'この端末は音声読み上げに非対応だよ')+'</span></div>'}
+function haltSpeech(){if(!voiceSupported)return;try{window.speechSynthesis.cancel()}catch(e){}}
+function speak(words,force=false){
+ if(!voiceSupported||(!voiceOn&&!force))return;
+ try{
+  const engine=window.speechSynthesis;engine.cancel();
+  const u=new window.SpeechSynthesisUtterance(String(words).slice(0,420));
+  u.lang='ja-JP';u.rate=.94;u.pitch=1.15;u.volume=1;
+  const voices=engine.getVoices?engine.getVoices():[];
+  const selected=voices.find(v=>v.lang&&v.lang.toLowerCase()==='ja-jp'&&/female|女性|nanami|haruka|kyoko|sayaka|mizuki/i.test(v.name))||voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith('ja'));
+  if(selected)u.voice=selected;
+  const status=document.getElementById('voiceStatus');
+  u.onerror=()=>{if(status)status.textContent='音声を再生できませんでした。端末の音量・音声設定を確認してね。'};
+  engine.speak(u);
+ }catch(e){const status=document.getElementById('voiceStatus');if(status)status.textContent='読み上げを開始できませんでした。'}
+}
+function topicSpeech(){return '今回のお題は、'+topic.title+'。1は、'+topic.low+'。100は、'+topic.high+'。みんなで数字を言わずにヒントを考えてね。'}
+function speakPublicContext(){
+ if(phase==='play')speak(topicSpeech()+'。相談して小さい順に並べよう。');
+ else if(phase==='result')speak('それでは、ドキドキの答え合わせを始めます。');
+ else if(phase==='setup')speak('サイ校、数字の以心伝心！みんなで協力して数字を並べよう。');
+ else speak('これから秘密の数字を配ります。数字は声に出さず、自分だけで覚えてね。');
+}
+updateVoiceButton();
 const soundButton=document.getElementById('soundBtn');
 function updateSoundButton(){if(soundButton){soundButton.textContent=soundOn?'🔊 効果音ON':'🔇 効果音OFF';soundButton.setAttribute('aria-pressed',String(soundOn))}}
 updateSoundButton();
@@ -168,13 +198,13 @@ function render(){
   return;
  }
  if(phase==='play'){
-  app.innerHTML=progress+panel('<h2>🎤 ヒントで相談しよう！</h2>'+topicHtml()+'<p class="tip">みんなのヒントを入力。▲▼または「移動先」の数字で、小さいと思う順に並べてね。<b>数字そのものは言わないで！</b></p><div class="clueList">'+entries.map((e,i)=>'<div class="clue"><span class="place">'+(i+1)+'</span><div><div class="person">'+esc(e.name)+'</div><input data-id="'+e.id+'" aria-label="'+esc(e.name)+'のヒント" placeholder="例：ライオン" maxlength="100" value="'+esc(e.clue)+'"></div><div class="orderActions"><span class="orderLabel">移動先</span><select class="orderSelect" data-move-id="'+e.id+'" aria-label="'+esc(e.name)+'の移動先">'+entries.map((x,j)=>'<option value="'+j+'"'+(i===j?' selected':'')+'>'+(j+1)+'番目</option>').join('')+'</select><div class="move"><button type="button" data-action="up" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を上へ" '+(i===0?'disabled':'')+'>▲</button><button type="button" data-action="down" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を下へ" '+(i===entries.length-1?'disabled':'')+'>▼</button></div></div></div>').join('')+'</div><p class="tip" id="error" role="status"></p><div class="buttons">'+btn('newTopic','🎲 お題を変える','secondary')+btn('reveal','🎬 ドキドキ答え合わせ！','primary')+'</div>');
+  app.innerHTML=progress+panel('<h2>🎤 ヒントで相談しよう！</h2>'+topicHtml()+voiceTools()+'<p class="tip">みんなのヒントを入力。▲▼または「移動先」の数字で、小さいと思う順に並べてね。<b>数字そのものは言わないで！</b></p><div class="clueList">'+entries.map((e,i)=>'<div class="clue"><span class="place">'+(i+1)+'</span><div><div class="person">'+esc(e.name)+'</div><input data-id="'+e.id+'" aria-label="'+esc(e.name)+'のヒント" placeholder="例：ライオン" maxlength="100" value="'+esc(e.clue)+'"></div><div class="orderActions"><span class="orderLabel">移動先</span><select class="orderSelect" data-move-id="'+e.id+'" aria-label="'+esc(e.name)+'の移動先">'+entries.map((x,j)=>'<option value="'+j+'"'+(i===j?' selected':'')+'>'+(j+1)+'番目</option>').join('')+'</select><div class="move"><button type="button" data-action="up" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を上へ" '+(i===0?'disabled':'')+'>▲</button><button type="button" data-action="down" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を下へ" '+(i===entries.length-1?'disabled':'')+'>▼</button></div></div></div>').join('')+'</div><p class="tip" id="error" role="status"></p><div class="buttons">'+btn('newTopic','🎲 お題を変える','secondary')+btn('reveal','🎬 ドキドキ答え合わせ！','primary')+'</div>');
   return;
  }
  if(phase==='result'){
   const finished=revealed===entries.length,sorted=entries.slice().sort((a,b)=>a.num-b.num),final=round===rounds;
   const cover=finished?(won?'🎊 全員正解！ おめでとう！':'💫 惜しい！ ここが逆だった！'):'ドキドキ… いよいよ答え合わせ！';
-  app.innerHTML=progress+panel('<div class="curtain"><strong>'+cover+'</strong><p>'+(finished?'全員の数字を公開したよ！':'カードを1枚ずつ開けて、みんなで予想しよう！')+'</p></div>'+topicHtml()+'<div class="revealAmount">🃏 '+revealed+' / '+entries.length+' 枚オープン！</div><div class="results">'+entries.map((e,i)=>'<div class="resultItem '+(i<revealed&&i>0&&entries[i-1].num>e.num?'out ':'')+(i===revealed-1?'newly':'')+'"><div class="number '+(i>=revealed?'mask':'')+'">'+(i<revealed?e.num:'❔')+'</div><div><strong>'+(i+1)+'. '+esc(e.name)+'</strong><p>💬 '+esc(e.clue)+'</p>'+(i<revealed&&i>0&&entries[i-1].num>e.num?'<span class="outmark">⚠️ ここで逆転！</span>':'')+'</div></div>').join('')+'</div>'+(finished?'<div class="judge '+(won?'good':'bad')+'">🎯 順番の一致率 '+accuracy+'%</div>'+(won?'<p class="correct">✨ 順番は全員正解！ 最強のチームワーク！</p>':'<p class="correct">💡 正解順：'+sorted.map(e=>esc(e.name)+'（'+e.num+'）').join(' → ')+'</p>')+'<div class="score">🏆 '+round+'ラウンド中 '+successes+'回 全員成功！<br><span class="avg">平均一致率 '+Math.round(totalAccuracy/round)+'%</span></div>':'<p class="tip">数字を見て「えーっ！」と盛り上がろう！</p>')+(finished&&final?'<p class="tip">🎉 全ラウンド終了！ おつかれさま！</p>':'')+'<div class="buttons">'+(finished?(btn(final?'again':'nextRound',final?'🔄 最初からもう一度':'➡️ 次のラウンドへ','primary')+btn('again','⌂ 設定に戻る','secondary')):(btn('flip','🃏 次の数字をオープン！','primary')+btn('flipAll','⚡ 残り全部オープン','secondary')))+'</div>');
+  app.innerHTML=progress+panel('<div class="curtain"><strong>'+cover+'</strong><p>'+(finished?'全員の数字を公開したよ！':'カードを1枚ずつ開けて、みんなで予想しよう！')+'</p></div>'+topicHtml()+voiceTools()+'<div class="revealAmount">🃏 '+revealed+' / '+entries.length+' 枚オープン！</div><div class="results">'+entries.map((e,i)=>'<div class="resultItem '+(i<revealed&&i>0&&entries[i-1].num>e.num?'out ':'')+(i===revealed-1?'newly':'')+'"><div class="number '+(i>=revealed?'mask':'')+'">'+(i<revealed?e.num:'❔')+'</div><div><strong>'+(i+1)+'. '+esc(e.name)+'</strong><p>💬 '+esc(e.clue)+'</p>'+(i<revealed&&i>0&&entries[i-1].num>e.num?'<span class="outmark">⚠️ ここで逆転！</span>':'')+'</div></div>').join('')+'</div>'+(finished?'<div class="judge '+(won?'good':'bad')+'">🎯 順番の一致率 '+accuracy+'%</div>'+(won?'<p class="correct">✨ 順番は全員正解！ 最強のチームワーク！</p>':'<p class="correct">💡 正解順：'+sorted.map(e=>esc(e.name)+'（'+e.num+'）').join(' → ')+'</p>')+'<div class="score">🏆 '+round+'ラウンド中 '+successes+'回 全員成功！<br><span class="avg">平均一致率 '+Math.round(totalAccuracy/round)+'%</span></div>':'<p class="tip">数字を見て「えーっ！」と盛り上がろう！</p>')+(finished&&final?'<p class="tip">🎉 全ラウンド終了！ おつかれさま！</p>':'')+'<div class="buttons">'+(finished?(btn(final?'again':'nextRound',final?'🔄 最初からもう一度':'➡️ 次のラウンドへ','primary')+btn('again','⌂ 設定に戻る','secondary')):(btn('flip','🃏 次の数字をオープン！','primary')+btn('flipAll','⚡ 残り全部オープン','secondary')))+'</div>');
   return;
  }
 }
@@ -186,8 +216,8 @@ function start(){
  const names=document.getElementById('names').value.split(/\r?\n/).map(s=>s.trim().slice(0,40)).filter(Boolean);
  players=Array.from({length:count},(_,i)=>names[i]||'プレイヤー'+(i+1));
  round=1;successes=0;totalAccuracy=0;usedTopics=[];
- saved={count,rounds,category,soundOn};savePrefs(count,rounds,category);
- newDeal();render();tone('tap');
+ saved={count,rounds,category,soundOn,voiceOn};savePrefs(count,rounds,category);
+ newDeal();render();tone('tap');speak('ゲームを開始します。まずは、自分の秘密の数字を見て、心の中で覚えてね。数字は口に出さないでね。');
 }
 function submit(){
  const empty=entries.find(e=>!e.clue.trim());
@@ -196,7 +226,7 @@ function submit(){
  let good=0;
  for(let i=0;i<entries.length;i++)for(let j=i+1;j<entries.length;j++)if(entries[i].num<entries[j].num)good++;
  accuracy=Math.round(good*100/pairs);
- won=good===pairs;revealed=0;awarded=false;phase='result';render();tone('tap');
+ won=good===pairs;revealed=0;awarded=false;phase='result';render();tone('tap');speak('さあ、ドキドキの答え合わせ！カードを1枚ずつめくっていこう！');
 }
 document.addEventListener('input',e=>{
  if(e.target.matches('input[data-id]')){
@@ -213,27 +243,31 @@ document.addEventListener('change',e=>{
 document.addEventListener('click',e=>{
  const button=e.target.closest('[data-action]');if(!button)return;
  const action=button.dataset.action;
- if(action==='sound'){soundOn=!soundOn;updateSoundButton();try{localStorage.setItem(settingsKey,JSON.stringify({...saved,soundOn}))}catch(e){}if(soundOn)tone('tap');return}
+ if(action==='sound'){soundOn=!soundOn;updateSoundButton();try{localStorage.setItem(settingsKey,JSON.stringify({...saved,soundOn,voiceOn}))}catch(e){}if(soundOn)tone('tap');return}
+ if(action==='voice'){if(!voiceSupported)return;voiceOn=!voiceOn;updateVoiceButton();try{localStorage.setItem(settingsKey,JSON.stringify({...saved,soundOn,voiceOn}))}catch(e){}if(voiceOn)speakPublicContext();else haltSpeech();render();return}
+ if(action==='readTopic'){if(phase==='play'||phase==='result')speak(topicSpeech(),true);return}
  if(action==='fullscreen'){const el=document.documentElement;if(!document.fullscreenElement&&el.requestFullscreen)el.requestFullscreen().catch(()=>{});else if(document.exitFullscreen)document.exitFullscreen().catch(()=>{});return}
  if(action==='start'){start();return}
  if(action==='peek'){document.getElementById('secret').hidden=false;document.getElementById('cardBack').hidden=true;document.getElementById('peek').hidden=true;document.getElementById('next').hidden=false;return}
- if(action==='next'){document.getElementById('secret').hidden=true;dealAt++;if(dealAt>=entries.length)phase='play';render();return}
+ if(action==='next'){document.getElementById('secret').hidden=true;dealAt++;if(dealAt>=entries.length)phase='play';render();if(phase==='play')speak(topicSpeech()+'。全員のヒントを聞いて、小さい順に並べてみよう。');return}
  if(action==='print'){if(typeof window.print==='function')window.print();return}
- if(action==='skipDeal'){phase='play';render();return}
+ if(action==='skipDeal'){phase='play';render();speak(topicSpeech()+'。数字を言わずにヒントを出そう。');return}
  if(action==='up'||action==='down'){
   if(phase!=='play')return;
   const i=entries.findIndex(x=>x.id===Number(button.dataset.id)),j=i+(action==='up'?-1:1);
   if(i<0||j<0||j>=entries.length)return;
   [entries[i],entries[j]]=[entries[j],entries[i]];render();tone('flip');return;
  }
- if(action==='newTopic'&&phase==='play'){pickTopic();render();tone('flip');return}
+ if(action==='newTopic'&&phase==='play'){pickTopic();render();tone('flip');speak(topicSpeech());return}
  if(action==='reveal'&&phase==='play'){submit();return}
  if(action==='flip'&&phase==='result'&&revealed<entries.length){
-  revealed++;if(revealed===entries.length)finishReveal();else tone('flip');render();return;
+  revealed++;if(revealed===entries.length)finishReveal();else tone('flip');render();
+ const opened=entries[revealed-1];speak((revealed)+'枚目、'+opened.name+'さん。数字は、'+opened.num+'！'+(revealed===entries.length?(won?'おめでとう！全員正解！':'結果発表！順番の一致率は'+accuracy+'パーセント！'):''));
+ return;
  }
- if(action==='flipAll'&&phase==='result'){revealed=entries.length;finishReveal();render();return}
- if(action==='nextRound'&&phase==='result'&&revealed===entries.length){round++;newDeal();render();window.scrollTo({top:0,behavior:'smooth'});return}
- if(action==='again'){phase='setup';render();window.scrollTo({top:0,behavior:'smooth'});return}
+ if(action==='flipAll'&&phase==='result'){revealed=entries.length;finishReveal();render();speak(won?'大成功！全員正解！':'惜しい！今回の一致率は'+accuracy+'パーセント！次もがんばろう！');return}
+ if(action==='nextRound'&&phase==='result'&&revealed===entries.length){haltSpeech();round++;newDeal();render();window.scrollTo({top:0,behavior:'smooth'});speak('次のラウンドです。新しい秘密の数字を確認してね。');return}
+ if(action==='again'){haltSpeech();phase='setup';render();window.scrollTo({top:0,behavior:'smooth'});return}
 });
 
 render();
