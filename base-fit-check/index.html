@@ -5,26 +5,26 @@
 *{box-sizing:border-box}body{margin:0;background:#eef0e9;color:#172622;font:16px/1.6 system-ui,sans-serif}main{max-width:700px;margin:auto;padding:20px}header,section{border-radius:22px;padding:24px;margin-bottom:16px}header{background:#142f28;color:white}header strong{color:#d8ff85;letter-spacing:.18em;font-size:13px}h1{font-size:clamp(25px,6vw,40px);line-height:1.15;margin:12px 0}h2{margin:0 0 8px;font-size:20px}p{margin:8px 0}section{background:white}small{display:block;color:#4b5d55}label{display:block;margin-top:10px}input,select,button{font:inherit;border:1px solid #a8b6ad;border-radius:10px;padding:9px;max-width:100%}button{cursor:pointer;background:#edf2e9;color:#142f28}button.primary{background:#d8ff85;border-color:#142f28;font-weight:bold;width:100%}.photos{display:grid;gap:15px;grid-template-columns:repeat(auto-fit,minmax(225px,1fr))}canvas{width:100%;height:auto;display:block;margin:8px 0;cursor:crosshair}canvas[hidden]{display:none}table{border-collapse:collapse;width:100%;text-align:left}td,th{padding:6px;border-bottom:1px solid #dbe3da}output{display:block;margin-top:12px;white-space:pre-line}output:empty{margin:0}.pick{font-weight:bold;color:#28552b}
 </style>
 <main>
-<header><strong>BASE FIT CHECK</strong><h1>�ʔ̂̃T�C�Y�I�т��A<br>���Ȃ��̑̂ɍ��킹�āB</h1><p>�ʐ^�ő��� �� ���i�̃T�C�Y�\������ �� ���S�n���ׂ�</p><button id="start">�ʐ^�ŃT�C�Y�𒲂ׂ�</button> <button id="try">�T���v���ő̌�����</button></header>
-<section><h2>01�@�B�e�̏���</h2><p>����ő̂ɉ������𒅂āA�C��E���܂��B�X�}�z����?���̍����ɗ��āA�X�����ɁA�����瑫���܂œ���ĎB�e�B�������͑̂�90�x�񂵁A�r�͋��̗֊s�ɏd�Ȃ�Ȃ��悤�ɂ��Ă��������B</p><small>�ʐ^�͂��̃y�[�W���ŏ������܂��B���M�E�ۑ��͂��܂���B����B���ꍇ�͓����̈ʒu��������悤�ɂ��Ă��������B</small>
-<label>�g���icm�j <input id="height" type="number" min="100" max="230" step="0.1" inputmode="decimal" placeholder="�� 163"></label></section>
-<section><h2>02�@���ʁE���̎ʐ^</h2><p>���ꂼ��̎ʐ^��4�_���^�b�v�B���̗��[�͓��������ŁA�r�����������̗̂֊s���w�肵�܂��B</p>
-<div class="photos"></div><button id="demo" type="button">�ʐ^�Ȃ��ŃT���v��������</button> <button id="clear" type="button">�ʐ^�Ɠ��͂��N���A</button></section>
-<section><h2>03�@��������T�V���c��o�^</h2>
-<label>���i�� <input id="product" maxlength="100" placeholder="�� �R�b�g��T�V���c"></label>
-<p>�ʔ̃y�[�W�̃T�C�Y�\�����Ȃ�����́B�g���͕��u���̕��ł��B�����l�͉ˋ󏤕i�̌��{�ł��B</p>
-<div style="overflow-x:auto"><table><thead><tr><th>�T�C�Y</th><th>�g�� cm</th><th>���� cm</th><th></th></tr></thead><tbody id="sizes"></tbody></table></div>
-<button id="add">�T�C�Y��ǉ�</button>
-<label>�D�� <select id="fit"><option value="6">��������</option><option value="10" selected>�ӂ�</option><option value="16">�������</option></select></label>
-<p><button class="primary" id="calculate">�������߃T�C�Y���m�F</button></p><output id="result" aria-live="polite"></output></section>
+<header><strong>BASE FIT CHECK</strong><h1>通販のサイズ選びを、<br>あなたの体に合わせて。</h1><p>写真で測る → 商品のサイズ表を入れる → 着心地を比べる</p><button id="start">写真でサイズを調べる</button> <button id="try">サンプルで体験する</button></header>
+<section><h2>01　撮影の準備</h2><p>薄手で体に沿う服を着て、靴を脱ぎます。スマホを胸〜腰の高さに立て、傾けずに頭から足元まで入れて撮影。横向きは体を90度回し、腕は胸の輪郭に重ならないようにしてください。</p><small>写真はこのページ内で処理します。送信・保存はしません。顔を隠す場合は頭頂の位置が見えるようにしてください。</small>
+<label>身長（cm） <input id="height" type="number" min="100" max="230" step="0.1" inputmode="decimal" placeholder="例 163"></label></section>
+<section><h2>02　正面・横の写真</h2><p>それぞれの写真で4点をタップ。胸の両端は同じ高さで、腕を除いた胴体の輪郭を指定します。</p>
+<div class="photos"></div><button id="demo" type="button">写真なしでサンプルを試す</button> <button id="clear" type="button">写真と入力をクリア</button></section>
+<section><h2>03　買いたいTシャツを登録</h2>
+<label>商品名 <input id="product" maxlength="100" placeholder="例 コットンTシャツ"></label>
+<p>通販ページのサイズ表を見ながら入力。身幅は平置きの幅です。初期値は架空商品の見本です。</p>
+<div style="overflow-x:auto"><table><thead><tr><th>サイズ</th><th>身幅 cm</th><th>着丈 cm</th><th></th></tr></thead><tbody id="sizes"></tbody></table></div>
+<button id="add">サイズを追加</button>
+<label>好み <select id="fit"><option value="6">すっきり</option><option value="10" selected>ふつう</option><option value="16">ゆったり</option></select></label>
+<p><button class="primary" id="calculate">おすすめサイズを確認</button></p><output id="result" aria-live="polite"></output></section>
 </main>
 <script>
 const $ = id => document.getElementById(id);
-const instructions = ['����', '���ɐڂ��鑫��', '���̍����œ��̂̍��[', '���������œ��̂̉E�['];
+const instructions = ['頭頂', '床に接する足元', '胸の高さで胴体の左端', '同じ高さで胴体の右端'];
 const result = $('result');
 function addSize(name='',width='',length=''){
   const row=document.createElement('tr');
-  for(const [label,value,type] of [['�T�C�Y��',name,'text'],['�g��',width,'number'],['����',length,'number']]){
+  for(const [label,value,type] of [['サイズ名',name,'text'],['身幅',width,'number'],['着丈',length,'number']]){
     const cell=document.createElement('td'),input=document.createElement('input');
     input.type=type;input.value=value;input.setAttribute('aria-label',label);
     input.style.width=type==='text'?'75px':'90px';
@@ -33,7 +33,7 @@ function addSize(name='',width='',length=''){
     cell.append(input);row.append(cell);
   }
   const cell=document.createElement('td'),button=document.createElement('button');
-  button.textContent='�폜';button.onclick=()=>{row.remove();result.textContent='';};
+  button.textContent='削除';button.onclick=()=>{row.remove();result.textContent='';};
   cell.append(button);row.append(cell);$('sizes').append(row);
 }
 function resetSizes(){
@@ -44,9 +44,9 @@ resetSizes();
 $('add').onclick=()=>addSize();
 $('start').onclick=()=>{$('height').scrollIntoView({behavior:'smooth',block:'center'});$('height').focus({preventScroll:true});};
 let demo = false;
-const photos = ['����','��'].map(name => {
+const photos = ['正面','横'].map(name => {
   const panel = document.createElement('div');
-  panel.innerHTML = '<label>'+name+'�̎ʐ^ <input type="file" accept="image/*"></label><label>�J�����ŎB�e <input type="file" accept="image/*" capture="environment"></label><small aria-live="polite">�ʐ^��I��ł�������</small><canvas hidden></canvas><button type="button" hidden>1�_�߂�</button>';
+  panel.innerHTML = '<label>'+name+'の写真 <input type="file" accept="image/*"></label><label>カメラで撮影 <input type="file" accept="image/*" capture="environment"></label><small aria-live="polite">写真を選んでください</small><canvas hidden></canvas><button type="button" hidden>1点戻す</button>';
   document.querySelector('.photos').append(panel);
   const input = panel.querySelector('input'), hint = panel.querySelector('small');
   const canvas = panel.querySelector('canvas'), reset = panel.querySelector('button');
@@ -59,13 +59,13 @@ const photos = ['����','��'].map(name => {
       ctx.fillStyle='#d8ff85';ctx.fill();ctx.strokeStyle='#142f28';ctx.stroke();
       ctx.fillStyle='#142f28';ctx.font='bold 12px sans-serif';ctx.fillText(i+1,x-4,y+4);
     });
-    hint.textContent = points.length===4 ? '4�_���w�肵�܂���' : (points.length+1)+' / 4�@'+instructions[points.length]+'���^�b�v';
+    hint.textContent = points.length===4 ? '4点を指定しました' : (points.length+1)+' / 4　'+instructions[points.length]+'をタップ';
   }
   for(const fileInput of panel.querySelectorAll('input')) fileInput.onchange = async () => {
     const file = fileInput.files[0]; if (!file) return;
     const current = ++revision;
     demo = false; result.textContent=''; points=[]; photo=null;
-    canvas.hidden=reset.hidden=true; hint.textContent='�ʐ^��ǂݍ��ݒ�';
+    canvas.hidden=reset.hidden=true; hint.textContent='写真を読み込み中';
     const url = URL.createObjectURL(file);
     try {
       const image = new Image(); image.src=url; await image.decode();
@@ -76,7 +76,7 @@ const photos = ['����','��'].map(name => {
       canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
       canvas.hidden=reset.hidden=false; draw();
     } catch {
-      if (current===revision) hint.textContent='�ǂݍ��߂܂���ł����BJPEG�܂���PNG�ł��������������B';
+      if (current===revision) hint.textContent='読み込めませんでした。JPEGまたはPNGでお試しください。';
     } finally { URL.revokeObjectURL(url); }
   };
   canvas.onclick = e => {
@@ -87,7 +87,7 @@ const photos = ['����','��'].map(name => {
   };
   reset.onclick = () => {points.pop();demo=false;result.textContent='';draw();};
   return {
-    clear(){revision++;panel.querySelectorAll('input').forEach(input=>input.value='');photo=null;points=[];canvas.width=1;canvas.height=1;canvas.hidden=reset.hidden=true;hint.textContent='�ʐ^��I��ł�������';},
+    clear(){revision++;panel.querySelectorAll('input').forEach(input=>input.value='');photo=null;points=[];canvas.width=1;canvas.height=1;canvas.hidden=reset.hidden=true;hint.textContent='写真を選んでください';},
     ratio(){
       if(points.length!==4)return null;
       const [head,foot,left,right]=points;
@@ -107,24 +107,24 @@ function recommend(width,depth,ease,sizes){
 }
 function calculate(){
   const height=$('height').valueAsNumber;
-  if(!Number.isFinite(height)||height<100||height>230){result.textContent='�g����100?230 cm�͈̔͂œ��͂��Ă��������B';return;}
+  if(!Number.isFinite(height)||height<100||height>230){result.textContent='身長を100〜230 cmの範囲で入力してください。';return;}
   const ratios=demo?[32/163,22/163]:photos.map(photo=>photo.ratio());
-  if(ratios.includes(null)){result.textContent='�����̎ʐ^�ŁA���� �� ���� �� ���̍��[ �� ���̉E�[�̏��Ɏw�肵�Ă��������B���̗��[�͓��������ɍ��킹�Ă��������B';return;}
+  if(ratios.includes(null)){result.textContent='両方の写真で、頭頂 → 足元 → 胸の左端 → 胸の右端の順に指定してください。胸の両端は同じ高さに合わせてください。';return;}
   const entered=[...$('sizes').rows].map(row=>[...row.querySelectorAll('input')].map(input=>input.value));
   if(!entered.length || entered.some(([name,width,length])=>!name.trim() || !width || !length || Number(width)<20 || Number(width)>160 || Number(length)<20 || Number(length)>160)){
-    result.textContent='�T�C�Y���E�g���E�������͂��Ă��������B�g���ƒ����20?160 cm�Ŏw��ł��܂��B';return;
+    result.textContent='サイズ名・身幅・着丈を入力してください。身幅と着丈は20〜160 cmで指定できます。';return;
   }
   const productSizes=entered.map(([name,width,length])=>[name.trim(),Number(width)*2,Number(length)]).sort((a,b)=>a[1]-b[1]);
   const {chest,target,sizes,index}=recommend(ratios[0]*height,ratios[1]*height,Number($('fit').value),productSizes);
   const boundary=sizes.slice(0,-1).findIndex(size=>Math.abs(size[1]-target)<=3);
-  const heading=index===-1?'���̏��i�̃T�C�Y�ł́A��]�̂�Ƃ�ɓ͂��܂���':boundary>=0?sizes[boundary][0]+'��'+sizes[boundary+1][0]+'�̋���':sizes[index][0]+'�����';
+  const heading=index===-1?'この商品のサイズでは、希望のゆとりに届きません':boundary>=0?sizes[boundary][0]+'と'+sizes[boundary+1][0]+'の境目':sizes[index][0]+'が候補';
   result.replaceChildren();
-  const title=document.createElement('strong'); title.className='pick';title.textContent=(demo?'�T���v���b':'')+heading;
-  result.append(title, '\n'+($('product').value.trim() || '�o�^����T�V���c')+'\n���܂��̐��� ��'+Math.round(chest)+' cm\n'+sizes.map(([name,circ,length])=>name+'  ���܂��̂�Ƃ� ��'+Math.round(circ-chest)+' cm / ���� '+length+' cm').join('\n')+'\n���܂�����ɂ������ł��B�����E���E����̃t�B�b�g�͔���Ɋ܂܂�܂���B���̌��݂�B�e�p�x�Ő��l�͕ς��܂��B');
+  const title=document.createElement('strong'); title.className='pick';title.textContent=(demo?'サンプル｜':'')+heading;
+  result.append(title, '\n'+($('product').value.trim() || '登録したTシャツ')+'\n胸まわりの推定 約'+Math.round(chest)+' cm\n'+sizes.map(([name,circ,length])=>name+'  胸まわりのゆとり 約'+Math.round(circ-chest)+' cm / 着丈 '+length+' cm').join('\n')+'\n胸まわりを基準にした候補です。肩幅・袖・着丈のフィットは判定に含まれません。服の厚みや撮影角度で数値は変わります。');
   result.scrollIntoView({block:'nearest'});
 }
 $('calculate').onclick=calculate;
-$('demo').onclick=()=>{demo=true;$('height').value=163;$('fit').value='10';$('product').value='�T���v�� �R�b�g��T�V���c';resetSizes();calculate();};
+$('demo').onclick=()=>{demo=true;$('height').value=163;$('fit').value='10';$('product').value='サンプル コットンTシャツ';resetSizes();calculate();};
 $('try').onclick=()=>$('demo').click();
 $('clear').onclick=()=>{demo=false;photos.forEach(photo=>photo.clear());$('height').value='';$('fit').value='10';$('product').value='';resetSizes();result.textContent='';};
 for(const id of ['height','fit','product'])$(id).oninput=()=>{result.textContent='';};
