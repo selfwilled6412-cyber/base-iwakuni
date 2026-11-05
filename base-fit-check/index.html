@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BASE FIT CHECK</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef0e9;color:#172622;font:16px/1.6 system-ui,sans-serif}main{max-width:700px;margin:auto;padding:20px}header,section{border-radius:22px;padding:24px;margin-bottom:16px}header{background:#142f28;color:white}header strong{color:#d8ff85;letter-spacing:.18em;font-size:13px}h1{font-size:clamp(25px,6vw,40px);line-height:1.15;margin:12px 0}h2{margin:0 0 8px;font-size:20px}p{margin:8px 0}section{background:white}small{display:block;color:#4b5d55}label{display:block;margin-top:10px}input,select,button{font:inherit;border:1px solid #a8b6ad;border-radius:10px;padding:9px;max-width:100%}button{cursor:pointer;background:#edf2e9;color:#142f28}button.primary{background:#d8ff85;border-color:#142f28;font-weight:bold;width:100%}.photos{display:grid;gap:15px;grid-template-columns:repeat(auto-fit,minmax(225px,1fr))}canvas{width:100%;height:auto;display:block;margin:8px 0;cursor:crosshair}canvas[hidden]{display:none}table{border-collapse:collapse;width:100%;text-align:left}td,th{padding:6px;border-bottom:1px solid #dbe3da}output{display:block;margin-top:12px;white-space:pre-line}output:empty{margin:0}.pick{font-weight:bold;color:#28552b}
+</style>
+<main>
+<header><strong>BASE FIT CHECK</strong><h1>�ʔ̂̃T�C�Y�I�т��A<br>���Ȃ��̑̂ɍ��킹�āB</h1><p>�ʐ^�ő��� �� ���i�̃T�C�Y�\������ �� ���S�n���ׂ�</p><button id="start">�ʐ^�ŃT�C�Y�𒲂ׂ�</button> <button id="try">�T���v���ő̌�����</button></header>
+<section><h2>01�@�B�e�̏���</h2><p>����ő̂ɉ������𒅂āA�C��E���܂��B�X�}�z����?���̍����ɗ��āA�X�����ɁA�����瑫���܂œ���ĎB�e�B�������͑̂�90�x�񂵁A�r�͋��̗֊s�ɏd�Ȃ�Ȃ��悤�ɂ��Ă��������B</p><small>�ʐ^�͂��̃y�[�W���ŏ������܂��B���M�E�ۑ��͂��܂���B����B���ꍇ�͓����̈ʒu��������悤�ɂ��Ă��������B</small>
+<label>�g���icm�j <input id="height" type="number" min="100" max="230" step="0.1" inputmode="decimal" placeholder="�� 163"></label></section>
+<section><h2>02�@���ʁE���̎ʐ^</h2><p>���ꂼ��̎ʐ^��4�_���^�b�v�B���̗��[�͓��������ŁA�r�����������̗̂֊s���w�肵�܂��B</p>
+<div class="photos"></div><button id="demo" type="button">�ʐ^�Ȃ��ŃT���v��������</button> <button id="clear" type="button">�ʐ^�Ɠ��͂��N���A</button></section>
+<section><h2>03�@��������T�V���c��o�^</h2>
+<label>���i�� <input id="product" maxlength="100" placeholder="�� �R�b�g��T�V���c"></label>
+<p>�ʔ̃y�[�W�̃T�C�Y�\�����Ȃ�����́B�g���͕��u���̕��ł��B�����l�͉ˋ󏤕i�̌��{�ł��B</p>
+<div style="overflow-x:auto"><table><thead><tr><th>�T�C�Y</th><th>�g�� cm</th><th>���� cm</th><th></th></tr></thead><tbody id="sizes"></tbody></table></div>
+<button id="add">�T�C�Y��ǉ�</button>
+<label>�D�� <select id="fit"><option value="6">��������</option><option value="10" selected>�ӂ�</option><option value="16">�������</option></select></label>
+<p><button class="primary" id="calculate">�������߃T�C�Y���m�F</button></p><output id="result" aria-live="polite"></output></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const instructions = ['����', '���ɐڂ��鑫��', '���̍����œ��̂̍��[', '���������œ��̂̉E�['];
+const result = $('result');
+function addSize(name='',width='',length=''){
+  const row=document.createElement('tr');
+  for(const [label,value,type] of [['�T�C�Y��',name,'text'],['�g��',width,'number'],['����',length,'number']]){
+    const cell=document.createElement('td'),input=document.createElement('input');
+    input.type=type;input.value=value;input.setAttribute('aria-label',label);
+    input.style.width=type==='text'?'75px':'90px';
+    if(type==='number'){input.min='20';input.max='160';input.step='0.1';}
+    input.oninput=()=>{result.textContent='';};
+    cell.append(input);row.append(cell);
+  }
+  const cell=document.createElement('td'),button=document.createElement('button');
+  button.textContent='�폜';button.onclick=()=>{row.remove();result.textContent='';};
+  cell.append(button);row.append(cell);$('sizes').append(row);
+}
+function resetSizes(){
+  $('sizes').replaceChildren();
+  [['S',47,64],['M',51,67],['L',55,70]].forEach(size=>addSize(...size));
+}
+resetSizes();
+$('add').onclick=()=>addSize();
+$('start').onclick=()=>{$('height').scrollIntoView({behavior:'smooth',block:'center'});$('height').focus({preventScroll:true});};
+let demo = false;
+const photos = ['����','��'].map(name => {
+  const panel = document.createElement('div');
+  panel.innerHTML = '<label>'+name+'�̎ʐ^ <input type="file" accept="image/*"></label><label>�J�����ŎB�e <input type="file" accept="image/*" capture="environment"></label><small aria-live="polite">�ʐ^��I��ł�������</small><canvas hidden></canvas><button type="button" hidden>1�_�߂�</button>';
+  document.querySelector('.photos').append(panel);
+  const input = panel.querySelector('input'), hint = panel.querySelector('small');
+  const canvas = panel.querySelector('canvas'), reset = panel.querySelector('button');
+  const ctx = canvas.getContext('2d');
+  let photo, points = [], revision = 0;
+  function draw() {
+    ctx.drawImage(photo,0,0,canvas.width,canvas.height);
+    points.forEach(([x,y], i) => {
+      ctx.beginPath(); ctx.arc(x,y,10,0,Math.PI*2);
+      ctx.fillStyle='#d8ff85';ctx.fill();ctx.strokeStyle='#142f28';ctx.stroke();
+      ctx.fillStyle='#142f28';ctx.font='bold 12px sans-serif';ctx.fillText(i+1,x-4,y+4);
+    });
+    hint.textContent = points.length===4 ? '4�_���w�肵�܂���' : (points.length+1)+' / 4�@'+instructions[points.length]+'���^�b�v';
+  }
+  for(const fileInput of panel.querySelectorAll('input')) fileInput.onchange = async () => {
+    const file = fileInput.files[0]; if (!file) return;
+    const current = ++revision;
+    demo = false; result.textContent=''; points=[]; photo=null;
+    canvas.hidden=reset.hidden=true; hint.textContent='�ʐ^��ǂݍ��ݒ�';
+    const url = URL.createObjectURL(file);
+    try {
+      const image = new Image(); image.src=url; await image.decode();
+      if (current!==revision) return;
+      photo=image;
+      const scale=Math.min(1,720/Math.max(image.naturalWidth,image.naturalHeight));
+      canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+      canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+      canvas.hidden=reset.hidden=false; draw();
+    } catch {
+      if (current===revision) hint.textContent='�ǂݍ��߂܂���ł����BJPEG�܂���PNG�ł��������������B';
+    } finally { URL.revokeObjectURL(url); }
+  };
+  canvas.onclick = e => {
+    if (points.length===4) return;
+    const box=canvas.getBoundingClientRect();
+    points.push([(e.clientX-box.left)*canvas.width/box.width,(e.clientY-box.top)*canvas.height/box.height]);
+    demo=false; result.textContent=''; draw();
+  };
+  reset.onclick = () => {points.pop();demo=false;result.textContent='';draw();};
+  return {
+    clear(){revision++;panel.querySelectorAll('input').forEach(input=>input.value='');photo=null;points=[];canvas.width=1;canvas.height=1;canvas.hidden=reset.hidden=true;hint.textContent='�ʐ^��I��ł�������';},
+    ratio(){
+      if(points.length!==4)return null;
+      const [head,foot,left,right]=points;
+      const height=foot[1]-head[1], width=right[0]-left[0];
+      const chest=(left[1]+right[1])/2;
+      if(height<=0 || width/height<.04 || width/height>.45 || Math.abs(left[1]-right[1])/height>.035 || chest<head[1]+.1*height || chest>head[1]+.5*height)return null;
+      return width/height;
+    }
+  };
+});
+function recommend(width,depth,ease,sizes){
+  const a=width/2,b=depth/2;
+  const chest=Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)));
+  const target=chest+ease;
+  const index=sizes.findIndex(size=>size[1]>=target);
+  return {chest,target,sizes,index};
+}
+function calculate(){
+  const height=$('height').valueAsNumber;
+  if(!Number.isFinite(height)||height<100||height>230){result.textContent='�g����100?230 cm�͈̔͂œ��͂��Ă��������B';return;}
+  const ratios=demo?[32/163,22/163]:photos.map(photo=>photo.ratio());
+  if(ratios.includes(null)){result.textContent='�����̎ʐ^�ŁA���� �� ���� �� ���̍��[ �� ���̉E�[�̏��Ɏw�肵�Ă��������B���̗��[�͓��������ɍ��킹�Ă��������B';return;}
+  const entered=[...$('sizes').rows].map(row=>[...row.querySelectorAll('input')].map(input=>input.value));
+  if(!entered.length || entered.some(([name,width,length])=>!name.trim() || !width || !length || Number(width)<20 || Number(width)>160 || Number(length)<20 || Number(length)>160)){
+    result.textContent='�T�C�Y���E�g���E�������͂��Ă��������B�g���ƒ����20?160 cm�Ŏw��ł��܂��B';return;
+  }
+  const productSizes=entered.map(([name,width,length])=>[name.trim(),Number(width)*2,Number(length)]).sort((a,b)=>a[1]-b[1]);
+  const {chest,target,sizes,index}=recommend(ratios[0]*height,ratios[1]*height,Number($('fit').value),productSizes);
+  const boundary=sizes.slice(0,-1).findIndex(size=>Math.abs(size[1]-target)<=3);
+  const heading=index===-1?'���̏��i�̃T�C�Y�ł́A��]�̂�Ƃ�ɓ͂��܂���':boundary>=0?sizes[boundary][0]+'��'+sizes[boundary+1][0]+'�̋���':sizes[index][0]+'�����';
+  result.replaceChildren();
+  const title=document.createElement('strong'); title.className='pick';title.textContent=(demo?'�T���v���b':'')+heading;
+  result.append(title, '\n'+($('product').value.trim() || '�o�^����T�V���c')+'\n���܂��̐��� ��'+Math.round(chest)+' cm\n'+sizes.map(([name,circ,length])=>name+'  ���܂��̂�Ƃ� ��'+Math.round(circ-chest)+' cm / ���� '+length+' cm').join('\n')+'\n���܂�����ɂ������ł��B�����E���E����̃t�B�b�g�͔���Ɋ܂܂�܂���B���̌��݂�B�e�p�x�Ő��l�͕ς��܂��B');
+  result.scrollIntoView({block:'nearest'});
+}
+$('calculate').onclick=calculate;
+$('demo').onclick=()=>{demo=true;$('height').value=163;$('fit').value='10';$('product').value='�T���v�� �R�b�g��T�V���c';resetSizes();calculate();};
+$('try').onclick=()=>$('demo').click();
+$('clear').onclick=()=>{demo=false;photos.forEach(photo=>photo.clear());$('height').value='';$('fit').value='10';$('product').value='';resetSizes();result.textContent='';};
+for(const id of ['height','fit','product'])$(id).oninput=()=>{result.textContent='';};
+</script>
+</html>
