@@ -10,7 +10,13 @@
 <label>身長（cm） <input id="height" type="number" min="100" max="230" step="0.1" inputmode="decimal" placeholder="例 163"></label></section>
 <section><h2>02　正面・横の写真</h2><p>それぞれの写真で4点をタップ。胸の両端は同じ高さで、腕を除いた胴体の輪郭を指定します。</p>
 <div class="photos"></div><button id="demo" type="button">写真なしでサンプルを試す</button> <button id="clear" type="button">写真と入力をクリア</button></section>
-<section><h2>03　買いたいTシャツを登録</h2>
+<section><h2>03　買いたい服を登録</h2>
+<label>商品ページのURL <input id="productUrl" type="url" placeholder="https://item.rakuten.co.jp/..." style="width:100%"></label>
+<button id="importUrl" type="button">URLから取り込む</button>
+<button id="exampleUrl" type="button">今回の楽天商品を試す</button>
+<small id="importStatus" role="status">URL取込は現在 Classical Elf「clf002」に対応。確認済みの商品データを読み込みます。</small>
+<a id="productSource" target="_blank" rel="noopener noreferrer" hidden>楽天の商品・サイズ表を確認</a>
+<p id="productNote" hidden></p>
 <label>商品名 <input id="product" maxlength="100" placeholder="例 コットンTシャツ"></label>
 <p>通販ページのサイズ表を見ながら入力。身幅は平置きの幅です。初期値は架空商品の見本です。</p>
 <div style="overflow-x:auto"><table><thead><tr><th>サイズ</th><th>身幅 cm</th><th>着丈 cm</th><th></th></tr></thead><tbody id="sizes"></tbody></table></div>
@@ -44,6 +50,45 @@ resetSizes();
 $('add').onclick=()=>addSize();
 $('start').onclick=()=>{$('height').scrollIntoView({behavior:'smooth',block:'center'});$('height').focus({preventScroll:true});};
 let demo = false;
+let importedOuter = false;
+function clearImport(){
+  importedOuter=false;
+  $('productNote').hidden=true;
+  $('productSource').hidden=true;
+  result.textContent='';
+}
+$('productUrl').oninput=()=>{
+  if(importedOuter){$('product').value='';$('sizes').replaceChildren();}
+  clearImport();
+  $('importStatus').textContent='URLを入力して取り込みボタンを押してください。';
+};
+$('importUrl').onclick=()=>{
+  let url;
+  try{
+    url=new URL($('productUrl').value.trim());
+    if(url.protocol!=='https:' || url.username || url.password) throw Error();
+  }catch{
+    $('importStatus').textContent='https:// で始まる商品URLを入力してください。';
+    return;
+  }
+  if(url.hostname!=='item.rakuten.co.jp' || url.pathname.replace(/\/$/,'')!=='/classical/clf002'){
+    $('importStatus').textContent='この商品はまだURL取込に対応していません。サイズ表を手入力してください。';
+    return;
+  }
+  demo=false; importedOuter=true; result.textContent='';
+  $('product').value='Classical Elf 3wayボアライナー付きマウンテンパーカー clf002';
+  $('sizes').replaceChildren();
+  [['S',55,67],['M',57,68],['L',59,69],['LL',61,73],['3L',63,74]].forEach(size=>addSize(...size));
+  $('importStatus').textContent='確認済みサイズ表を読み込みました（2026年11月5日確認）。バスト寸法を2で割って身幅に換算しています。価格・在庫の取得は含みません。';
+  $('productSource').href='https://item.rakuten.co.jp/classical/clf002/';
+  $('productSource').hidden=false;
+  $('productNote').textContent='この商品はアウターです。掲載寸法はライナーを外して背中側から測定。お店はボアライナーによって小さく感じる場合があり、厚手のインナーでゆったり着る場合は1サイズ上を検討するよう案内しています。アプリでは寸法を比較し、サイズの断定を控えます。';
+  $('productNote').hidden=false;
+};
+$('exampleUrl').onclick=()=>{
+  $('productUrl').value='https://item.rakuten.co.jp/classical/clf002/';
+  $('importUrl').click();
+};
 const photos = ['正面','横'].map(name => {
   const panel = document.createElement('div');
   panel.innerHTML = '<label>'+name+'の写真 <input type="file" accept="image/*"></label><label>カメラで撮影 <input type="file" accept="image/*" capture="environment"></label><small aria-live="polite">写真を選んでください</small><canvas hidden></canvas><button type="button" hidden>1点戻す</button>';
@@ -117,16 +162,17 @@ function calculate(){
   const productSizes=entered.map(([name,width,length])=>[name.trim(),Number(width)*2,Number(length)]).sort((a,b)=>a[1]-b[1]);
   const {chest,target,sizes,index}=recommend(ratios[0]*height,ratios[1]*height,Number($('fit').value),productSizes);
   const boundary=sizes.slice(0,-1).findIndex(size=>Math.abs(size[1]-target)<=3);
-  const heading=index===-1?'この商品のサイズでは、希望のゆとりに届きません':boundary>=0?sizes[boundary][0]+'と'+sizes[boundary+1][0]+'の境目':sizes[index][0]+'が候補';
+  const heading=importedOuter?'アウターの胸まわり寸法を比較':index===-1?'この商品のサイズでは、希望のゆとりに届きません':boundary>=0?sizes[boundary][0]+'と'+sizes[boundary+1][0]+'の境目':sizes[index][0]+'が候補';
   result.replaceChildren();
   const title=document.createElement('strong'); title.className='pick';title.textContent=(demo?'サンプル｜':'')+heading;
   result.append(title, '\n'+($('product').value.trim() || '登録したTシャツ')+'\n胸まわりの推定 約'+Math.round(chest)+' cm\n'+sizes.map(([name,circ,length])=>name+'  胸まわりのゆとり 約'+Math.round(circ-chest)+' cm / 着丈 '+length+' cm').join('\n')+'\n胸まわりを基準にした候補です。肩幅・袖・着丈のフィットは判定に含まれません。服の厚みや撮影角度で数値は変わります。');
+  if(importedOuter) result.append('\nボアライナーを含めた実際の着心地・重ね着の余裕は、この寸法差だけでは判断できません。商品ページの案内も確認してください。');
   result.scrollIntoView({block:'nearest'});
 }
 $('calculate').onclick=calculate;
-$('demo').onclick=()=>{demo=true;$('height').value=163;$('fit').value='10';$('product').value='サンプル コットンTシャツ';resetSizes();calculate();};
+$('demo').onclick=()=>{clearImport();$('productUrl').value='';demo=true;$('height').value=163;$('fit').value='10';$('product').value='サンプル コットンTシャツ';resetSizes();calculate();};
 $('try').onclick=()=>$('demo').click();
-$('clear').onclick=()=>{demo=false;photos.forEach(photo=>photo.clear());$('height').value='';$('fit').value='10';$('product').value='';resetSizes();result.textContent='';};
+$('clear').onclick=()=>{clearImport();$('productUrl').value='';$('importStatus').textContent='URL取込は現在 Classical Elf「clf002」に対応。確認済みの商品データを読み込みます。';demo=false;photos.forEach(photo=>photo.clear());$('height').value='';$('fit').value='10';$('product').value='';resetSizes();result.textContent='';};
 for(const id of ['height','fit','product'])$(id).oninput=()=>{result.textContent='';};
 </script>
 </html>
