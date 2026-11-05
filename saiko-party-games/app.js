@@ -13,8 +13,27 @@ function stop(){clearInterval(timer);clearTimeout(timer);timer=null}
 function show(t){$('status').textContent=t}function panel(h){$('board').innerHTML=h}
 function actions(arr){$('actions').innerHTML=arr.map(([id,v])=>'<button id="a_'+id+'" type="button">'+v+'</button>').join('')}
 function scores(){if(mode==='bingo'||mode==='two'){$('scores').replaceChildren();return}if(['teamMemory','teamHighLow','team21','symbolSpeed'].includes(mode)){if(!state||state.phase==='setup'){$('scores').replaceChildren();return}$('scores').innerHTML=teams.map((n,i)=>'<div class="teamStanding'+((mode==='teamMemory'||mode==='team21')&&state.turn===i?' current':'')+'">'+(mode==='teamMemory'?memoryMemberLabel(i):TEAM_BADGES[i]+' '+TEAM_COLORS[i])+' '+(n||0)+(mode==='teamMemory'?'組':'点')+'</div>').join('');return}$('scores').innerHTML=teams.map((n,i)=>'<div>'+(i?'🔵青':'🔴赤')+' '+n+'点 <button type="button" id="team'+i+'">＋1</button></div>').join('');[0,1].forEach(i=>$('team'+i).onclick=()=>{teams[i]++;scores()})}
-function back(){stop();mode=null;state=null;$('home').hidden=false;$('game').hidden=true}
-function start(m){stop();mode=m;state=null;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 みんなで神経衰弱',teamHighLow:'🃏 みんなでハイ＆ロー',team21:'🎯 ぴったり21カード',symbolSpeed:'⚡ 同じ絵スピード',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='teamHighLow')startTeamHighLow();else if(m==='team21')startTeam21();else if(m==='symbolSpeed')startSymbolSpeed();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
+function hideNumberGame(){
+ const frame=$('numberFrame');
+ if(frame){try{frame.contentWindow?.speechSynthesis?.cancel()}catch(e){};frame.removeAttribute('src')}
+ $('numberGame').hidden=true;
+}
+function back(){stop();hideNumberGame();mode=null;state=null;$('home').hidden=false;$('game').hidden=true}
+function startNumberGame(){
+ stop();mode='numberMind';state=null;
+ $('home').hidden=true;$('game').hidden=true;$('numberGame').hidden=false;
+ const frame=$('numberFrame');
+ frame.src='../saiko-number-mind/?embed=1';
+ window.scrollTo({top:0,behavior:'instant'});
+}
+$('numberBack').onclick=back;
+window.addEventListener('message',event=>{
+ if(event.origin!==window.location.origin||event.source!==$('numberFrame').contentWindow||!event.data||event.data.type!=='saiko-number-resize'||$('numberGame').hidden)return;
+ const h=Number(event.data.height);
+ if(Number.isFinite(h)&&h>=400&&h<=30000)$('numberFrame').style.height=Math.ceil(h+8)+'px';
+});
+
+function start(m){if(m==='numberMind'){startNumberGame();return}hideNumberGame();stop();mode=m;state=null;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 みんなで神経衰弱',teamHighLow:'🃏 みんなでハイ＆ロー',team21:'🎯 ぴったり21カード',symbolSpeed:'⚡ 同じ絵スピード',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='teamHighLow')startTeamHighLow();else if(m==='team21')startTeam21();else if(m==='symbolSpeed')startSymbolSpeed();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
 document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>start(b.dataset.game));$('back').onclick=back;$('restart').onclick=()=>{if(!mode||!confirm('最初からやり直す？'))return;if(mode==='bingo'){delete saved.bingo;persist()}start(mode)};
 $('full').onclick=()=>document.fullscreenElement?document.exitFullscreen?.():document.documentElement.requestFullscreen?.().catch(()=>{});
 function bingo(){let d=saved.bingo;state=d&&Array.isArray(d.numbers)&&d.numbers.length===75&&new Set(d.numbers).size===75&&d.pos>=0&&d.pos<=75?d:{numbers:shuffle(Array.from({length:75},(_,i)=>i+1)),pos:0};saved.bingo=state;persist();bingoShow()}
