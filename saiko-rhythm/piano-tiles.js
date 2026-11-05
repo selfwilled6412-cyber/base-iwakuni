@@ -139,6 +139,12 @@ canvas.addEventListener('pointerdown',event=>{
 },{passive:false});
 canvas.addEventListener('pointerup',event=>{event.preventDefault();release(event.pointerId)},{passive:false});
 canvas.addEventListener('pointercancel',event=>{event.preventDefault();release(event.pointerId,true)},{passive:false});
+canvas.addEventListener('lostpointercapture',event=>{
+ // Android can revoke touch capture during gestures, system overlays or interruptions.
+ // Never leave a sustained note earning points after its finger is lost.
+ release(event.pointerId,true);
+});
+
 document.addEventListener('keydown',event=>{
  const index=['d','f','j','k'].indexOf(event.key.toLowerCase());
  if(index>=0){event.preventDefault();if(!event.repeat)tap(index,'key-'+index)}
@@ -376,6 +382,11 @@ $('again').addEventListener('click',()=>{
  $('result').hidden=true;$('game').hidden=true;$('menu').hidden=false;$('pause').disabled=false;
 });
 window.SaikoPianoAutoPause=()=>{if(playing&&!paused)$('pause').click()};
+window.addEventListener('blur',()=>{
+ // Some Android WebViews lose focus before visibilitychange fires.
+ window.SaikoPianoAutoPause();
+});
+
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden)window.SaikoPianoAutoPause();
 });
