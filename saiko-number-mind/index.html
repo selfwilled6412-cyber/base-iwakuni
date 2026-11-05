@@ -21,10 +21,25 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
 .results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.resultItem{padding:14px;border:3px solid #e1d4ff9a;border-radius:18px;background:#ffffff1e;display:flex;gap:13px;align-items:center}.resultItem.out{border-color:#ff8eaf;background:#ff477024}.number{flex:none;border-radius:13px;width:72px;min-height:72px;background:#fff3bc;color:#573368;display:grid;place-items:center;font-size:30px;font-weight:1000}.resultItem strong{font-size:19px}.resultItem p{margin:4px 0 0;font-size:16px;overflow-wrap:anywhere}.outmark{color:#ffd89b;font-weight:1000}
 .judge{text-align:center;font-weight:1000;font-size:clamp(30px,5vw,66px);margin:12px 0}.judge.good{color:#c9ffbf;text-shadow:0 0 27px #5cffb680}.judge.bad{color:#ffb2d0}.score{text-align:center;font-weight:1000;color:#ffe1a0;font-size:clamp(19px,2.5vw,32px);margin:15px 0}.correct{padding:14px;text-align:center;border:2px solid #91eac5;border-radius:15px;background:#144a55;font-weight:850;line-height:1.7}
 .footer{text-align:center;padding:21px;font-size:12px;color:#c0b5e3}.flash{animation:pop .6s ease-out}@keyframes pop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}@media(max-width:730px){.setupGrid,.clueList,.results{grid-template-columns:1fr}.field.wide{grid-column:span 1}.bar{align-items:flex-start}.nav button{display:none}.clue{grid-template-columns:33px minmax(0,1fr) 42px;padding:8px;gap:7px}.clue input{font-size:16px}.topic{padding:14px}.scale{gap:6px}.scale span{padding:8px}.wrap{padding:16px 10px 42px}}@media(prefers-reduced-motion:reduce){.flash{animation:none}}
+
+/* Game-show reveal, optional print-at-home slips, and fast ordering for large groups */
+.orderSelect{max-width:115px;min-height:37px;background:#f4e7ff;color:#2b315f;border:2px solid #e4dbff;border-radius:8px;font-size:13px;font-weight:950;padding:4px}.orderActions{display:flex;flex-direction:column;gap:6px;align-items:center}.orderActions .move{display:flex;gap:4px}.orderActions .move button{width:38px;min-height:36px}.orderLabel{font-size:11px;color:#fff0ac;font-weight:900}.clue{grid-template-columns:48px minmax(0,1fr) 115px}.clueList{gap:10px}
+.curtain{padding:20px;text-align:center;border:3px solid #f1c3ff;border-radius:23px;background:linear-gradient(120deg,#482a99,#234f9e);box-shadow:0 8px 27px #0008;margin-bottom:20px}.curtain strong{font-size:clamp(30px,5vw,63px);display:block;color:#ffe594;text-shadow:0 4px #b0469d}.curtain p{margin:6px;color:#fff;font-size:clamp(16px,2vw,23px);font-weight:900}.mask{background:linear-gradient(135deg,#7347b6,#42348e)!important;color:#fff!important;border:3px solid #ffe198;box-shadow:inset 0 0 20px #fff4}.revealAmount{font-size:clamp(21px,2.5vw,35px);color:#b9fff5;text-align:center;font-weight:1000}.resultItem.newly{animation:revealPop .65s ease-out;box-shadow:0 0 28px #fce9889e}.avg{color:#fff5be}.printSheet{display:none}.printHint{border:2px solid #ffdf8d;background:#4d3477;border-radius:18px;padding:17px;margin-top:20px;text-align:center}.printHint strong{display:block;color:#ffe7a4;font-size:19px}.printHint p{font-size:13px;margin:7px 0}.tip a{text-decoration:underline}
+@keyframes revealPop{0%{transform:scale(.83);opacity:.4}65%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+@media(max-width:730px){.clue{grid-template-columns:31px minmax(0,1fr) 91px}.orderSelect{max-width:91px;font-size:11px;padding:2px}.orderActions .move button{width:33px;min-height:32px;font-size:17px}.orderActions .move{gap:2px}.clue input{min-height:48px}.resultItem{padding:10px}.number{width:60px;min-height:63px}}
+@media print {
+@page{size:A4 portrait;margin:12mm}
+body{background:white!important;color:#111!important}
+.header,.hero,.panel,.progress,.footer{display:none!important}
+.wrap{max-width:none;padding:0;margin:0}
+.printSheet{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8mm;background:white!important;color:black!important}
+.printCard{break-inside:avoid;min-height:45mm;border:2px dashed #333;border-radius:5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:5mm}
+.printCard strong{font-size:12pt}.printCard b{font-size:42pt;line-height:1.3}.printCard small{font-size:8pt}
+}
 </style>
 </head>
 <body>
-<header class="header"><div class="bar"><div class="logo">🃏 サイ校 数字の以心伝心<small>SAIKO PROJECT IWAKUNI</small></div><nav class="nav"><a href="../saiko-party-games/">📺 ゲーム大会へ</a><a href="../saiko-apps/">⌂ ゲームひろば</a><button type="button" data-action="fullscreen">⛶ 全画面</button></nav></div></header>
+<header class="header"><div class="bar"><div class="logo">🃏 サイ校 数字の以心伝心<small>SAIKO PROJECT IWAKUNI</small></div><nav class="nav"><a href="../saiko-party-games/">📺 ゲーム大会へ</a><a href="../saiko-apps/">⌂ ゲームひろば</a><button type="button" data-action="sound" id="soundBtn" aria-pressed="false">🔇 効果音OFF</button><button type="button" data-action="fullscreen">⛶ 全画面</button></nav></div></header>
 <main class="wrap"><div class="hero"><span class="tag">🌈 みんなで協力！ 数字と言葉のゲーム</span><h1>数字の<em>以心伝心</em>！</h1><p>「そのヒント、そんなに強い!?」 みんなの感覚が試される！</p></div><div id="app" aria-live="polite"></div></main>
 <footer class="footer">サイ校プロジェクト岩国オリジナルレクリエーション｜登録・課金なし／オンライン対戦機能なし</footer>
 <script>
@@ -86,41 +101,140 @@ const TOPICS=[
 ['おもしろ','一緒に冒険したい架空の職業','足手まとい','最強の仲間'],
 ['おもしろ','サプライズで登場したら面白い人物','微妙','会場が沸く'],
 ['おもしろ','タイムマシンで行きたい時代','行きたくない','どうしても行きたい'],
-['日常','休日に届いたら嬉しい連絡','そうでもない','最高のニュース']
+['日常','休日に届いたら嬉しい連絡','そうでもない','最高のニュース'],
+['おもしろ','部屋に突然置いてあったら驚くもの','普通','大事件'],
+['おもしろ','動物園にいたら人気者になりそうな生き物','誰も見ない','大行列'],
+['おもしろ','魔王の弱点としてありそうなもの','弱点にならない','一発で倒せる'],
+['おもしろ','世界一どうでもいい発明','いらない','全人類がほしい'],
+['おもしろ','名前だけで強そうな部活','弱そう','全国制覇しそう'],
+['おもしろ','もし空から降ってきたら嬉しいもの','むしろ困る','大歓喜'],
+['おもしろ','漫画の主人公にありがちなセリフ','モブ感','主人公すぎる'],
+['おもしろ','一番ワクワクする秘密基地の設備','どうでもいい','夢の秘密基地'],
+['おもしろ','突然しゃべりだしたらびっくりする物','まあ普通','ニュースになる'],
+['おもしろ','運動会に追加されたら盛り上がる競技','微妙','大盛況'],
+['おもしろ','レクの景品としてもらいたいもの','いらない','歓声が上がる'],
+['おもしろ','未来の学校にありそうな設備','現実的','SFすぎる'],
+['日常','友達がしてくれたら嬉しいこと','ありがたいけど普通','一生の宝'],
+['日常','いい一日だったと感じる出来事','まあまあ','最高の一日'],
+['日常','お出かけで見つけると嬉しいもの','普通','テンション爆上がり'],
+['日常','落ち込んだとき元気が出ること','効かない','一瞬で復活'],
+['日常','一週間休みがあったらやりたいこと','やりたくない','夢の過ごし方'],
+['日常','今日はラッキーだと感じる瞬間','小さな幸運','奇跡'],
+['食べ物','食べ放題で最初に食べたいもの','最後でいい','最優先'],
+['食べ物','屋台で食べたいもの','通り過ぎる','必ず買う'],
+['食べ物','お祝いで食べたい料理','普段のごはん','最高のお祝い'],
+['食べ物','差し入れでもらうと嬉しい飲み物','あまり嬉しくない','大喜び'],
+['動物','探偵になれそうな動物','絶対に無理','名探偵'],
+['動物','ヒーローになれそうな動物','助けてもらえない','最強のヒーロー'],
+['趣味','友達と一緒に作りたい作品','興味なし','超大作'],
+['趣味','文化祭の出し物でやりたいこと','やりたくない','絶対やりたい'],
+['趣味','カラオケで歌いたくなる曲の雰囲気','歌いたくない','全力で歌いたい'],
+['趣味','ゲームにあったら嬉しい機能','どうでもいい','神機能'],
+['おもしろ','サイ校の新しいマスコットにしたいもの','向いていない','人気者確定'],
+['おもしろ','宇宙旅行に一緒に連れて行きたいもの','連れて行かない','絶対必要']
 ];
 const app=document.getElementById('app');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const randomInt=n=>{if(globalThis.crypto&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n}return Math.floor(Math.random()*n)};
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){let j=randomInt(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
-let phase='setup',players=[],entries=[],usedTopics=[],topic=null,round=1,rounds=3,dealAt=0,successes=0,won=false,category='all';
+let phase='setup',players=[],entries=[],usedTopics=[],topic=null,round=1,rounds=3,dealAt=0,successes=0,won=false,category='all',revealed=0,accuracy=0,totalAccuracy=0,awarded=false,soundOn=false;
+const settingsKey='saiko-number-mind-options-v2';
+let saved={};try{saved=JSON.parse(localStorage.getItem(settingsKey)||'{}');if(!saved||typeof saved!=='object')saved={}}catch(e){saved={}}
+function savePrefs(count,rounds,category){try{localStorage.setItem(settingsKey,JSON.stringify({count,rounds,category,soundOn}))}catch(e){}}
+soundOn=saved.soundOn===true;
+const soundButton=document.getElementById('soundBtn');
+function updateSoundButton(){if(soundButton){soundButton.textContent=soundOn?'🔊 効果音ON':'🔇 効果音OFF';soundButton.setAttribute('aria-pressed',String(soundOn))}}
+updateSoundButton();
+function tone(type){if(!soundOn)return;try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C();const notes=type==='win'?[523,659,784,1047]:type==='miss'?[392,349,293]:type==='flip'?[550]:[420,660];const now=ctx.currentTime;notes.forEach((f,i)=>{const osc=ctx.createOscillator(),vol=ctx.createGain();osc.type='sine';osc.frequency.setValueAtTime(f,now+i*.1);vol.gain.setValueAtTime(.0001,now+i*.1);vol.gain.exponentialRampToValueAtTime(.12,now+i*.1+.02);vol.gain.exponentialRampToValueAtTime(.0001,now+i*.1+.19);osc.connect(vol);vol.connect(ctx.destination);osc.start(now+i*.1);osc.stop(now+i*.1+.2)});setTimeout(()=>ctx.close().catch(()=>{}),Math.ceil((notes.length+2)*100))}catch(e){}}
+function finishReveal(){if(awarded)return;awarded=true;totalAccuracy+=accuracy;if(won)successes++;tone(won?'win':'miss')}
+function printSheet(){return '<section class="printSheet" aria-label="配布用カード">'+entries.map(e=>'<div class="printCard"><strong>'+esc(e.name)+'</strong><b>'+e.num+'</b><small>数字はほかの人に見せないでね｜サイ校 数字の以心伝心</small></div>').join('')+'</section>'}
+
 const panel=s=>'<section class="panel flash">'+s+'</section>';
 const btn=(action,label,klass='')=>'<button type="button" class="btn '+klass+'" data-action="'+action+'">'+label+'</button>';
 function pickTopic(){let pool=TOPICS.map((t,i)=>({...{category:t[0],title:t[1],low:t[2],high:t[3]},index:i})).filter(t=>(category==='all'||category===t.category)&&!usedTopics.includes(t.index));if(!pool.length){usedTopics=[];pool=TOPICS.map((t,i)=>({category:t[0],title:t[1],low:t[2],high:t[3],index:i})).filter(t=>category==='all'||category===t.category)}topic=pool[randomInt(pool.length)];usedTopics.push(topic.index)}
-function newDeal(){const numbers=shuffle(Array.from({length:100},(_,i)=>i+1)).slice(0,players.length);entries=players.map((name,i)=>({id:i,name,num:numbers[i],clue:''}));dealAt=0;pickTopic();phase='deal'}
+function newDeal(){const numbers=shuffle(Array.from({length:100},(_,i)=>i+1)).slice(0,players.length);entries=players.map((name,i)=>({id:i,name,num:numbers[i],clue:''}));dealAt=0;revealed=0;awarded=false;accuracy=0;pickTopic();phase='deal'}
 function topicHtml(){return '<div class="topic"><small>🎲 '+esc(topic.category)+' のお題</small><strong>'+esc(topic.title)+'</strong><div class="scale"><span>🧊 1：'+esc(topic.low)+'</span><span>🔥 100：'+esc(topic.high)+'</span></div></div>'}
 function render(){
- if(phase==='setup'){app.innerHTML=panel('<h2>🎮 いっしょに遊ぼう！</h2><div class="pills"><span class="pill">👥 2〜20人</span><span class="pill">🃏 数字は全員ちがう</span><span class="pill">🤝 全員で協力</span></div><p style="text-align:center">1〜100の秘密の数字を、数字を言わずに「お題のヒント」で表現！<br>みんなのヒントを小さい順に並べて、全員正解を目指そう！</p><div class="setupGrid"><div class="field"><label for="count">参加人数</label><select id="count">'+Array.from({length:19},(_,i)=>i+2).map(n=>'<option value="'+n+'"'+(n===6?' selected':'')+'>'+n+'人</option>').join('')+'</select></div><div class="field"><label for="rounds">ラウンド数</label><select id="rounds">'+Array.from({length:10},(_,i)=>i+1).map(n=>'<option value="'+n+'"'+(n===3?' selected':'')+'>'+n+'回</option>').join('')+'</select></div><div class="field"><label for="category">お題ジャンル</label><select id="category"><option value="all">全部ランダム 🎉</option>'+['おもしろ','動物','食べ物','日常','趣味'].map(n=>'<option value="'+n+'">'+n+'</option>').join('')+'</select></div><div class="field wide"><label for="names">参加者の名前（任意・1行に1人ずつ）</label><textarea id="names" placeholder="例：たろう&#10;はなこ&#10;じろう"></textarea><span style="font-size:13px;color:#d5ccf7">人数より名前が少ない場合、残りは「プレイヤー○」になるよ。</span></div></div><p class="note">🔒 秘密の数字はこの端末に1人ずつ表示するよ。配布中は大画面への投影をオフにして、数字を本人以外に見せないでね。紙のカードで配る場合はこの方式とは別の進行が必要です。</p><div class="buttons">'+btn('start','🚀 ゲームスタート！','primary')+'</div>');return}
- const progress='<div class="progress">ROUND '+round+' / '+rounds+'　★ 成功 '+successes+' 回</div>';
- if(phase==='deal'){const e=entries[dealAt];app.innerHTML=progress+panel('<h2>🔒 秘密の数字を配ろう</h2>'+topicHtml()+'<p class="privacy">⚠️ この画面をみんなに映さないで！<br>次の人だけが画面を見てください。</p><div class="secretBox"><div class="secretOwner">'+esc(e.name)+' さんの番　('+Number(dealAt+1)+' / '+entries.length+')</div><div id="cardBack" class="cardBack">🃏❔</div><div id="secret" class="secretNumber" hidden>'+e.num+'</div><div class="buttons"><button id="peek" class="btn primary" type="button" data-action="peek">👀 自分だけ数字を見る</button><button id="next" class="btn secondary" type="button" data-action="next" hidden>🔒 隠して'+(dealAt===entries.length-1?'ヒント発表へ':'次の人へ')+' ▶</button></div></div><p class="tip">数字を覚えたら「隠して次の人へ」を押してね。数字の大小を相談するのはヒントを出してから！</p>');return}
- if(phase==='play'){app.innerHTML=progress+panel('<h2>🎤 ヒントを出して、順番を考えよう！</h2>'+topicHtml()+'<p class="tip">数字は言わないでね。全員のヒントを入力したら、▲▼で小さい順に並べ替えよう！</p><div class="clueList">'+entries.map((e,i)=>'<div class="clue"><span class="place">'+(i+1)+'</span><div><div class="person">'+esc(e.name)+'</div><input data-id="'+e.id+'" aria-label="'+esc(e.name)+'のヒント" placeholder="ヒントを入力" maxlength="100" value="'+esc(e.clue)+'"></div><div class="move"><button type="button" data-action="up" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を上へ" '+(i===0?'disabled':'')+'>▲</button><button type="button" data-action="down" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を下へ" '+(i===entries.length-1?'disabled':'')+'>▼</button></div></div>').join('')+'</div><p class="tip" id="error" role="status"></p><div class="buttons">'+btn('newTopic','🎲 お題を変更','secondary')+btn('reveal','🎉 数字を一斉公開！','primary')+'</div>');return}
- if(phase==='result'){const sorted=entries.slice().sort((a,b)=>a.num-b.num);const final=round===rounds;app.innerHTML=progress+panel('<div class="judge '+(won?'good':'bad')+'">'+(won?'🎊 全員ピッタリ！ 大成功！':'💫 惜しい！ 次こそ成功！')+'</div>'+topicHtml()+'<p class="tip">みんなが並べた順番と秘密の数字</p><div class="results">'+entries.map((e,i)=>'<div class="resultItem '+(i&&entries[i-1].num>e.num?'out':'')+'"><div class="number">'+e.num+'</div><div><strong>'+(i+1)+'. '+esc(e.name)+'</strong><p>💬 '+esc(e.clue)+'</p>'+(i&&entries[i-1].num>e.num?'<span class="outmark">⚠️ ここで大小が逆転！</span>':'')+'</div></div>').join('')+'</div>'+(won?'<p class="correct">✨ 全員の感覚が一致した！</p>':'<p class="correct">💡 正しい順番：'+sorted.map(e=>esc(e.name)+'（'+e.num+'）').join(' → ')+'</p>')+'<div class="score">🏆 '+round+'ラウンド中 '+successes+'回 成功！</div>'+(final?'<p class="tip">全ラウンド終了！ おつかれさま！</p>':'')+'<div class="buttons">'+btn(final?'again':'nextRound',final?'🔄 もう一度最初から':'➡️ 次のラウンドへ','primary')+btn('again','⌂ 設定に戻る','secondary')+'</div>');return}
+ if(phase==='setup'){
+  const countSaved=Number(saved.count);const roundSaved=Number(saved.rounds);
+  app.innerHTML=panel('<h2>🎮 みんなで挑戦！</h2><div class="pills"><span class="pill">👥 2〜20人</span><span class="pill">🃏 1〜100で重複なし</span><span class="pill">🤝 全員で協力</span><span class="pill">🎉 '+TOPICS.length+'お題</span></div><p style="text-align:center">みんなには秘密の数字が1つずつ配られるよ！<br>数字を言わずにヒントを出して、小さい順に並べられるかな？</p><div class="setupGrid"><div class="field"><label for="count">参加人数</label><select id="count">'+Array.from({length:19},(_,i)=>i+2).map(n=>'<option value="'+n+'"'+(n===(countSaved>=2&&countSaved<=20?countSaved:6)?' selected':'')+'>'+n+'人</option>').join('')+'</select></div><div class="field"><label for="rounds">ラウンド数</label><select id="rounds">'+Array.from({length:10},(_,i)=>i+1).map(n=>'<option value="'+n+'"'+(n===(roundSaved>=1&&roundSaved<=10?roundSaved:3)?' selected':'')+'>'+n+'回</option>').join('')+'</select></div><div class="field"><label for="category">お題ジャンル</label><select id="category"><option value="all">全部ランダム 🎉</option>'+['おもしろ','動物','食べ物','日常','趣味'].map(n=>'<option value="'+n+'"'+(saved.category===n?' selected':'')+'>'+n+'</option>').join('')+'</select></div><div class="field wide"><label for="names">参加者の名前（任意・1行に1人ずつ）</label><textarea id="names" placeholder="例：たろう&#10;はなこ&#10;じろう"></textarea><span style="font-size:13px;color:#d5ccf7">人数より名前が少なければ、残りは「プレイヤー○」になるよ。名前は保存しません。</span></div></div><p class="note">🔒 数字は本人だけの秘密！スマホを順番に回す方法と、カードを印刷して配る方法を選べるよ。<strong>秘密カードの配布中は大画面投影・画面共有を停止</strong>してね。</p><div class="buttons">'+btn('start','🚀 ゲームスタート！','primary')+'</div>');
+  return;
+ }
+ const progress='<div class="progress">ROUND '+round+' / '+rounds+'　★ 全員成功 '+successes+'回'+(round>1?'　★ 平均一致率 '+Math.round(totalAccuracy/(round-1))+'%':'')+'</div>';
+ if(phase==='deal'){
+  const e=entries[dealAt];
+  app.innerHTML=progress+panel('<h2>🔒 秘密の数字を配ろう</h2>'+topicHtml()+'<p class="privacy">⚠️ 配布中は画面の投影・共有を必ず止めてね！<br>スマホを次の人だけに渡して、数字を確認してもらおう。</p><div class="secretBox"><div class="secretOwner">'+esc(e.name)+' さんの番　('+(dealAt+1)+' / '+entries.length+')</div><div id="cardBack" class="cardBack">🃏❔</div><div id="secret" class="secretNumber" hidden>'+e.num+'</div><div class="buttons"><button id="peek" class="btn primary" type="button" data-action="peek">👀 自分だけ数字を見る</button><button id="next" class="btn secondary" type="button" data-action="next" hidden>🔒 数字を隠して'+(dealAt===entries.length-1?'並べ替えへ':'次の人へ')+' ▶</button></div></div><p class="tip">数字を覚えたら必ず隠してね。ヒントを話すのは全員に配り終わってから！</p><div class="printHint"><strong>🖨️ 紙のカードを配りたいスタッフはこちら</strong><p>配布用カードをA4に印刷（またはPDF保存）できます。印刷プレビューに全員の数字が出るので、<b>画面共有は切ってから</b>操作してね。</p><div class="buttons">'+btn('print','🖨️ 配布カードを印刷','secondary')+btn('skipDeal','✅ 全員に配布したので開始','secondary')+'</div></div>')+printSheet();
+  return;
+ }
+ if(phase==='play'){
+  app.innerHTML=progress+panel('<h2>🎤 ヒントで相談しよう！</h2>'+topicHtml()+'<p class="tip">みんなのヒントを入力。▲▼または「移動先」の数字で、小さいと思う順に並べてね。<b>数字そのものは言わないで！</b></p><div class="clueList">'+entries.map((e,i)=>'<div class="clue"><span class="place">'+(i+1)+'</span><div><div class="person">'+esc(e.name)+'</div><input data-id="'+e.id+'" aria-label="'+esc(e.name)+'のヒント" placeholder="例：ライオン" maxlength="100" value="'+esc(e.clue)+'"></div><div class="orderActions"><span class="orderLabel">移動先</span><select class="orderSelect" data-move-id="'+e.id+'" aria-label="'+esc(e.name)+'の移動先">'+entries.map((x,j)=>'<option value="'+j+'"'+(i===j?' selected':'')+'>'+(j+1)+'番目</option>').join('')+'</select><div class="move"><button type="button" data-action="up" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を上へ" '+(i===0?'disabled':'')+'>▲</button><button type="button" data-action="down" data-id="'+e.id+'" aria-label="'+esc(e.name)+'を下へ" '+(i===entries.length-1?'disabled':'')+'>▼</button></div></div></div>').join('')+'</div><p class="tip" id="error" role="status"></p><div class="buttons">'+btn('newTopic','🎲 お題を変える','secondary')+btn('reveal','🎬 ドキドキ答え合わせ！','primary')+'</div>');
+  return;
+ }
+ if(phase==='result'){
+  const finished=revealed===entries.length,sorted=entries.slice().sort((a,b)=>a.num-b.num),final=round===rounds;
+  const cover=finished?(won?'🎊 全員正解！ おめでとう！':'💫 惜しい！ ここが逆だった！'):'ドキドキ… いよいよ答え合わせ！';
+  app.innerHTML=progress+panel('<div class="curtain"><strong>'+cover+'</strong><p>'+(finished?'全員の数字を公開したよ！':'カードを1枚ずつ開けて、みんなで予想しよう！')+'</p></div>'+topicHtml()+'<div class="revealAmount">🃏 '+revealed+' / '+entries.length+' 枚オープン！</div><div class="results">'+entries.map((e,i)=>'<div class="resultItem '+(i<revealed&&i>0&&entries[i-1].num>e.num?'out ':'')+(i===revealed-1?'newly':'')+'"><div class="number '+(i>=revealed?'mask':'')+'">'+(i<revealed?e.num:'❔')+'</div><div><strong>'+(i+1)+'. '+esc(e.name)+'</strong><p>💬 '+esc(e.clue)+'</p>'+(i<revealed&&i>0&&entries[i-1].num>e.num?'<span class="outmark">⚠️ ここで逆転！</span>':'')+'</div></div>').join('')+'</div>'+(finished?'<div class="judge '+(won?'good':'bad')+'">🎯 順番の一致率 '+accuracy+'%</div>'+(won?'<p class="correct">✨ 順番は全員正解！ 最強のチームワーク！</p>':'<p class="correct">💡 正解順：'+sorted.map(e=>esc(e.name)+'（'+e.num+'）').join(' → ')+'</p>')+'<div class="score">🏆 '+round+'ラウンド中 '+successes+'回 全員成功！<br><span class="avg">平均一致率 '+Math.round(totalAccuracy/round)+'%</span></div>':'<p class="tip">数字を見て「えーっ！」と盛り上がろう！</p>')+(finished&&final?'<p class="tip">🎉 全ラウンド終了！ おつかれさま！</p>':'')+'<div class="buttons">'+(finished?(btn(final?'again':'nextRound',final?'🔄 最初からもう一度':'➡️ 次のラウンドへ','primary')+btn('again','⌂ 設定に戻る','secondary')):(btn('flip','🃏 次の数字をオープン！','primary')+btn('flipAll','⚡ 残り全部オープン','secondary')))+'</div>');
+  return;
+ }
 }
-function start(){const count=Number(document.getElementById('count').value);rounds=Number(document.getElementById('rounds').value);category=document.getElementById('category').value;const names=document.getElementById('names').value.split(/\r?\n/).map(s=>s.trim().slice(0,40)).filter(Boolean);players=Array.from({length:count},(_,i)=>names[i]||'プレイヤー'+(i+1));round=1;successes=0;usedTopics=[];newDeal();render()}
-function submit(){const empty=entries.find(e=>!e.clue.trim());if(empty){const el=document.getElementById('error');el.textContent='⚠️ '+empty.name+'さんのヒントを入力してね！';document.querySelector('input[data-id="'+empty.id+'"]')?.focus();return}won=entries.every((e,i)=>!i||entries[i-1].num<e.num);if(won)successes++;phase='result';render()}
-document.addEventListener('input',e=>{if(e.target.matches('input[data-id]')){const found=entries.find(x=>x.id===Number(e.target.dataset.id));if(found)found.clue=e.target.value}});
+
+function start(){
+ const count=Number(document.getElementById('count').value);
+ rounds=Number(document.getElementById('rounds').value);
+ category=document.getElementById('category').value;
+ const names=document.getElementById('names').value.split(/\r?\n/).map(s=>s.trim().slice(0,40)).filter(Boolean);
+ players=Array.from({length:count},(_,i)=>names[i]||'プレイヤー'+(i+1));
+ round=1;successes=0;totalAccuracy=0;usedTopics=[];
+ saved={count,rounds,category,soundOn};savePrefs(count,rounds,category);
+ newDeal();render();tone('tap');
+}
+function submit(){
+ const empty=entries.find(e=>!e.clue.trim());
+ if(empty){const el=document.getElementById('error');el.textContent='⚠️ '+empty.name+'さんのヒントを入力してね！';document.querySelector('input[data-id="'+empty.id+'"]')?.focus();return}
+ const pairs=entries.length*(entries.length-1)/2;
+ let good=0;
+ for(let i=0;i<entries.length;i++)for(let j=i+1;j<entries.length;j++)if(entries[i].num<entries[j].num)good++;
+ accuracy=Math.round(good*100/pairs);
+ won=good===pairs;revealed=0;awarded=false;phase='result';render();tone('tap');
+}
+document.addEventListener('input',e=>{
+ if(e.target.matches('input[data-id]')){
+  const found=entries.find(x=>x.id===Number(e.target.dataset.id));
+  if(found)found.clue=e.target.value;
+ }
+});
+document.addEventListener('change',e=>{
+ if(!e.target.matches('select[data-move-id]'))return;
+ const id=Number(e.target.dataset.moveId),from=entries.findIndex(x=>x.id===id),target=Number(e.target.value);
+ if(phase!=='play'||from<0||target<0||target>=entries.length||!Number.isInteger(target))return;
+ const [entry]=entries.splice(from,1);entries.splice(target,0,entry);render();tone('flip');
+});
 document.addEventListener('click',e=>{
  const button=e.target.closest('[data-action]');if(!button)return;
  const action=button.dataset.action;
+ if(action==='sound'){soundOn=!soundOn;updateSoundButton();try{localStorage.setItem(settingsKey,JSON.stringify({...saved,soundOn}))}catch(e){}if(soundOn)tone('tap');return}
  if(action==='fullscreen'){const el=document.documentElement;if(!document.fullscreenElement&&el.requestFullscreen)el.requestFullscreen().catch(()=>{});else if(document.exitFullscreen)document.exitFullscreen().catch(()=>{});return}
  if(action==='start'){start();return}
  if(action==='peek'){document.getElementById('secret').hidden=false;document.getElementById('cardBack').hidden=true;document.getElementById('peek').hidden=true;document.getElementById('next').hidden=false;return}
  if(action==='next'){document.getElementById('secret').hidden=true;dealAt++;if(dealAt>=entries.length)phase='play';render();return}
- if(action==='up'||action==='down'){const i=entries.findIndex(x=>x.id===Number(button.dataset.id));const j=i+(action==='up'?-1:1);if(i<0||j<0||j>=entries.length)return;[entries[i],entries[j]]=[entries[j],entries[i]];render();return}
- if(action==='newTopic'){pickTopic();render();return}
- if(action==='reveal'){submit();return}
- if(action==='nextRound'){round++;newDeal();render();window.scrollTo({top:0,behavior:'smooth'});return}
+ if(action==='print'){if(typeof window.print==='function')window.print();return}
+ if(action==='skipDeal'){phase='play';render();return}
+ if(action==='up'||action==='down'){
+  if(phase!=='play')return;
+  const i=entries.findIndex(x=>x.id===Number(button.dataset.id)),j=i+(action==='up'?-1:1);
+  if(i<0||j<0||j>=entries.length)return;
+  [entries[i],entries[j]]=[entries[j],entries[i]];render();tone('flip');return;
+ }
+ if(action==='newTopic'&&phase==='play'){pickTopic();render();tone('flip');return}
+ if(action==='reveal'&&phase==='play'){submit();return}
+ if(action==='flip'&&phase==='result'&&revealed<entries.length){
+  revealed++;if(revealed===entries.length)finishReveal();else tone('flip');render();return;
+ }
+ if(action==='flipAll'&&phase==='result'){revealed=entries.length;finishReveal();render();return}
+ if(action==='nextRound'&&phase==='result'&&revealed===entries.length){round++;newDeal();render();window.scrollTo({top:0,behavior:'smooth'});return}
  if(action==='again'){phase='setup';render();window.scrollTo({top:0,behavior:'smooth'});return}
 });
+
 render();
 })();
 </script>
