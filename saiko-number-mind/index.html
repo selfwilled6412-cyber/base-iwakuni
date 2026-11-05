@@ -139,7 +139,7 @@ const TOPICS=[
 const embedded=window.self!==window.top&&new URLSearchParams(window.location.search).get('embed')==='1';
 if(embedded){
  document.documentElement.dataset.embed='1';
- const sendHeight=()=>{try{window.parent.postMessage({type:'saiko-number-resize',height:Math.max(550,document.body.scrollHeight,document.documentElement.scrollHeight)},window.location.origin)}catch(e){}};
+ const sendHeight=()=>{try{window.parent.postMessage({type:'saiko-number-resize',height:Math.max(550,Math.ceil((document.querySelector('.footer')?.getBoundingClientRect().bottom||document.body.scrollHeight)+window.scrollY))},window.location.origin)}catch(e){}};
  if(typeof ResizeObserver!=='undefined'){const observer=new ResizeObserver(sendHeight);observer.observe(document.body);observer.observe(document.documentElement)}
  window.addEventListener('load',sendHeight);
  window.addEventListener('resize',sendHeight);
