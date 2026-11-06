@@ -6,6 +6,16 @@
 </style>
 <main>
 <header><strong>BASE FIT CHECK</strong><h1>通販のサイズ選びを、<br>あなたの体に合わせて。</h1><p>写真で測る → 商品のサイズ表を入れる → 着心地を比べる</p><button id="start">写真でサイズを調べる</button> <button id="try">サンプルで体験する</button></header>
+<section><h2>自分・家族のサイズ</h2>
+<label>比較する人 <select id="profileSelect"><option value="">新しく登録する</option></select></label>
+<label>名前・ニックネーム <input id="profileName" maxlength="40" placeholder="例 自分・勇気・娘"></label>
+<p id="profileSummary">初めての方は名前を入力し、下の写真で採寸してください。</p>
+<button id="saveProfile" type="button">採寸した寸法を保存</button>
+<button id="remeasureProfile" type="button">選んだ人を再採寸</button>
+<button id="deleteProfile" type="button" disabled>選んだ人を削除</button>
+<p id="profileStatus" role="status"></p>
+<small>名前・身長・胸まわりの推定に使う寸法を、このブラウザに保存します。写真は保存しません。同じ端末・ブラウザで利用できます。ブラウザのデータを消すと登録も消えます。スマホとPC間の共有は未対応です。</small>
+</section>
 <section><h2>01　撮影の準備</h2><p>薄手で体に沿う服を着て、靴を脱ぎます。スマホを胸〜腰の高さに立て、傾けずに頭から足元まで入れて撮影。横向きは体を90度回し、腕は胸の輪郭に重ならないようにしてください。</p><small>写真はこのページ内で処理します。送信・保存はしません。顔を隠す場合は頭頂の位置が見えるようにしてください。</small>
 <label>身長（cm） <input id="height" type="number" min="100" max="230" step="0.1" inputmode="decimal" placeholder="例 163"></label></section>
 <section><h2>02　正面・横の写真</h2><p>それぞれの写真で4点をタップ。胸の両端は同じ高さで、腕を除いた胴体の輪郭を指定します。</p>
@@ -51,6 +61,125 @@ $('add').onclick=()=>addSize();
 $('start').onclick=()=>{$('height').scrollIntoView({behavior:'smooth',block:'center'});$('height').focus({preventScroll:true});};
 let demo = false;
 let importedOuter = false;
+let savedBody = null;
+const profileStorageKey = 'base-fit-check-profiles-v1';
+function validProfile(profile){
+  return profile && typeof profile.id==='string' && typeof profile.name==='string' &&
+    profile.name.trim().length>0 && profile.name.length<=40 &&
+    Number.isFinite(profile.height) && profile.height>=100 && profile.height<=230 &&
+    Number.isFinite(profile.width) && profile.width/profile.height>=.04 && profile.width/profile.height<=.45 &&
+    Number.isFinite(profile.depth) && profile.depth/profile.height>=.04 && profile.depth/profile.height<=.45 &&
+    typeof profile.updatedAt==='string' && Number.isFinite(Date.parse(profile.updatedAt));
+}
+function readProfiles(){
+  const raw=localStorage.getItem(profileStorageKey);
+  if(raw===null) return {version:1,profiles:[],selectedId:''};
+  const data=JSON.parse(raw);
+  if(data.version!==1 || !Array.isArray(data.profiles) || !data.profiles.every(validProfile) ||
+    new Set(data.profiles.map(profile=>profile.id)).size!==data.profiles.length) throw Error('invalid profiles');
+  return data;
+}
+function writeProfiles(data){
+  localStorage.setItem(profileStorageKey,JSON.stringify(data));
+}
+function renderProfiles(data,selectedId=''){
+  $('profileSelect').replaceChildren(new Option('新しく登録する',''));
+  for(const profile of data.profiles){
+    $('profileSelect').add(new Option(profile.name+'（'+new Date(profile.updatedAt).toLocaleDateString('ja-JP')+'）',profile.id));
+  }
+  $('profileSelect').value=selectedId;
+  $('deleteProfile').disabled=!selectedId;
+  $('saveProfile').textContent=selectedId?'この人の寸法を更新':'採寸した寸法を保存';
+}
+function resetBody(){
+  savedBody=null;demo=false;photos.forEach(photo=>photo.clear());$('height').value='';result.textContent='';
+}
+function showProfile(profile){
+  resetBody();
+  $('profileName').value=profile?profile.name:'';
+  if(profile){
+    savedBody={height:profile.height,width:profile.width,depth:profile.depth};
+    $('height').value=profile.height;
+    const chest=recommend(profile.width,profile.depth,0,[]).chest;
+    $('profileSummary').textContent=profile.name+'さんの保存寸法を使用中。身長 '+profile.height+' cm・胸まわりの推定 約'+Math.round(chest)+' cm。商品を選んで比較できます。';
+  }else{
+    $('profileSummary').textContent='名前を入力し、写真で採寸して保存してください。';
+  }
+}
+function restoreProfiles(){
+  try{
+    const data=readProfiles();
+    const profile=data.profiles.find(profile=>profile.id===data.selectedId);
+    renderProfiles(data,profile?profile.id:'');
+    showProfile(profile);
+  }catch{
+    $('profileStatus').textContent='保存データを読み込めませんでした。このブラウザの保存設定を確認してください。既存データは書き換えていません。';
+  }
+}
+$('profileSelect').onchange=()=>{
+  try{
+    const data=readProfiles(),id=$('profileSelect').value;
+    const profile=data.profiles.find(profile=>profile.id===id);
+    if(id && !profile) throw Error('missing profile');
+    writeProfiles({...data,selectedId:id});
+    renderProfiles(data,id);showProfile(profile);
+    $('profileStatus').textContent=profile?profile.name+'さんを選びました。':'新規登録に切り替えました。';
+  }catch{
+    $('profileStatus').textContent='切り替えを保存できませんでした。保存設定を確認してください。';
+  }
+};
+$('saveProfile').onclick=()=>{
+  const name=$('profileName').value.trim();
+  if(!name){$('profileStatus').textContent='名前・ニックネームを入力してください。';return;}
+  if(demo){$('profileStatus').textContent='サンプルの寸法は保存できません。ご本人の写真で採寸してください。';return;}
+  const body=getBody();
+  if(!body){$('profileStatus').textContent='身長と、正面・横の写真の4点を確認してください。';return;}
+  try{
+    const data=readProfiles(),selectedId=$('profileSelect').value;
+    if(selectedId && !data.profiles.some(profile=>profile.id===selectedId)) throw Error('missing profile');
+    const profile={id:selectedId||crypto.randomUUID(),name,...body,updatedAt:new Date().toISOString()};
+    if(!validProfile(profile)) throw Error('invalid profile');
+    const profiles=data.profiles.filter(item=>item.id!==profile.id);
+    profiles.push(profile);
+    writeProfiles({version:1,profiles,selectedId:profile.id});
+    renderProfiles({profiles},profile.id);showProfile(profile);
+    $('profileStatus').textContent=name+'さんの寸法を保存しました。次回もこのブラウザで使えます。';
+  }catch{
+    $('profileStatus').textContent='保存できませんでした。ブラウザの保存設定や空き容量を確認してください。';
+  }
+};
+$('remeasureProfile').onclick=()=>{
+  resetBody();
+  $('profileSummary').textContent='下の写真で再採寸し、保存ボタンを押すと更新できます。保存済みの寸法は更新するまで保持されます。';
+  $('profileStatus').textContent='';
+  $('height').focus();
+};
+$('deleteProfile').onclick=()=>{
+  const id=$('profileSelect').value;
+  if(!id)return;
+  try{
+    const data=readProfiles(),profiles=data.profiles.filter(profile=>profile.id!==id);
+    writeProfiles({version:1,profiles,selectedId:''});
+    renderProfiles({profiles});showProfile(null);
+    $('profileStatus').textContent='選んだ人の登録を削除しました。';
+  }catch{
+    $('profileStatus').textContent='削除できませんでした。ブラウザの保存設定を確認してください。';
+  }
+};
+function getBody(){
+  const height=$('height').valueAsNumber;
+  if(!Number.isFinite(height)||height<100||height>230)return null;
+  if(savedBody)return savedBody;
+  const ratios=demo?[32/163,22/163]:photos.map(photo=>photo.ratio());
+  if(ratios.includes(null))return null;
+  return {height,width:ratios[0]*height,depth:ratios[1]*height};
+}
+function beginPhotoMeasurement(){
+  if(savedBody){
+    savedBody=null;
+    $('profileSummary').textContent='新しい写真を採寸中。保存ボタンを押すと、選んだ人の寸法を更新します。';
+  }
+}
 function clearImport(){
   importedOuter=false;
   $('productNote').hidden=true;
@@ -109,7 +238,7 @@ const photos = ['正面','横'].map(name => {
   for(const fileInput of panel.querySelectorAll('input')) fileInput.onchange = async () => {
     const file = fileInput.files[0]; if (!file) return;
     const current = ++revision;
-    demo = false; result.textContent=''; points=[]; photo=null;
+    beginPhotoMeasurement(); demo = false; result.textContent=''; points=[]; photo=null;
     canvas.hidden=reset.hidden=true; hint.textContent='写真を読み込み中';
     const url = URL.createObjectURL(file);
     try {
@@ -153,26 +282,31 @@ function recommend(width,depth,ease,sizes){
 function calculate(){
   const height=$('height').valueAsNumber;
   if(!Number.isFinite(height)||height<100||height>230){result.textContent='身長を100〜230 cmの範囲で入力してください。';return;}
-  const ratios=demo?[32/163,22/163]:photos.map(photo=>photo.ratio());
-  if(ratios.includes(null)){result.textContent='両方の写真で、頭頂 → 足元 → 胸の左端 → 胸の右端の順に指定してください。胸の両端は同じ高さに合わせてください。';return;}
+  const body=getBody();
+  if(!body){result.textContent='両方の写真で、頭頂 → 足元 → 胸の左端 → 胸の右端の順に指定してください。胸の両端は同じ高さに合わせてください。';return;}
   const entered=[...$('sizes').rows].map(row=>[...row.querySelectorAll('input')].map(input=>input.value));
   if(!entered.length || entered.some(([name,width,length])=>!name.trim() || !width || !length || Number(width)<20 || Number(width)>160 || Number(length)<20 || Number(length)>160)){
     result.textContent='サイズ名・身幅・着丈を入力してください。身幅と着丈は20〜160 cmで指定できます。';return;
   }
   const productSizes=entered.map(([name,width,length])=>[name.trim(),Number(width)*2,Number(length)]).sort((a,b)=>a[1]-b[1]);
-  const {chest,target,sizes,index}=recommend(ratios[0]*height,ratios[1]*height,Number($('fit').value),productSizes);
+  const {chest,target,sizes,index}=recommend(body.width,body.depth,Number($('fit').value),productSizes);
   const boundary=sizes.slice(0,-1).findIndex(size=>Math.abs(size[1]-target)<=3);
   const heading=importedOuter?'アウターの胸まわり寸法を比較':index===-1?'この商品のサイズでは、希望のゆとりに届きません':boundary>=0?sizes[boundary][0]+'と'+sizes[boundary+1][0]+'の境目':sizes[index][0]+'が候補';
   result.replaceChildren();
   const title=document.createElement('strong'); title.className='pick';title.textContent=(demo?'サンプル｜':'')+heading;
-  result.append(title, '\n'+($('product').value.trim() || '登録したTシャツ')+'\n胸まわりの推定 約'+Math.round(chest)+' cm\n'+sizes.map(([name,circ,length])=>name+'  胸まわりのゆとり 約'+Math.round(circ-chest)+' cm / 着丈 '+length+' cm').join('\n')+'\n胸まわりを基準にした候補です。肩幅・袖・着丈のフィットは判定に含まれません。服の厚みや撮影角度で数値は変わります。');
+  result.append(title, '\n'+(demo?'サンプル寸法':($('profileName').value.trim()||'今回の採寸'))+'で比較\n'+($('product').value.trim() || '登録したTシャツ')+'\n胸まわりの推定 約'+Math.round(chest)+' cm\n'+sizes.map(([name,circ,length])=>name+'  胸まわりのゆとり 約'+Math.round(circ-chest)+' cm / 着丈 '+length+' cm').join('\n')+'\n胸まわりを基準にした候補です。肩幅・袖・着丈のフィットは判定に含まれません。服の厚みや撮影角度で数値は変わります。');
   if(importedOuter) result.append('\nボアライナーを含めた実際の着心地・重ね着の余裕は、この寸法差だけでは判断できません。商品ページの案内も確認してください。');
   result.scrollIntoView({block:'nearest'});
 }
 $('calculate').onclick=calculate;
-$('demo').onclick=()=>{clearImport();$('productUrl').value='';demo=true;$('height').value=163;$('fit').value='10';$('product').value='サンプル コットンTシャツ';resetSizes();calculate();};
+$('demo').onclick=()=>{resetBody();$('profileSelect').value='';$('profileName').value='';$('deleteProfile').disabled=true;$('saveProfile').textContent='採寸した寸法を保存';$('profileSummary').textContent='サンプルを体験中。ご本人の寸法は保存ボタンから登録してください。';clearImport();$('productUrl').value='';demo=true;$('height').value=163;$('fit').value='10';$('product').value='サンプル コットンTシャツ';resetSizes();calculate();};
 $('try').onclick=()=>$('demo').click();
-$('clear').onclick=()=>{clearImport();$('productUrl').value='';$('importStatus').textContent='URL取込は現在 Classical Elf「clf002」に対応。確認済みの商品データを読み込みます。';demo=false;photos.forEach(photo=>photo.clear());$('height').value='';$('fit').value='10';$('product').value='';resetSizes();result.textContent='';};
-for(const id of ['height','fit','product'])$(id).oninput=()=>{result.textContent='';};
+$('clear').onclick=()=>{resetBody();$('profileSelect').value='';$('profileName').value='';$('deleteProfile').disabled=true;$('saveProfile').textContent='採寸した寸法を保存';$('profileSummary').textContent='入力をクリアしました。保存済みの人は一覧から選べます。';clearImport();$('productUrl').value='';$('importStatus').textContent='URL取込は現在 Classical Elf「clf002」に対応。確認済みの商品データを読み込みます。';demo=false;photos.forEach(photo=>photo.clear());$('height').value='';$('fit').value='10';$('product').value='';resetSizes();result.textContent='';};
+for(const id of ['height','fit','product','profileName'])$(id).oninput=()=>{result.textContent='';};
+$('height').oninput=()=>{
+  if(savedBody){savedBody=null;photos.forEach(photo=>photo.clear());$('profileSummary').textContent='身長を変更しました。写真を再採寸して保存してください。';}
+  result.textContent='';
+};
+restoreProfiles();
 </script>
 </html>
