@@ -6,7 +6,7 @@ const $=id=>document.getElementById(id), core=window.SaikoPianoCore, analyzer=wi
 if(!core||!analyzer){$('status').textContent='音声解析エンジンを読み込めませんでした';return}
 let level='easy',playing=false,paused=false,game=null,track=null,source=null,ctx=null,audioBuffer=null;
 let startClock=0,offset=0,raf=0,chartDuration=0,sourceMode='demo',nativePending=false,lastRender=0;
-let timingMs=0;
+let timingMs=0,activeTrackKey='';
 let hitPulse=[0,0,0,0],hitStreak=0;
 const PRE_ROLL_MS=2200;
 let musicStarted=false,countdownEnd=0,countdownRemaining=0;
@@ -170,6 +170,8 @@ function cleanup(){
 function begin(rawNotes,duration,title,mode,buffer){
  cleanup(); sourceMode=mode;audioBuffer=buffer||null;
  game=core.engine(rawNotes);chartDuration=Math.max(duration,rawNotes[rawNotes.length-1].t+.7);
+ // Best scores are per track and difficulty, never shared between unrelated songs.
+ activeTrackKey=mode+'|'+title;
  $('songLabel').textContent=title;
  $('menu').hidden=true;$('game').hidden=false;$('result').hidden=true;
  $('pause').textContent='⏸ 一時停止';
@@ -183,11 +185,19 @@ function finish(){
  if(!game||!playing)return;
  const completed=game.state();game.end();const s=game.state();
  cleanup();$('result').hidden=false;$('pause').disabled=true;
- $('finalScores').textContent='SCORE '+s.score.toLocaleString('ja-JP')+' ／ PERFECT '+s.perfect+' ／ GOOD '+s.good+' ／ MISS '+s.miss+' ／ 最大COMBO '+s.best;
+ const accuracy=s.total?Math.round((s.perfect+s.good*.5)/s.total*1000)/10:0;
+ const grade=accuracy>=95?'S':accuracy>=85?'A':accuracy>=70?'B':accuracy>=50?'C':'D';
+ let bestScore=s.score,recordText='';
  try{
-  const key='saiko-piano-best-'+level, best=Number(localStorage.getItem(key)||0);
-  if(s.score>best)localStorage.setItem(key,String(s.score));
+  // FNV-1a hash keeps storage keys short even for long imported filenames.
+  let hash=2166136261;
+  for(let i=0;i<activeTrackKey.length;i++){hash^=activeTrackKey.charCodeAt(i);hash=Math.imul(hash,16777619)}
+  const key='saiko-piano-best-v2-'+level+'-'+(hash>>>0).toString(16);
+  const previous=Math.max(0,Number(localStorage.getItem(key))||0);
+  bestScore=Math.max(previous,s.score);
+  if(s.score>previous){localStorage.setItem(key,String(s.score));recordText=' 🏆 NEW BEST!'}
  }catch(e){}
+ $('finalScores').textContent='RANK '+grade+' ／ 精度 '+accuracy.toFixed(1)+'% ／ SCORE '+s.score.toLocaleString('ja-JP')+' ／ BEST '+bestScore.toLocaleString('ja-JP')+recordText+' ／ PERFECT '+s.perfect+' ／ GOOD '+s.good+' ／ MISS '+s.miss+' ／ 最大COMBO '+s.best;
  $('result').scrollIntoView({block:'nearest'});
 }
 function chooseDifficulty(value){
