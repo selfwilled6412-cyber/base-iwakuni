@@ -3,15 +3,15 @@
 const fs=require('node:fs'),assert=require('node:assert/strict'),vm=require('node:vm');
 const html=fs.readFileSync('saiko-apps/index.html','utf8');
 const items=[...html.matchAll(/<article class="tile" data-app-id="(\d+)" data-view="([^"]+)" data-kind="([^"]+)" data-tags="([^"]+)">([\s\S]*?)<\/article>/g)];
-assert.equal(items.length,15,'Ready-to-play main catalog should have 15 compact apps');
-assert.equal(new Set(items.map(x=>x[1])).size,15,'App IDs are unique');
+assert.equal(items.length,16,'Ready-to-play main catalog should have 16 compact apps');
+assert.equal(new Set(items.map(x=>x[1])).size,16,'App IDs are unique');
 const hrefs=items.map(x=>(x[5].match(/<a class="tileLink" href="([^"]+)"/)||[])[1]);
 assert(hrefs.every(Boolean));
-assert.equal(new Set(hrefs).size,15,'No duplicates in main catalog');
+assert.equal(new Set(hrefs).size,16,'No duplicates in main catalog');
 assert(items.every(x=>x[2].includes('all')),'All apps visible in all tab');
 const distribution={};
 for(const x of items)distribution[x[3]]=(distribution[x[3]]||0)+1;
-assert.deepEqual(distribution,{game:10,creative:4,utility:1},'All playable puzzles and escape rooms belong to Games');
+assert.deepEqual(distribution,{game:11,creative:4,utility:1},'All playable puzzles and escape rooms belong to Games');
 for(const url of ['../saiko-nazotoki/','../saiko-escape/','../saiko-escape-2/']){
  const match=items.find(x=>x[5].includes('href="'+url+'"'));
  assert(match&&match[3]==='game','Puzzle or escape incorrectly excluded from Games: '+url);
@@ -41,5 +41,5 @@ assert(html.includes('max-width:650px'), 'Mobile layout should be single column'
 const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
 assert.equal(scripts.length,1);
 new vm.Script(scripts[0][1],{filename:'saiko-hub.js'});
-console.log('PASS: 15 ready/usable apps, 3 separated experiments/old/coming apps, 3 featured quick links');
+console.log('PASS: 16 ready/usable apps, 3 separated experiments/old/coming apps, 3 featured quick links');
 console.log('PASS: old URLs, favorites storage, guide character, staff guide and responsive filters preserved');

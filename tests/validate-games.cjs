@@ -142,7 +142,7 @@ for(const href of ['../saiko-nazotoki/','../saiko-escape/','../saiko-escape-2/',
  assert(appHub.includes('href="'+href+'"'),'Missing hub link '+href);
 }
 const playCards=(appHub.match(/<article class="tile"[^>]*data-view="[^"]+"/g)||[]);
-assert.equal(playCards.length,15,'Active games should appear as compact tiles');
+assert.equal(playCards.length,16,'Active games should appear as compact tiles');
 assert(playCards.some(x=>x.includes('group'))&&playCards.some(x=>x.includes('solo')));
 for(const mode of ['game','creative','utility','all','favorites'])assert(appHub.includes('data-view-filter="'+mode+'"'),'Missing category '+mode);
 for(const mode of ['group','solo','all'])assert(appHub.includes('data-players-filter="'+mode+'"'),'Missing optional play mode '+mode);

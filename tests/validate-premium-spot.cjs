@@ -6,8 +6,8 @@ const html=fs.readFileSync(path.join(base,'index.html'),'utf8');
 const dataMatch=html.match(/<script id="puzzledata" type="application\/json">([\s\S]*?)<\/script>/);
 assert(dataMatch,'Embedded puzzle configuration is missing');
 const data=JSON.parse(dataMatch[1]);
-assert.equal(data.length,3,'Only verified premium images may be playable; never claim 90');
-assert.deepEqual(data.map(p=>p.answers.length),[5,7,5]);
+assert.equal(data.length,5,'Only verified premium images may be playable; never claim 90');
+assert.deepEqual(data.map(p=>p.answers.length),[5,7,5,5,5]);
 assert(html.includes('残りの高品質画像は未制作'),'Be transparent about unfinished question bank');
 for(const puzzle of data){
  assert(puzzle.id&&puzzle.name);
@@ -17,6 +17,13 @@ for(const puzzle of data){
   assert(bytes.length>100000,'Artwork is missing or unusually low fidelity');
   assert.equal(bytes.toString('ascii',0,4),'RIFF');
   assert.equal(bytes.toString('ascii',8,12),'WEBP');
+ }
+ if(puzzle.patches){
+  assert.equal(puzzle.patches.length,puzzle.answers.length);
+  for(const polygon of puzzle.patches){
+   assert(polygon.length>=3);
+   for(const [x,y] of polygon)assert(x>=0&&x<=1024&&y>=0&&y<=1536);
+  }
  }
  const used=[];
  for(const answer of puzzle.answers){
@@ -66,6 +73,12 @@ for(let i=0;i<data.length;i++){
  game.open(i);
  assert.equal(game.getState().index,i);
  const p=data[i];
+ assert.equal(node('img-b').src,p.patches?p.a:p.b,'New puzzles must share identical base pixels');
+ if(p.patches){
+  assert(node('marks-b').innerHTML.includes('clipPath'),'Edited art is restricted to authored objects');
+  assert(!node('marks-a').innerHTML.includes('clipPath'),'Reference image is unmodified');
+ }
+ node('hint').onclick();
  game.tapAt('a',.005,.995);
  assert.equal(game.getState().wrong,1,'Wrong coordinate should be counted');
  game.tapAt('a',p.answers[0].x,p.answers[0].y);
@@ -79,6 +92,11 @@ for(let i=0;i<data.length;i++){
  assert.equal(node('finish').hidden,false,'Winning screen visible');
  assert.equal(node('found').textContent,p.answers.length+' / '+p.answers.length);
 }
+node('back').onclick();
+assert.equal(node('gallery').hidden,false,'Return to gallery');
+assert.equal(node('game').hidden,true);
+node('switch').onclick();
+assert.equal(game.getState().index,0,'Next wraps to first puzzle');
 assert(storage.has('saiko-premium-spot-preview-v1'),'Local progress must persist');
-console.log('PASS: 3 premium paired original image scenes, 17 exact tappable differences, and WebP files');
+console.log('PASS: 5 premium paired original image scenes, 27 exact tappable differences, and WebP files');
 console.log('PASS: correct/incorrect taps, both sides, no double-score, hints, completion and saved record');
