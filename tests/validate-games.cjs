@@ -158,14 +158,14 @@ for(const target of ['saiko-adventure/index.html','saiko-adventure/app.js','saik
 function suiteHarness(file,expose){
  const elements=new Map();
  function node(id){return {id,hidden:false,innerHTML:'',textContent:'',style:{},children:[],value:'',dataset:{},disabled:false,
-  append(){},replaceChildren(){this.children=[]},addEventListener(){},setAttribute(){},querySelector(){return node('child')},querySelectorAll(){return []}};}
+  removeAttribute(){},append(){},replaceChildren(){this.children=[]},addEventListener(){},setAttribute(){},querySelector(){return node('child')},querySelectorAll(){return []}};}
  const $=id=>elements.get(id)||(elements.set(id,node(id)),elements.get(id));
  const d={getElementById:$,querySelectorAll(){return []},querySelector(){return node('child')},addEventListener(){}};
- const w={scrollTo(){},print(){},fullscreenElement:null};
+ const w={scrollTo(){},print(){},addEventListener(){},location:{search:"",origin:"https://example.test"},fullscreenElement:null};
  const storage={getItem(){return null},setItem(){},removeItem(){}};
  const code=read(file).replace(/\}\)\(\);\s*$/,expose);
  new vm.Script(code,{filename:file}).runInNewContext(vm.createContext({
-   document:d,window:w,localStorage:storage,performance:{now(){return 1000}},
+   document:d,window:w,URLSearchParams,localStorage:storage,performance:{now(){return 1000}},
    setTimeout(){return 1},clearTimeout(){},setInterval(){return 1},clearInterval(){},confirm(){return true},
    console
  }),{timeout:10000});
