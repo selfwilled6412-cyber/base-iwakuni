@@ -19,11 +19,11 @@ function fakeNode(id){
   addEventListener(name,fn){this['on'+name]=fn},focus(){},click(){this.onclick?.()}};
  return e;
 }
-function makeHarness(script,kind){
+function makeHarness(script,kind,search=""){
  const nodes=new Map();
  const get=id=>nodes.get(id)||(nodes.set(id,fakeNode(id)),nodes.get(id));
  const progressStore={data:{},getItem(k){return this.data[k]||null},setItem(k,v){this.data[k]=String(v)},removeItem(k){delete this.data[k]}};
- const w={scrollTo(){},setTimeout(cb){cb()},confirm(){return true},speechSynthesis:{cancel(){},speak(){}}};
+ const w={location:{search},scrollTo(){},setTimeout(cb){cb()},confirm(){return true},speechSynthesis:{cancel(){},speak(){}}};
  let doc;
  if(kind==='adventure'){
   get('play').hidden=true;get('win').hidden=true;
@@ -39,7 +39,7 @@ function makeHarness(script,kind){
   script=script.replace(/\}\)\(\);\s*$/,"window.__qa={start,setLevel:l=>difficulty=l,getGame:()=>game,getCycles:()=>puzzleCycles};})();");
  }
  const sandbox={window:w,document:doc,localStorage:progressStore,sessionStorage:progressStore,
-  SpeechSynthesisUtterance:function(){},URL:{createObjectURL(){return 'blob:fake'},revokeObjectURL(){}},Blob:function(){},console};
+  URLSearchParams,SpeechSynthesisUtterance:function(){},URL:{createObjectURL(){return 'blob:fake'},revokeObjectURL(){}},Blob:function(){},console};
  vm.runInNewContext(script,sandbox,{timeout:10000});
  return {qa:w.__qa,store:progressStore,get};
 }
@@ -142,7 +142,7 @@ for(const href of ['../saiko-nazotoki/','../saiko-escape/','../saiko-escape-2/',
  assert(appHub.includes('href="'+href+'"'),'Missing hub link '+href);
 }
 const playCards=(appHub.match(/<article class="tile"[^>]*data-view="[^"]+"/g)||[]);
-assert.equal(playCards.length,16,'Active games should appear as compact tiles');
+assert.equal(playCards.length,40,'Active games should appear as compact tiles');
 assert(playCards.some(x=>x.includes('group'))&&playCards.some(x=>x.includes('solo')));
 for(const mode of ['game','creative','utility','all','favorites'])assert(appHub.includes('data-view-filter="'+mode+'"'),'Missing category '+mode);
 for(const mode of ['group','solo','all'])assert(appHub.includes('data-players-filter="'+mode+'"'),'Missing optional play mode '+mode);
@@ -155,13 +155,13 @@ new vm.Script(hubJS,{filename:'saiko-apps/index.html'});
 for(const target of ['saiko-adventure/index.html','saiko-adventure/app.js','saiko-kids/index.html','saiko-kids/app.js','saiko-draw/index.html','saiko-draw/app.js','saiko-apps/guide.html']){
  assert(fs.existsSync(path.join(root,target)),'Missing public file '+target);
 }
-function suiteHarness(file,expose){
+function suiteHarness(file,expose,search=""){
  const elements=new Map();
  function node(id){return {id,hidden:false,innerHTML:'',textContent:'',style:{},children:[],value:'',dataset:{},disabled:false,
   removeAttribute(){},append(){},replaceChildren(){this.children=[]},addEventListener(){},setAttribute(){},querySelector(){return node('child')},querySelectorAll(){return []}};}
  const $=id=>elements.get(id)||(elements.set(id,node(id)),elements.get(id));
  const d={getElementById:$,querySelectorAll(){return []},querySelector(){return node('child')},addEventListener(){}};
- const w={scrollTo(){},print(){},addEventListener(){},location:{search:"",origin:"https://example.test"},fullscreenElement:null};
+ const w={scrollTo(){},print(){},addEventListener(){},location:{search,origin:"https://example.test"},fullscreenElement:null};
  const storage={getItem(){return null},setItem(){},removeItem(){}};
  const code=read(file).replace(/\}\)\(\);\s*$/,expose);
  new vm.Script(code,{filename:file}).runInNewContext(vm.createContext({
@@ -359,3 +359,20 @@ console.log('PASS: 10 solo games, 10 group games, 110 mixed associations + 80 co
 console.log('PASS: team memory with inclusive co-op, 15-round High-Low, 2–6 player 21-card challenge and 15-round symbol-speed scoring');
 console.log('PASS: Both escape series play through all 50 stages and allow all chapter jumps');
 console.log('PASS: polished card park, 3 memory difficulties, 25 high-low rounds and two Lumi card opponents');
+
+// Every public game link must launch the requested game, after initialization.
+for(const [folder,variable] of [['saiko-party-games','mode'],['saiko-solo-arcade','mode'],['saiko-card-games','game']]){
+ const page=read(folder+'/index.html');
+ for(const m of new Set([...page.matchAll(/data-game="([^"]+)"/g)].map(x=>x[1]))){
+  const h=suiteHarness(folder+'/app.js','window.__qa={mode:()=>'+variable+'};})();','?game='+m);
+  assert.equal(h.qa.mode(),m,'Direct link failed for '+folder+'/'+m);
+ }
+ const h=suiteHarness(folder+'/app.js','window.__qa={mode:()=>'+variable+'};})();','?game=not-a-game');
+ assert.equal(h.qa.mode(),null,'Unknown games must not start');
+}
+for(const m of ['memory','spot','puzzle']){
+ const h=makeHarness(read('saiko-kids/app.js'),'kids','?game='+m);
+ assert.equal(h.get('home').hidden,true,'Kids direct link '+m);
+ assert.equal(h.get('gamePanel').hidden,false);
+}
+console.log('PASS: every party, solo, card and kids deep link starts its game; invalid modes are ignored');

@@ -170,4 +170,7 @@ function slideMove(index){
  }else drawSlide();
 }
 
+
+const requestedGame=window.location?.search?new URLSearchParams(window.location.search).get("game"):null;
+if(["reaction", "mole", "simon", "order", "math", "odd", "word", "merge", "rps", "slide"].includes(requestedGame))start(requestedGame);
 })();

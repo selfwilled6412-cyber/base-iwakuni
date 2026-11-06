@@ -35,7 +35,7 @@ window.addEventListener('message',event=>{
 
 function start(m){if(m==='numberMind'){startNumberGame();return}hideNumberGame();stop();mode=m;state=null;teams=[0,0];$('game').dataset.mode=m;$('home').hidden=true;$('game').hidden=false;$('title').textContent={bingo:'🎱 ビンゴ大会',gesture:'🎭 ジェスチャー対決',association:'💭 ヒントで連想大会',ox:'⭕❌ ○×クイズ大会',teamMemory:'🃏 みんなで神経衰弱',teamHighLow:'🃏 みんなでハイ＆ロー',team21:'🎯 ぴったり21カード',symbolSpeed:'⚡ 同じ絵スピード',two:'🤔 究極の二択',tsukkomi:'🎤 ツッコミ選手権'}[m];$('printCards').replaceChildren();scores();if(m==='two')startTwo();else if(m==='tsukkomi')startTsukkomi();else if(m==='teamMemory')startTeamMemory();else if(m==='teamHighLow')startTeamHighLow();else if(m==='team21')startTeam21();else if(m==='symbolSpeed')startSymbolSpeed();else if(m==='bingo')bingo();else if(m==='gesture'){state={items:shuffle(GESTURES),pos:0,phase:0,seconds:60};gestureShow()}else if(m==='association'){beginAssociation('all')}else{state={items:shuffle(FACTS),pos:0,answer:false};oxShow()}}
 document.querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>start(b.dataset.game));
-if(new URLSearchParams(window.location.search).get('game')==='numberMind')startNumberGame();$('back').onclick=back;$('restart').onclick=()=>{if(!mode||!confirm('最初からやり直す？'))return;if(mode==='bingo'){delete saved.bingo;persist()}start(mode)};
+$('back').onclick=back;$('restart').onclick=()=>{if(!mode||!confirm('最初からやり直す？'))return;if(mode==='bingo'){delete saved.bingo;persist()}start(mode)};
 $('full').onclick=()=>document.fullscreenElement?document.exitFullscreen?.():document.documentElement.requestFullscreen?.().catch(()=>{});
 function bingo(){let d=saved.bingo;state=d&&Array.isArray(d.numbers)&&d.numbers.length===75&&new Set(d.numbers).size===75&&d.pos>=0&&d.pos<=75?d:{numbers:shuffle(Array.from({length:75},(_,i)=>i+1)),pos:0};saved.bingo=state;persist();bingoShow()}
 function bingoName(n){return 'BINGO'[Math.floor((n-1)/15)]+'-'+n}
@@ -498,4 +498,7 @@ function finishSymbolSpeed(){
  $('a_setup').onclick=()=>{state={phase:'setup',members:s.members,total:15};symbolSetup()};
 }
 
+
+const requestedGame=new URLSearchParams(window.location.search).get('game');
+if(['numberMind','bingo','gesture','association','ox','teamMemory','teamHighLow','team21','symbolSpeed','two','tsukkomi'].includes(requestedGame))start(requestedGame);
 })();

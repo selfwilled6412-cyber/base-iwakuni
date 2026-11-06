@@ -206,4 +206,7 @@ function turnSevensAI(){
  }else s.status='サイ校キャラは出せるカードがないのでパス！ あなたの番！';
  s.phase='user';s.turn++;message('');renderSevens();
 }
+
+const requestedGame=window.location?.search?new URLSearchParams(window.location.search).get("game"):null;
+if(["memory", "highlow", "oldmaid", "sevens"].includes(requestedGame))start(requestedGame);
 })();

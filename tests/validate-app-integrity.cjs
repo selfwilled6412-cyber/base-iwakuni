@@ -94,7 +94,7 @@ assert(bingo.includes('bingo-voice.js'),'Bingo voice asset missing');
 const games=fs.readFileSync(path.join(root,'saiko-apps/index.html'),'utf8');
 for(const file of pages.filter(x=>x.endsWith('/index.html')&&x!=='saiko-apps/index.html')){
  const dir=file.slice(0,-'index.html'.length);
- assert(games.includes('href="../'+dir+'"')||games.includes('href="../'+file+'"')||dir==='saiko-rhythm/'||dir==='saiko-nazotoki/'||dir==='saiko-escape/'||dir==='saiko-escape-2/',
+ assert(games.includes('href="../'+dir+'"')||games.includes('href="../'+file+'"')||dir==='saiko-spot-difference/'||dir==='saiko-rhythm/'||dir==='saiko-nazotoki/'||dir==='saiko-escape/'||dir==='saiko-escape-2/',
  'Game hub missing '+file);
 }
 console.log('PASS: '+pages.length+' smartphone-friendly pages, '+local+' local links/assets and '+soundApps.length+' game sound engines');

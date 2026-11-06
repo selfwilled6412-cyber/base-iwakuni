@@ -50,14 +50,14 @@ footer{text-align:center;color:#7985a3;font-size:12px;padding:25px 10px;line-hei
 @media(max-width:650px){.tiles{grid-template-columns:1fr}.tileLink{min-height:94px}.sectionHead{margin-top:24px}.brandLogo{width:70px}.staff{font-size:11px;padding:9px}.heroTitle{margin-top:13px}.tab{flex:1;padding:8px 9px;font-size:13px}.tab.starTab{margin-left:0}.spotlight{gap:9px}.feature{padding:15px}.feature strong{font-size:17px}.feature.premium strong{font-size:22px}}
 @media(max-width:380px){.tab{font-size:12px}.tileIcon{width:47px;height:47px}.feature strong{font-size:15px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
-</style></head><body>
+.genres{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.genres[hidden]{display:none}.genres .playChip[aria-pressed="true"]{background:#2d405e;color:#fff;border-color:#73e8d2}</style></head><body>
 <header><div class="topWrap"><div class="brandRow"><div class="brand"><img class="brandLogo" src="https://storage.googleapis.com/studio-design-asset-files/projects/V5a73rv7aR/s-1901x504_v-frms_webp_cf16287b-a688-4d6f-afad-af48e43834df_small.webp" alt="サイ校ロゴ" onerror="this.hidden=true"><div><span>SAIKO PROJECT IWAKUNI</span><strong>サイ校プロジェクト岩国</strong></div></div><a class="staff" href="guide.html">スタッフ用ガイド</a></div><h1 class="heroTitle">サイ校 <span>ゲームひろば</span></h1><p class="heroDesc">ひとりでも、みんなでも。好きなゲームを選んで遊ぼう！</p></div></header>
 <main>
 <section class="welcome"><div class="welcomeText"><strong>今日は何して遊ぶ？ 🎉</strong><p>人数で選ぶのも、好きなゲームを探すのもOK！</p></div><img class="guideAvatar" src="../assets/lumi-approved.webp" alt="サイ校の案内キャラクター"></section>
-<section aria-label="おすすめのゲーム"><div class="sectionHead"><h2>まずはこの3つ！</h2><small>タップですぐ遊べる</small></div>
+<section aria-label="おすすめのゲーム"><div class="sectionHead"><h2>おすすめのゲーム</h2><small>タップですぐ遊べる</small></div>
 <div class="spotlight">
-<a class="feature premium" href="../saiko-premium-spot/"><span class="featureTag">🎨 新作2問追加・全5問</span><strong>プレミアム<br>まちがいさがし</strong><small>絵本のような風景で違いを探そう</small></a>
-<a class="feature party" href="../saiko-party-games/"><span class="featureTag">📺 みんなで</span><strong>ゲーム大会</strong><small>ビンゴ・神経衰弱・対戦</small></a>
+<a class="feature premium" href="../saiko-premium-spot/"><span class="featureTag">🔎 間違い探し</span><strong>プレミアム<br>まちがいさがし</strong><small>絵本のような風景で違いを探そう</small></a>
+<a class="feature party" href="../saiko-party-games/?game=bingo"><span class="featureTag">📺 みんなで</span><strong>ビンゴ大会</strong><small>みんなで数字ビンゴを楽しもう</small></a>
 <a class="feature rhythm" href="../saiko-rhythm/"><span class="featureTag">🎵 音ゲー</span><strong>BEAT RUSH</strong><small>オリジナル曲で遊ぼう</small></a>
 </div></section>
 <section class="browse" id="browse" aria-label="アプリを探す"><div class="sectionHead"><h2>遊びたいものを探す</h2><small>ゲームも謎解きもここから</small></div>
@@ -73,54 +73,39 @@ footer{text-align:center;color:#7985a3;font-size:12px;padding:25px 10px;line-hei
 <button type="button" class="playChip" data-players-filter="group" aria-pressed="false">👥 みんなで</button>
 <button type="button" class="playChip" data-players-filter="solo" aria-pressed="false">📱 ひとりで</button>
 </div>
-<div class="toolbar"><input id="appSearch" class="search" type="search" placeholder="🔎 ゲーム名で探す" aria-label="ゲーム名で検索" autocomplete="off"><span class="counter" id="appCount" aria-live="polite"></span></div>
+<div class="genres" id="gameGenres" role="group" aria-label="ゲームの種類"><button type="button" class="playChip" data-genre="all" aria-pressed="true">すべての種類</button><button type="button" class="playChip" data-genre="cards" aria-pressed="false">🃏 カード</button><button type="button" class="playChip" data-genre="puzzle" aria-pressed="false">🧩 謎解き・頭脳</button><button type="button" class="playChip" data-genre="action" aria-pressed="false">⚡ アクション</button><button type="button" class="playChip" data-genre="party" aria-pressed="false">🎉 交流・クイズ</button><button type="button" class="playChip" data-genre="music" aria-pressed="false">🎵 音楽</button><button type="button" class="playChip" data-genre="kids" aria-pressed="false">🚀 キッズ</button></div><div class="toolbar"><input id="appSearch" class="search" type="search" placeholder="🔎 ゲーム名で探す" aria-label="ゲーム名で検索" autocomplete="off"><span class="counter" id="appCount" aria-live="polite"></span></div>
 <p id="emptyResults" class="empty" hidden>見つからなかったよ。「すべて」か別の言葉で探してね。</p>
 <div class="tiles" id="gameCards">
-<article class="tile" data-app-id="0" data-view="all group solo" data-kind="game" data-tags="recreation kids group solo">
-<a class="tileLink" href="../saiko-premium-spot/"><span class="tileIcon" aria-hidden="true">🎨✨</span><span class="tileInfo"><strong>プレミアム間違い探し</strong><small>絵本みたいな5つの風景から違いを探そう</small><span class="smallTag">高品質版・全5問</span></span><span class="arrow" aria-hidden="true">›</span></a>
+<article class="tile" data-app-id="0" data-view="all group solo" data-kind="game" data-tags="recreation kids group solo puzzle">
+<a class="tileLink" href="../saiko-premium-spot/"><span class="tileIcon" aria-hidden="true">🎨✨</span><span class="tileInfo"><strong>プレミアム間違い探し</strong><small>美しい風景の中から違いを探そう</small><span class="smallTag">初級・中級・上級</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="1" data-view="all group" data-kind="game" data-tags="recreation kids group">
-<a class="tileLink" href="../saiko-party-games/"><span class="tileIcon" aria-hidden="true">📺</span><span class="tileInfo"><strong>みんなでゲーム大会</strong><small>神経衰弱・ビンゴ・みんなで対戦</small></span><span class="arrow" aria-hidden="true">›</span></a>
-<button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
-
-</article>
-<article class="tile" data-app-id="2" data-view="all group solo" data-kind="game" data-tags="recreation kids solo group">
+<article class="tile" data-app-id="2" data-view="all group solo" data-kind="game" data-tags="recreation kids solo group music">
 <a class="tileLink" href="../saiko-rhythm/"><span class="tileIcon" aria-hidden="true">🎵</span><span class="tileInfo"><strong>SAIKO BEAT RUSH</strong><small>オリジナル3曲でリズムゲーム</small><span class="smallTag">オリジナル曲</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
-<div class="extraLink"><a href="../saiko-rhythm/piano-tiles.html">🎹 新作 PIANO RUSH を遊ぶ（音声解析デモ） ›</a></div>
-</article>
-<article class="tile" data-app-id="3" data-view="all solo" data-kind="game" data-tags="recreation kids solo">
-<a class="tileLink" href="../saiko-solo-arcade/"><span class="tileIcon" aria-hidden="true">🕹️</span><span class="tileInfo"><strong>ミニゲームセンター</strong><small>モグラたたきなど10種類のミニゲーム</small></span><span class="arrow" aria-hidden="true">›</span></a>
-<button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="4" data-view="all solo" data-kind="game" data-tags="recreation kids solo">
-<a class="tileLink" href="../saiko-card-games/"><span class="tileIcon" aria-hidden="true">🃏</span><span class="tileInfo"><strong>カードゲーム</strong><small>ババ抜き・七並べ・CPU対戦など</small></span><span class="arrow" aria-hidden="true">›</span></a>
-<button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
-
-</article>
-<article class="tile" data-app-id="15" data-view="all group" data-kind="game" data-tags="recreation party group cooperation number ito">
-<a class="tileLink" href="../saiko-party-games/?game=numberMind"><span class="tileIcon" aria-hidden="true">🃏💡</span><span class="tileInfo"><strong>数字の以心伝心</strong><small>音声司会付き！秘密の数字をヒントで並べる2〜20人の協力ゲーム。</small><span class="smallTag">NEW・みんなで協力</span></span><span class="arrow" aria-hidden="true">›</span></a>
+<article class="tile" data-app-id="15" data-view="all group" data-kind="game" data-tags="recreation party group cooperation number ito party">
+<a class="tileLink" href="../saiko-party-games/?game=numberMind"><span class="tileIcon" aria-hidden="true">🃏💡</span><span class="tileInfo"><strong>数字の以心伝心</strong><small>音声司会付き！秘密の数字をヒントで並べる2〜20人の協力ゲーム。</small><span class="smallTag">みんなで協力</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 </article>
-<article class="tile" data-app-id="5" data-view="all group" data-kind="game" data-tags="recreation group">
+<article class="tile" data-app-id="5" data-view="all group" data-kind="game" data-tags="recreation group puzzle">
 <a class="tileLink" href="../saiko-nazotoki/"><span class="tileIcon" aria-hidden="true">🧩</span><span class="tileInfo"><strong>謎解きゲーム</strong><small>初級〜上級のひらめきクイズ150問</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="6" data-view="all group" data-kind="game" data-tags="recreation kids group">
+<article class="tile" data-app-id="6" data-view="all group" data-kind="game" data-tags="recreation kids group puzzle">
 <a class="tileLink" href="../saiko-escape/"><span class="tileIcon" aria-hidden="true">🔐</span><span class="tileInfo"><strong>脱出ミッション</strong><small>50ステージの謎をみんなで解こう</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="7" data-view="all group" data-kind="game" data-tags="recreation group">
+<article class="tile" data-app-id="7" data-view="all group" data-kind="game" data-tags="recreation group puzzle">
 <a class="tileLink" href="../saiko-escape-2/"><span class="tileIcon" aria-hidden="true">🧠</span><span class="tileInfo"><strong>脱出ミッションⅡ</strong><small>難しい謎に挑む上級50ステージ</small><span class="smallTag">上級</span></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="8" data-view="all solo" data-kind="game" data-tags="recreation kids solo">
+<article class="tile" data-app-id="8" data-view="all solo" data-kind="game" data-tags="recreation kids solo puzzle">
 <a class="tileLink" href="../saiko-adventure/"><span class="tileIcon" aria-hidden="true">🗺️</span><span class="tileInfo"><strong>宝さがし大冒険</strong><small>迷路を進んで宝を見つけよう</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
@@ -130,20 +115,15 @@ footer{text-align:center;color:#7985a3;font-size:12px;padding:25px 10px;line-hei
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
-<article class="tile" data-app-id="10" data-view="all solo" data-kind="game" data-tags="kids solo">
-<a class="tileLink" href="../saiko-kids/"><span class="tileIcon" aria-hidden="true">🚀</span><span class="tileInfo"><strong>キッズゲームひろば</strong><small>子ども向けのゲーム入口</small></span><span class="arrow" aria-hidden="true">›</span></a>
-<button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
-
-</article>
 <article class="tile" data-app-id="11" data-view="all creative" data-kind="creative" data-tags="creative solo">
 <a class="tileLink" href="https://ai-badge-workshop.selfwilled6412.chatgpt.site/" target="_blank" rel="noopener noreferrer"><span class="tileIcon" aria-hidden="true">🎖️</span><span class="tileInfo"><strong>AI缶バッジ工房</strong><small>オリジナルの缶バッジをデザイン</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
 <article class="tile" data-app-id="12" data-view="all creative" data-kind="creative" data-tags="creative kids solo">
-<a class="tileLink" href="https://selfwilled6412-cyber.github.io/ai-4koma-manga-kobo/" target="_blank" rel="noopener noreferrer"><span class="tileIcon" aria-hidden="true">📚</span><span class="tileInfo"><strong>AI4コマ漫画工房</strong><small>5つの質問から4コマ漫画を作ろう</small><span class="smallTag">試作</span></span><span class="arrow" aria-hidden="true">›</span></a>
+<a class="tileLink" href="https://selfwilled6412-cyber.github.io/ai-4koma-manga-kobo/" target="_blank" rel="noopener noreferrer"><span class="tileIcon" aria-hidden="true">📚</span><span class="tileInfo"><strong>AI4コマ漫画工房</strong><small>5つの質問から4コマ漫画を作ろう</small></span><span class="arrow" aria-hidden="true">›</span></a>
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
-<div class="extraLink"><a href="https://selfwilled6412-cyber.github.io/ai-4koma-manga-kobo/quick.html" target="_blank" rel="noopener noreferrer">✨ かんたん完成モード　› ›</a></div>
+
 </article>
 <article class="tile" data-app-id="13" data-view="all group" data-kind="utility" data-tags="recreation group">
 <a class="tileLink" href="https://saikou-seat-concierge.selfwilled6412.chatgpt.site" target="_blank" rel="noopener noreferrer"><span class="tileIcon" aria-hidden="true">🪑</span><span class="tileInfo"><strong>席決めコンシェルジュ</strong><small>ランダムに座席を決める便利ツール</small></span><span class="arrow" aria-hidden="true">›</span></a>
@@ -155,10 +135,36 @@ footer{text-align:center;color:#7985a3;font-size:12px;padding:25px 10px;line-hei
 <button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button>
 
 </article>
+<article class="tile" data-app-id="100" data-view="all group" data-kind="game" data-tags="game group cards"><a class="tileLink" href="../saiko-party-games/?game=team21"><span class="tileIcon" aria-hidden="true">🎯🃏</span><span class="tileInfo"><strong>ぴったり21カード</strong><small>2〜6人で「21」に近づける3回戦！ 何枚引くか、いつ止めるかの駆け引きを楽しもう。</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="101" data-view="all group" data-kind="game" data-tags="game group action"><a class="tileLink" href="../saiko-party-games/?game=symbolSpeed"><span class="tileIcon" aria-hidden="true">⚡👀</span><span class="tileInfo"><strong>同じ絵スピード</strong><small>2枚のカードに同じ絵が1つだけ！ 2〜6チームの早押し対決。15問で優勝を決めよう。</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="102" data-view="all group" data-kind="game" data-tags="game group cards"><a class="tileLink" href="../saiko-party-games/?game=teamMemory"><span class="tileIcon" aria-hidden="true">🃏🌈</span><span class="tileInfo"><strong>神経衰弱・個人戦＆チーム戦</strong><small>👤 1〜6人の個人戦！ プレイヤーごとにペア数を競おう。👥 チーム戦も選べるよ。カードは12・20・30枚から選択。</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="103" data-view="all group" data-kind="game" data-tags="game group cards"><a class="tileLink" href="../saiko-party-games/?game=teamHighLow"><span class="tileIcon" aria-hidden="true">🃏⬆️⬇️</span><span class="tileInfo"><strong>みんなでハイ＆ロー</strong><small>2〜6人の予想をまとめて発表！ 15ラウンドのカード大会で最多得点を目指そう。</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="104" data-view="all group" data-kind="game" data-tags="game group party"><a class="tileLink" href="../saiko-party-games/?game=two"><span class="tileIcon" aria-hidden="true">🤔🅰️🅱️</span><span class="tileInfo"><strong>究極の二択！</strong><small>答えは1つじゃない！ 40の笑える二択でみんなの意見が真っ二つ？ 投票・集計もできるよ。</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="105" data-view="all group" data-kind="game" data-tags="game group party"><a class="tileLink" href="../saiko-party-games/?game=tsukkomi"><span class="tileIcon" aria-hidden="true">🎤😂</span><span class="tileInfo"><strong>爆笑ツッコミ選手権</strong><small>「宇宙人がWi-Fiを聞いてきた！」など40の珍事件。みんなでツッコミを考えよう！</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="106" data-view="all group" data-kind="game" data-tags="game group party"><a class="tileLink" href="../saiko-party-games/?game=bingo"><span class="tileIcon" aria-hidden="true">🎱</span><span class="tileInfo"><strong>数字ビンゴ大会</strong><small>75個の数字を重複なしで抽選。カードの印刷もできる！</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="107" data-view="all group" data-kind="game" data-tags="game group party"><a class="tileLink" href="../saiko-party-games/?game=gesture"><span class="tileIcon" aria-hidden="true">🎭</span><span class="tileInfo"><strong>ジェスチャー対決</strong><small>80種類のお題を身ぶりで表現するチームゲーム。</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="108" data-view="all group" data-kind="game" data-tags="game group party"><a class="tileLink" href="../saiko-party-games/?game=association"><span class="tileIcon" aria-hidden="true">💭</span><span class="tileInfo"><strong>ヒントで連想大会</strong><small>普通だけじゃない！爆笑40問＋カオス20問も追加。全110問を混ぜて遊べる！</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="109" data-view="all group" data-kind="game" data-tags="game group party"><a class="tileLink" href="../saiko-party-games/?game=ox"><span class="tileIcon" aria-hidden="true">⭕❌</span><span class="tileInfo"><strong>○×クイズ大会</strong><small>正解が明確な50問に、みんなで○か×で答えよう！</small><span class="smallTag">みんなで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="110" data-view="all solo" data-kind="game" data-tags="game solo action"><a class="tileLink" href="../saiko-solo-arcade/?game=rps"><span class="tileIcon" aria-hidden="true">✊✌️✋</span><span class="tileInfo"><strong>じゃんけんバトル</strong><small>サイ校キャラと10回勝負！ グー・チョキ・パーで勝利数を競おう。</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="111" data-view="all solo" data-kind="game" data-tags="game solo puzzle"><a class="tileLink" href="../saiko-solo-arcade/?game=slide"><span class="tileIcon" aria-hidden="true">🧩🔢</span><span class="tileInfo"><strong>スライドパズル</strong><small>3×3・4×4の数字をきれいに並べよう！ 必ず解ける問題を生成。</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="112" data-view="all solo" data-kind="game" data-tags="game solo action"><a class="tileLink" href="../saiko-solo-arcade/?game=reaction"><span class="tileIcon" aria-hidden="true">⚡</span><span class="tileInfo"><strong>反射神経チャレンジ</strong><small>緑に変わった瞬間にタップ！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="113" data-view="all solo" data-kind="game" data-tags="game solo action"><a class="tileLink" href="../saiko-solo-arcade/?game=mole"><span class="tileIcon" aria-hidden="true">🐹</span><span class="tileInfo"><strong>もぐらタッチ</strong><small>出てきたもぐらを素早くタップ！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="114" data-view="all solo" data-kind="game" data-tags="game solo puzzle"><a class="tileLink" href="../saiko-solo-arcade/?game=simon"><span class="tileIcon" aria-hidden="true">🌈</span><span class="tileInfo"><strong>カラー記憶ゲーム</strong><small>光る色の順番を覚えて再現！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="115" data-view="all solo" data-kind="game" data-tags="game solo puzzle"><a class="tileLink" href="../saiko-solo-arcade/?game=order"><span class="tileIcon" aria-hidden="true">🔢</span><span class="tileInfo"><strong>数字を順番に</strong><small>1から16まで順にタップ！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="116" data-view="all solo" data-kind="game" data-tags="game solo puzzle"><a class="tileLink" href="../saiko-solo-arcade/?game=math"><span class="tileIcon" aria-hidden="true">🧮</span><span class="tileInfo"><strong>計算スピード対決</strong><small>10問連続で計算に挑戦！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="117" data-view="all solo" data-kind="game" data-tags="game solo puzzle"><a class="tileLink" href="../saiko-solo-arcade/?game=odd"><span class="tileIcon" aria-hidden="true">🔍</span><span class="tileInfo"><strong>ちがいを見つけよう</strong><small>たくさんの絵文字から1つ違うものを探そう！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="118" data-view="all solo" data-kind="game" data-tags="game solo puzzle"><a class="tileLink" href="../saiko-solo-arcade/?game=word"><span class="tileIcon" aria-hidden="true">🔤</span><span class="tileInfo"><strong>ことば並べ替え</strong><small>バラバラのひらがなを正しく並べよう！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="119" data-view="all solo" data-kind="game" data-tags="game solo puzzle"><a class="tileLink" href="../saiko-solo-arcade/?game=merge"><span class="tileIcon" aria-hidden="true">🧠</span><span class="tileInfo"><strong>2048数字パズル</strong><small>同じ数字を合体して2048を目指そう！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="120" data-view="all solo" data-kind="game" data-tags="game solo cards"><a class="tileLink" href="../saiko-card-games/?game=memory"><span class="tileIcon" aria-hidden="true">🃏</span><span class="tileInfo"><strong>神経衰弱</strong><small>カードを2枚めくってペアを探そう。6・10・15ペアの3難易度！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="121" data-view="all solo" data-kind="game" data-tags="game solo cards"><a class="tileLink" href="../saiko-card-games/?game=highlow"><span class="tileIcon" aria-hidden="true">🃏</span><span class="tileInfo"><strong>ハイ＆ロー</strong><small>次のカードは大きい？ 小さい？ 連続正解記録にチャレンジ！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="122" data-view="all solo" data-kind="game" data-tags="game solo cards"><a class="tileLink" href="../saiko-card-games/?game=oldmaid"><span class="tileIcon" aria-hidden="true">🃏</span><span class="tileInfo"><strong>ババ抜き</strong><small>サイ校キャラと1対1のカード対決。最後にジョーカーを持っていたら負け！</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="123" data-view="all solo" data-kind="game" data-tags="game solo cards"><a class="tileLink" href="../saiko-card-games/?game=sevens"><span class="tileIcon" aria-hidden="true">🃏</span><span class="tileInfo"><strong>七並べ</strong><small>7を中心に数字をつなごう。サイ校キャラと交互にカードを出す戦略ゲーム。</small><span class="smallTag">ひとりで</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="124" data-view="all solo" data-kind="game" data-tags="game solo kids"><a class="tileLink" href="../saiko-kids/?game=memory"><span class="tileIcon" aria-hidden="true">🧸</span><span class="tileInfo"><strong>キッズ・絵合わせカード</strong><small>同じ絵のカードを2枚見つけよう</small><span class="smallTag">キッズ</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="125" data-view="all solo" data-kind="game" data-tags="game solo kids"><a class="tileLink" href="../saiko-kids/?game=spot"><span class="tileIcon" aria-hidden="true">🔎</span><span class="tileInfo"><strong>キッズ・ちがいさがし</strong><small>やさしい絵で違う場所を探そう</small><span class="smallTag">キッズ</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="126" data-view="all solo" data-kind="game" data-tags="game solo kids"><a class="tileLink" href="../saiko-kids/?game=puzzle"><span class="tileIcon" aria-hidden="true">💡</span><span class="tileInfo"><strong>キッズ・ひらめきクイズ</strong><small>ヒントを使って10問にチャレンジ</small><span class="smallTag">キッズ</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
+<article class="tile" data-app-id="127" data-view="all solo" data-kind="game" data-tags="game solo music"><a class="tileLink" href="../saiko-rhythm/piano-tiles.html"><span class="tileIcon" aria-hidden="true">🎹</span><span class="tileInfo"><strong>PIANO RUSH</strong><small>音楽に合わせてピアノタイルをタップ</small><span class="smallTag">音楽</span></span><span class="arrow" aria-hidden="true">›</span></a><button class="favToggle" aria-label="お気に入りに登録" title="お気に入りに登録" type="button" aria-pressed="false">☆</button></article>
 </div></section>
-<section class="devArea" aria-label="試作・旧版"><details id="otherApps"><summary>🛠️ 試作・旧バージョン・準備中のアプリ（3件）</summary><p>こちらは通常のおすすめとは分けているよ。YouTube実験版はURLだけで自動採譜できないため、完成した音ゲーと区別しています。</p><a class="labItem" href="../saiko-spot-difference/"><span>🔎🖼️ <strong>間違い探し・旧イラスト版</strong><small>旧版のシンプルな風景イラスト全90問</small></span><span>開く ›</span></a>
-<a class="labItem" href="../saiko-rhythm/youtube.html"><span>📺🎵 <strong>BEAT RUSH × YouTube 譜面付き動画の実験版</strong><small>YouTubeからの自動採譜は未対応</small></span><span>開く ›</span></a>
-<div class="labItem muted"><span>🖼️ <strong>AI画像伝言ゲーム</strong><small>現在準備中・公開先は未確定</small></span><span>準備中</span></div></details></section>
+<section class="devArea" aria-label="ゲーム集で選ぶ"><h2>ゲーム集で選ぶ</h2><a class="labItem" href="../saiko-party-games/">📺 みんなでゲーム大会　›</a><a class="labItem" href="../saiko-solo-arcade/">🕹️ ミニゲームセンター　›</a><a class="labItem" href="../saiko-card-games/">🃏 カードゲーム　›</a><a class="labItem" href="../saiko-kids/">🚀 キッズゲームひろば　›</a></section>
 <footer>サイ校プロジェクト岩国<br>つくって、遊んで、ひらめこう。</footer>
 </main><script>
 (()=>{'use strict';
@@ -170,7 +176,7 @@ const input=document.getElementById('appSearch');
 const counter=document.getElementById('appCount');
 const empty=document.getElementById('emptyResults');
 const STORAGE='saiko-apps-favorites-v1';
-let view='game',players='all',favorites=[];
+let view='game',players='all',favorites=[];let genre='all';const genreButtons=Array.from(document.querySelectorAll('[data-genre]'));
 try{let list=JSON.parse(localStorage.getItem(STORAGE)||'[]');if(Array.isArray(list))favorites=list.filter(v=>typeof v==='string').slice(0,150)}catch(e){}
 const favoritesFor=card=>card.querySelector('.tileLink').href;
 const save=()=>{try{localStorage.setItem(STORAGE,JSON.stringify(favorites))}catch(e){}};
@@ -182,7 +188,7 @@ function refresh(){
   const matchesView=view==='favorites'?starred:view==='all'||card.dataset.kind===view;
   const matchesPlayers=view!=='game'||players==='all'||card.dataset.view.split(' ').includes(players);
   const matchesText=!query||card.textContent.normalize('NFKC').toLocaleLowerCase('ja').includes(query);
-  const show=matchesView&&matchesPlayers&&matchesText;
+  const matchesGenre=view!=='game'||genre==='all'||card.dataset.tags.split(' ').includes(genre);const show=matchesView&&matchesPlayers&&matchesText&&matchesGenre;
   card.hidden=!show;
   if(show)visible++;
   card.style.order=starred?'-1':'0';
@@ -193,7 +199,7 @@ function refresh(){
  }
  counter.textContent=visible+' 件';
  empty.hidden=visible!==0;
- playOptions.hidden=view!=='game';
+ playOptions.hidden=view!=='game';document.getElementById('gameGenres').hidden=view!=='game';
 }
 tabs.forEach(tab=>tab.addEventListener('click',()=>{
  view=tab.dataset.viewFilter;
@@ -210,7 +216,7 @@ cards.forEach(card=>card.querySelector('.favToggle').addEventListener('click',()
  favorites=favorites.includes(key)?favorites.filter(v=>v!==key):[...favorites,key];
  save();refresh();
 }));
-input.addEventListener('input',refresh);refresh();
+genreButtons.forEach(button=>button.addEventListener('click',()=>{genre=button.dataset.genre;genreButtons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));refresh()}));input.addEventListener('input',refresh);refresh();
 window.SaikoHub={getView:()=>view,getPlayers:()=>players,getVisibleCount:()=>cards.filter(c=>!c.hidden).length};
 })();
 </script></body></html>

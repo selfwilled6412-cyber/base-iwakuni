@@ -197,4 +197,7 @@ $('gameBody').addEventListener('click',event=>{
  if(game.idx>=game.questions.length)finish(game.questions.length+'問すべてクリア！ ひらめき名人だね！');else{renderPuzzle();$('hintBtn').disabled=false;}
 });
 function hintPuzzle(){const q=game.questions[game.idx];hint('💡 ヒント：'+q.hint);}
+
+const requestedGame=window.location?.search?new URLSearchParams(window.location.search).get("game"):null;
+if(["memory", "spot", "puzzle"].includes(requestedGame))start(requestedGame);
 })();
