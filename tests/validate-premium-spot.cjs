@@ -6,8 +6,8 @@ const html=fs.readFileSync(path.join(base,'index.html'),'utf8');
 const dataMatch=html.match(/<script id="puzzledata" type="application\/json">([\s\S]*?)<\/script>/);
 assert(dataMatch,'Embedded puzzle configuration is missing');
 const data=JSON.parse(dataMatch[1]);
-assert.equal(data.length,7,'Only verified premium images may be playable; never claim 90');
-assert.deepEqual(data.map(p=>p.answers.length),[5,7,5,5,5,10,7]);
+assert.equal(data.length,8,'Only verified premium images may be playable; never claim 90');
+assert.deepEqual(data.map(p=>p.answers.length),[5,7,5,5,5,10,7,10]);
 assert(!/未制作|体験版|試作|承認済み|本番は/.test(html),'Public screen must contain player-facing language only');
 for(const puzzle of data){
  assert(puzzle.id&&puzzle.name);
@@ -94,7 +94,7 @@ for(let i=0;i<data.length;i++){
 }
 node('back').onclick();
 node('level-hard').onclick();
-assert.equal(node('level-status').textContent,'上級・1問');
+assert.equal(node('level-status').textContent,'上級・2問');
 assert(node('cards').innerHTML.includes('春の温室ティータイム'));
 assert(!node('cards').innerHTML.includes('湖畔のピクニック'));
 node('level-normal').onclick();
@@ -106,5 +106,5 @@ assert.equal(node('game').hidden,true);
 node('switch').onclick();
 assert.equal(game.getState().index,0,'Next wraps to first puzzle');
 assert(storage.has('saiko-premium-spot-preview-v1'),'Local progress must persist');
-console.log('PASS: 7 premium paired original image scenes, 44 exact tappable differences, and WebP files');
+console.log('PASS: 8 premium paired original image scenes, 54 exact tappable differences, and WebP files');
 console.log('PASS: correct/incorrect taps, both sides, no double-score, hints, completion and saved record');
