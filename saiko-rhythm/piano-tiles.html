@@ -39,6 +39,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 #stage{position:relative;overflow:hidden;background:linear-gradient(180deg,#100e39,#26166e 55%,#050e32);border:2px solid #a9beff;border-radius:16px;box-shadow:0 0 30px #946cff38;flex:1;min-height:380px;touch-action:none;user-select:none}
 #tilesCanvas{display:block;width:100%;height:100%;touch-action:none}
 .progress{position:absolute;top:0;left:0;height:4px;width:0;background:linear-gradient(90deg,#84ffe2,#ffea9b);box-shadow:0 0 12px #8effda;pointer-events:none}
+.countdown{position:absolute;z-index:5;left:50%;top:43%;transform:translate(-50%,-50%);pointer-events:none;font-size:clamp(68px,21vw,132px);font-weight:1000;line-height:1;color:#fff;text-shadow:0 0 15px #6fffe7,0 0 44px #a44dff,0 5px 4px #03051d;animation:countPop .26s ease-out both}@keyframes countPop{from{opacity:.5;transform:translate(-50%,-50%) scale(1.35)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 .hitText{position:absolute;top:45%;left:0;right:0;text-align:center;font-size:36px;font-weight:1000;color:#ffe6a2;text-shadow:0 0 20px #e948ff;pointer-events:none;opacity:0}
 .hitText.show{animation:flash .37s both}@keyframes flash{0%{opacity:0;transform:translateY(12px) scale(.8)}25%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:translateY(-15px)}}
 .gameTop{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -51,17 +52,67 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 @media(max-height:590px){.top{height:46px}#stage{height:58vh;min-height:200px}.scorebar .stat b{font-size:17px}}
 @media(min-width:800px){#stage{height:66vh;min-height:550px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important}}
+
+/* v0.6: immersive four-lane playfield and thumb-friendly mobile layout */
+body:has(#game:not([hidden])){background:#050611}
+body:has(#game:not([hidden])) .top{height:48px;background:#090b1b;border-bottom:1px solid #ffffff16}
+body:has(#game:not([hidden])) .shell{max-width:560px;padding:5px 6px calc(5px + env(safe-area-inset-bottom))}
+#game{gap:5px}#game .gameTop{min-height:37px}#game .scorebar{gap:4px}
+#game .stat{background:#0c1025;border-color:#343e66;border-radius:7px;padding:3px}
+#game .stat b{font-size:clamp(18px,5vw,27px);color:#fff}
+#stage{border:1px solid #505b8a;border-radius:5px;background:#090d1b;box-shadow:0 0 28px #446eff24;height:calc(100dvh - 205px);min-height:260px;max-height:none}
+#game .hint{margin:1px 0;font-size:10px}
+#game .songLabel{font-size:12px}
+@media(max-height:650px){#stage{height:calc(100dvh - 175px);min-height:190px}#game .hint{display:none}}
+@media(min-width:800px){#stage{height:min(76dvh,820px)}}
+/* v0.7: Galaxy viewport-fit and notch-safe HUD; game canvas uses remaining viewport height. */
+body:has(#game:not([hidden])){min-height:100dvh;display:flex;flex-direction:column}
+body:has(#game:not([hidden])) .top{flex:0 0 auto;min-width:0;gap:8px;padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+body:has(#game:not([hidden])) .logo{min-width:0;flex:1 1 auto;font-size:clamp(13px,3.6vw,21px);letter-spacing:-.045em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body:has(#game:not([hidden])) .logo small{font-size:clamp(8px,2vw,11px);margin-left:4px}
+body:has(#game:not([hidden])) .mode{flex:0 0 auto;font-size:10px;padding:5px 7px}
+body:has(#game:not([hidden])) .shell{flex:1 1 auto;width:100%;min-height:0;display:flex;flex-direction:column;padding-bottom:max(6px,env(safe-area-inset-bottom))}
+#game:not([hidden]){flex:1 1 auto;min-height:0}
+#game:not([hidden]) #stage{flex:1 1 auto;height:auto;min-height:180px;max-height:none}
+#game:not([hidden]) .gameTop{flex:0 0 auto}
+#game:not([hidden]) .songLabel{flex:1 1 auto}
+#game:not([hidden]) .gameActions{flex:0 0 auto}
+#game:not([hidden]) .scorebar{flex:0 0 auto}
+#game:not([hidden]) .hint{flex:0 0 auto}
+@media(max-width:370px){body:has(#game:not([hidden])) .logo small{display:none}#game .gameActions .btn{padding:8px 9px}}
 </style></head><body>
 <header class="top"><div class="logo">♫ SAIKO <b>BEAT</b><small>PIANO RUSH</small></div><span class="mode">🎹 4レーン</span></header>
 <main class="shell">
 <section id="menu">
  <div class="intro"><span class="eyebrow">PLAY THE BEAT</span><h1>音に合わせて<br>タイルを叩け！</h1><p>音楽を解析して、タイルが降ってくる。<br>画面下に来たらタップ！</p></div>
  <div class="heroCard"><span class="mode">すぐ遊べる</span><h2>🎵 オリジナル楽曲で遊ぶ</h2><p>音の波形を実際に解析して譜面を作る、オフライン体験版。</p><button id="demo" class="btn primary" type="button">▶ すぐにプレイ！</button></div>
+ <div class="section" id="songLibrary" aria-label="楽曲ライブラリ">
+  <h3>🎧 曲を選んでプレイ</h3>
+  <input id="songSearch" type="search" placeholder="曲名・ジャンルを検索" aria-label="楽曲を検索" style="width:100%;padding:13px;border-radius:12px;border:1px solid #6574ac;background:#0b1230;color:white">
+  <div id="songResults" style="display:grid;gap:9px;margin-top:12px">
+   <button class="btn secondary" type="button" data-song-action="demo" data-search="saiko original オリジナル エレクトロ">🎹 SAIKO ORIGINAL　<small>オリジナル・解析済み</small></button>
+   <button class="btn secondary" type="button" data-song-action="local" data-search="マイミュージック mp3 m4a wav ローカル">📁 マイミュージック　<small>端末の曲から譜面生成</small></button>
+  </div>
+  <p id="songEmpty" class="hint" hidden>一致する曲はありません。追加の楽曲は準備中です。</p>
+  <p class="hint">現在の収録曲はオリジナル1曲。人気曲は音源の利用許諾を得てから追加します。</p>
+ </div>
  <div class="section">
   <h3>難易度を選ぶ</h3>
   <div class="levels" role="group" aria-label="難易度"><button type="button" data-level="easy" aria-pressed="true">🌱 初級</button><button type="button" data-level="normal" aria-pressed="false">⚡ 中級</button><button type="button" data-level="hard" aria-pressed="false">🔥 上級</button></div>
  </div>
+ <div class="section" id="localMode"><h3>🎼 好きな音楽ファイルで遊ぶ</h3>
+  <p class="hint" style="text-align:left">利用許可のあるMP3・M4A・WAVなどを選んでね。音声を解析して、同じ音源を再生します。端末外には送信しません。</p>
+  <input id="localAudioFile" type="file" accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac" hidden aria-label="自分の音楽ファイル">
+  <button id="localAudio" class="btn secondary" type="button">📁 音楽ファイルを選んで遊ぶ</button>
+ </div>
+ <div class="section"><h3>🎯 タップ判定のタイミング調整</h3>
+  <label for="timingAdjust" class="hint">音が聞こえるタイミングに合わせて調整 <strong id="timingValue">0 ms</strong></label>
+  <input id="timingAdjust" type="range" min="-200" max="200" step="10" value="0" style="width:100%;accent-color:#6effe4" aria-label="タップ判定補正ミリ秒">
+  <p class="hint">音が遅れて聞こえる端末では＋方向に調整。タップ判定だけ補正し、音楽とタイルの描画時刻は変更しません。</p>
+ </div>
  <div class="section" id="youtubeMode"><h3>🔬 YouTube音声解析（Android実験版）</h3>
+  <p class="hint">曲を探す場合はYouTubeを開き、動画の「共有」からリンクをコピーして下に貼り付けてください。</p>
+  <a class="btn secondary" href="https://www.youtube.com/" rel="noopener noreferrer" style="display:block;text-align:center;text-decoration:none;margin:10px 0">▶ YouTubeを開いて曲を探す ↗</a>
   <div class="field"><input id="videoUrl" type="url" inputmode="url" aria-label="YouTube URL" placeholder="YouTubeのURLを貼る"><button id="load" class="btn small secondary" type="button">解析</button></div>
   <p class="hint">映像は表示しません。YouTubeによるアクセス制限や利用条件の問題があり、曲によって動作しません。解析に失敗したらオリジナル楽曲で遊べます。</p>
  </div>
@@ -70,8 +121,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 <section id="game" hidden aria-label="ピアノタイルゲーム">
  <div class="gameTop"><div class="songLabel" id="songLabel">♪ SAIKO MUSIC</div><div class="gameActions"><button id="pause" class="btn flat small" type="button">⏸ 一時停止</button><button id="quit" class="btn flat small" type="button">✕ 戻る</button></div></div>
  <div class="scorebar"><div class="stat"><small>SCORE</small><b id="score">0</b></div><div class="stat"><small>COMBO</small><b id="combo">0</b></div><div class="stat"><small>PERFECT</small><b id="perfect">0</b></div></div>
- <div id="stage"><canvas id="tilesCanvas" aria-label="音楽に合わせて下へ落ちる4列のタイルをタップ" role="application"></canvas><div class="progress" id="progress"></div><div class="hitText" id="hitText"></div></div>
- <p class="hint">4列の光るタイルが下のラインに来た瞬間にタップ！</p>
+ <div id="stage"><canvas id="tilesCanvas" aria-label="音楽に合わせて下へ落ちる4列のタイルをタップ" role="application"></canvas><div class="progress" id="progress"></div><div class="countdown" id="countdown" aria-live="off" hidden>3</div><div class="hitText" id="hitText"></div></div>
+ <p class="hint">4列の光るタイルをタップ！長いタイルは最後まで押しっぱなし。</p>
  <div id="result" hidden><strong>🎉 RESULT</strong><p id="finalScores"></p><button type="button" id="again" class="btn primary">もう一度遊ぶ</button></div>
 </section>
 </main>

@@ -1,0 +1,74 @@
+name: SAIKO Android Emulator UI Smoke
+on:
+  push:
+    branches: [feature/saiko-beat-native-android-20261030]
+    paths:
+      - '.github/workflows/saiko-android-emulator.yml'
+      - 'saiko-android/**'
+      - 'saiko-rhythm/piano*'
+      - 'saiko-rhythm/beat-analyzer.js'
+      - 'tests/saiko-emulator-smoke.sh'
+      - 'tests/make-saiko-wav.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: saiko-piano-emulator-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  launch-on-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Generate deterministic original PCM WAV fixtures (16/24/float)
+        run: python3 tests/make-saiko-wav.py saiko-android/app/src/main/assets/qa
+      - name: Encode original WAV as AAC/M4A and MP3 for native decoder regression
+        run: |
+          # ubuntu-latest no longer guarantees ffmpeg is preinstalled.
+          # Install it explicitly so compressed-codec emulator QA actually runs.
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq ffmpeg
+          fi
+          ffmpeg -version | head -n 1
+          ffmpeg -hide_banner -loglevel error -y -i saiko-android/app/src/main/assets/qa/fixture.wav -c:a aac -b:a 128k saiko-android/app/src/main/assets/qa/fixture-aac.m4a
+          ffmpeg -hide_banner -loglevel error -y -i saiko-android/app/src/main/assets/qa/fixture.wav -c:a libmp3lame -b:a 160k saiko-android/app/src/main/assets/qa/fixture-mp3.mp3
+      - name: Prepare packaged game and compile APK
+        run: |
+          mkdir -p saiko-android/app/src/main/assets
+          cp saiko-rhythm/youtube.html saiko-rhythm/youtube.js saiko-rhythm/youtube-core.js saiko-rhythm/studio-core.js saiko-rhythm/beat-analyzer.js saiko-android/app/src/main/assets/
+          cp saiko-rhythm/piano-tiles.html saiko-rhythm/piano-tiles.js saiko-rhythm/piano-core.js saiko-android/app/src/main/assets/
+          cd saiko-android
+          gradle :app:assembleDebug --no-daemon
+      - name: Enable KVM if available
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_4
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tests/saiko-emulator-smoke.sh
+      - name: Collect screenshot and crash logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: saiko-android-emulator-proof
+          path: |
+            saiko-android/emulator-screen.png
+            saiko-android/emulator-playing.png
+            saiko-android/emulator-playing.xml
+            saiko-android/emulator-errors.log
+            saiko-android/emulator-native-audio.log
+          if-no-files-found: warn

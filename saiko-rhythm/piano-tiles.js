@@ -6,11 +6,24 @@ const $=id=>document.getElementById(id), core=window.SaikoPianoCore, analyzer=wi
 if(!core||!analyzer){$('status').textContent='音声解析エンジンを読み込めませんでした';return}
 let level='easy',playing=false,paused=false,game=null,track=null,source=null,ctx=null,audioBuffer=null;
 let startClock=0,offset=0,raf=0,chartDuration=0,sourceMode='demo',nativePending=false,lastRender=0;
+let timingMs=0,activeTrackKey='';
+let hitPulse=[0,0,0,0],hitStreak=0;
+const PRE_ROLL_MS=2200;
+let musicStarted=false,countdownEnd=0,countdownRemaining=0;
+try{timingMs=Math.max(-200,Math.min(200,Number(localStorage.getItem('saiko-piano-timing-ms')||0)||0))}catch(e){}
+$('timingAdjust').value=String(timingMs);$('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
+$('timingAdjust').addEventListener('input',event=>{
+ timingMs=Number(event.target.value)||0;
+ $('timingValue').textContent=(timingMs>0?'+':'')+timingMs+' ms';
+ try{localStorage.setItem('saiko-piano-timing-ms',String(timingMs))}catch(e){}
+});
 const canvas=$('tilesCanvas'),stage=$('stage'),g=canvas.getContext('2d',{alpha:false});
 const native=!!window.SaikoNativeAutoChart;
-$('youtubeMode').hidden=!native;
+const youtubeDiagnostic=native&&typeof window.SaikoNativeAutoChart.youtubeDiagnosticEnabled==='function'&&
+  window.SaikoNativeAutoChart.youtubeDiagnosticEnabled();
+$('youtubeMode').hidden=!youtubeDiagnostic;
 const colors=['#f6a5ff','#64f0ee','#fbe795','#95bbff'];
-const now=()=>sourceMode==='native'?(native?Number(window.SaikoNativeAutoChart.currentSeconds())||0:0):
+const now=()=>!musicStarted?-Math.max(0,(paused?countdownRemaining:countdownEnd-performance.now())/1000):sourceMode==='native'?(native?Number(window.SaikoNativeAutoChart.currentSeconds())||0:0):
   playing&&ctx?Math.max(0,(paused?offset:ctx.currentTime-startClock+offset)):offset;
 function status(message){$('status').textContent=message}
 function updateStats(){
@@ -46,6 +59,8 @@ function render(time){
   g.beginPath();g.arc(x,y,Math.max(2,w*.008),0,Math.PI*2);g.fill();
  }
  for(let lane=0;lane<4;lane++){
+  const pulse=Math.max(0,1-(performance.now()-hitPulse[lane])/180);
+  if(pulse){g.fillStyle=`rgba(130,255,238,${(pulse*.22).toFixed(3)})`;g.fillRect(lane*s,0,s,h);}
   g.fillStyle=lane%2?'#ffffff09':'#03071c28';g.fillRect(lane*s,0,s,h);
   if(lane){g.fillStyle='#b4c8fc55';g.fillRect(lane*s-1.1,0,2.2,h)}
  }
@@ -53,15 +68,26 @@ function render(time){
  for(const n of noteList){
   if(n.judged)continue;
   const y=target-(n.t-time)/lead*(target+tileHeight*.3)-tileHeight*.5;
-  if(y>h+80||y< -tileHeight-80)continue;
+  const tailY=n.hold>0?target-(n.t+n.hold-time)/lead*(target+tileHeight*.3)-tileHeight*.5:y;
+  if((y>h+80&&tailY>h+80)||(y< -tileHeight-80&&tailY< -tileHeight-80))continue;
   const x=n.lane*s+5*gScale(),ww=s-10*gScale();
+  if(n.hold>0){
+   const bottom=n.holding?target+tileHeight*.5:y+tileHeight;
+   const top=Math.max(-tileHeight,tailY);
+   if(bottom>top){
+    const body=g.createLinearGradient(x,top,x+ww,top);
+    body.addColorStop(0,'#6352d0');body.addColorStop(.5,colors[n.lane]);body.addColorStop(1,'#3a2877');
+    rounded(x+7*gScale(),top,ww-14*gScale(),bottom-top,8*gScale(),body,colors[n.lane]);
+   }
+  }
+  const headY=n.holding?target-tileHeight*.5:y;
   g.shadowBlur=16*gScale();g.shadowColor=colors[n.lane];
-  rounded(x,y,ww,tileHeight,13*gScale(),'#050716',colors[n.lane]);g.shadowBlur=0;
-  rounded(x+5*gScale(),y+5*gScale(),ww-10*gScale(),Math.max(9,tileHeight*.12),4*gScale(),colors[n.lane]);
-  const shine=g.createLinearGradient(x,y,x+ww,y);
+  rounded(x,headY,ww,tileHeight,13*gScale(),'#050716',colors[n.lane]);g.shadowBlur=0;
+  rounded(x+5*gScale(),headY+5*gScale(),ww-10*gScale(),Math.max(9,tileHeight*.12),4*gScale(),colors[n.lane]);
+  const shine=g.createLinearGradient(x,headY,x+ww,headY);
   shine.addColorStop(0,'#ffffff11');shine.addColorStop(.5,'#ffffff3e');shine.addColorStop(1,'#ffffff0c');
-  rounded(x+6*gScale(),y+17*gScale(),ww-12*gScale(),tileHeight*.37,8*gScale(),shine);
-  g.fillStyle='#ffffffb0';g.beginPath();g.arc(x+ww*.5,y+tileHeight*.75,Math.max(3,4*gScale()),0,Math.PI*2);g.fill();
+  rounded(x+6*gScale(),headY+17*gScale(),ww-12*gScale(),tileHeight*.37,8*gScale(),shine);
+  g.fillStyle='#ffffffb0';g.beginPath();g.arc(x+ww*.5,headY+tileHeight*.75,Math.max(3,4*gScale()),0,Math.PI*2);g.fill();
  }
  g.shadowColor='#fff9c0';g.shadowBlur=16*gScale();g.fillStyle='#fff3c1';g.fillRect(0,target+tileHeight*.5,w,4*gScale());g.shadowBlur=0;
  // Press region ends at the same target line used by the input engine.
@@ -70,32 +96,62 @@ function render(time){
 }
 function animate(){
  if(!playing)return;
- const time=now();
  if(!paused){
+  if(!musicStarted){
+   const remaining=countdownEnd-performance.now();
+   if(remaining<=0){
+    try{startAudio(0);musicStarted=true;countdownRemaining=0;}
+    catch(e){cleanup();$('game').hidden=true;$('menu').hidden=false;status('音声が再生できません: '+e.message);return;}
+    $('countdown').textContent='GO!';
+   }else{
+    const digit=String(Math.max(1,Math.ceil(remaining/1000)));
+    if($('countdown').textContent!==digit){$('countdown').textContent=digit;$('countdown').style.animation='none';void $('countdown').offsetWidth;$('countdown').style.animation='';}
+   }
+  }else if(performance.now()-countdownEnd>400){$('countdown').hidden=true;}
+  const time=now();
   game.tick(time);updateStats();render(time);
-  if(time>chartDuration+.45){finish();return;}
- }else if(!lastRender){render(time);}
- lastRender=time;
+  if(time>chartDuration+.45||(sourceMode==='native'&&native&&window.SaikoNativeAutoChart.isMusicFinished())){finish();return;}
+ }else if(!lastRender){render(now());}
+ lastRender=now();
  raf=requestAnimationFrame(animate);
 }
 function showHit(text){
  const el=$('hitText');el.textContent=text;el.classList.remove('show');void el.offsetWidth;el.classList.add('show');
 }
-function tap(lane){
+function tap(lane,pointerId=null){
+ if(!playing||paused||!game||!musicStarted)return;
+ const result=game.press(lane,now()-timingMs/1000,pointerId);
+ if(result){hitPulse[lane]=performance.now();hitStreak++;showHit(result.result==='hold'?'HOLD!':result.result==='perfect'?'PERFECT!':'GOOD!');}
+ else {hitStreak=0;showHit('KEEP GOING');}
+ updateStats();
+}
+function release(pointerId,cancel=false){
  if(!playing||paused||!game)return;
- const result=game.tap(lane,now());
- if(result)showHit(result.result==='perfect'?'PERFECT!':'GOOD!');
- else showHit('KEEP GOING');
+ const result=game.release(pointerId,now()-timingMs/1000,cancel);
+ if(result)showHit(result.result==='miss'?'TOO SOON!':'GREAT HOLD!');
  updateStats();
 }
 canvas.addEventListener('pointerdown',event=>{
  event.preventDefault();
  const r=canvas.getBoundingClientRect();
- tap(Math.max(0,Math.min(3,Math.floor((event.clientX-r.left)/r.width*4))));
+ if(event.pointerId!==undefined&&canvas.setPointerCapture)try{canvas.setPointerCapture(event.pointerId)}catch(e){}
+ tap(Math.max(0,Math.min(3,Math.floor((event.clientX-r.left)/r.width*4))),event.pointerId);
 },{passive:false});
+canvas.addEventListener('pointerup',event=>{event.preventDefault();release(event.pointerId)},{passive:false});
+canvas.addEventListener('pointercancel',event=>{event.preventDefault();release(event.pointerId,true)},{passive:false});
+canvas.addEventListener('lostpointercapture',event=>{
+ // Android can revoke touch capture during gestures, system overlays or interruptions.
+ // Never leave a sustained note earning points after its finger is lost.
+ release(event.pointerId,true);
+});
+
 document.addEventListener('keydown',event=>{
  const index=['d','f','j','k'].indexOf(event.key.toLowerCase());
- if(index>=0){event.preventDefault();tap(index)}
+ if(index>=0){event.preventDefault();if(!event.repeat)tap(index,'key-'+index)}
+});
+document.addEventListener('keyup',event=>{
+ const index=['d','f','j','k'].indexOf(event.key.toLowerCase());
+ if(index>=0){event.preventDefault();release('key-'+index)}
 });
 function stopAudio(){
  if(source){try{source.stop();source.disconnect()}catch(e){}source=null}
@@ -109,27 +165,39 @@ function startAudio(from=0){
 }
 function cleanup(){
  cancelAnimationFrame(raf);playing=false;paused=false;stopAudio();game=null;
+ musicStarted=false;countdownRemaining=0;$('countdown').hidden=true;
 }
 function begin(rawNotes,duration,title,mode,buffer){
  cleanup(); sourceMode=mode;audioBuffer=buffer||null;
  game=core.engine(rawNotes);chartDuration=Math.max(duration,rawNotes[rawNotes.length-1].t+.7);
+ // Best scores are per track and difficulty, never shared between unrelated songs.
+ activeTrackKey=mode+'|'+title;
  $('songLabel').textContent=title;
  $('menu').hidden=true;$('game').hidden=false;$('result').hidden=true;
  $('pause').textContent='⏸ 一時停止';
  $('stage').scrollIntoView({block:'nearest'});
- playing=true;paused=false;lastRender=0;
- try{startAudio(0)}catch(e){cleanup();$('game').hidden=true;$('menu').hidden=false;status('音声が再生できません: '+e.message);return}
- updateStats();raf=requestAnimationFrame(animate);
+ playing=true;paused=false;lastRender=0;hitStreak=0;hitPulse=[0,0,0,0];
+ musicStarted=false;countdownRemaining=PRE_ROLL_MS;countdownEnd=performance.now()+PRE_ROLL_MS;
+ $('countdown').textContent=String(Math.ceil(PRE_ROLL_MS/1000));$('countdown').hidden=false;
+ updateStats();render(now());raf=requestAnimationFrame(animate);
 }
 function finish(){
  if(!game||!playing)return;
  const completed=game.state();game.end();const s=game.state();
  cleanup();$('result').hidden=false;$('pause').disabled=true;
- $('finalScores').textContent='SCORE '+s.score.toLocaleString('ja-JP')+' ／ PERFECT '+s.perfect+' ／ GOOD '+s.good+' ／ MISS '+s.miss+' ／ 最大COMBO '+s.best;
+ const accuracy=s.total?Math.round((s.perfect+s.good*.5)/s.total*1000)/10:0;
+ const grade=accuracy>=95?'S':accuracy>=85?'A':accuracy>=70?'B':accuracy>=50?'C':'D';
+ let bestScore=s.score,recordText='';
  try{
-  const key='saiko-piano-best-'+level, best=Number(localStorage.getItem(key)||0);
-  if(s.score>best)localStorage.setItem(key,String(s.score));
+  // FNV-1a hash keeps storage keys short even for long imported filenames.
+  let hash=2166136261;
+  for(let i=0;i<activeTrackKey.length;i++){hash^=activeTrackKey.charCodeAt(i);hash=Math.imul(hash,16777619)}
+  const key='saiko-piano-best-v2-'+level+'-'+(hash>>>0).toString(16);
+  const previous=Math.max(0,Number(localStorage.getItem(key))||0);
+  bestScore=Math.max(previous,s.score);
+  if(s.score>previous){localStorage.setItem(key,String(s.score));recordText=' 🏆 NEW BEST!'}
  }catch(e){}
+ $('finalScores').textContent='RANK '+grade+' ／ 精度 '+accuracy.toFixed(1)+'% ／ SCORE '+s.score.toLocaleString('ja-JP')+' ／ BEST '+bestScore.toLocaleString('ja-JP')+recordText+' ／ PERFECT '+s.perfect+' ／ GOOD '+s.good+' ／ MISS '+s.miss+' ／ 最大COMBO '+s.best;
  $('result').scrollIntoView({block:'nearest'});
 }
 function chooseDifficulty(value){
@@ -143,22 +211,45 @@ function demoWaveform(){
  // no hidden YouTube player, no downloaded audio and no prewritten beatmap.
  const sr=22050,duration=34,buffer=ctx.createBuffer(1,sr*duration,sr),wave=buffer.getChannelData(0);
  const scale=[0,2,4,7,9,12,14,16,19,21,24],melody=[0,4,7,2,5,9,7,4,2,5,7,10,9,7,4,2];
- function note(start,freq,length,volume){
+ function note(start,freq,length,volume,decayRate=5.8){
   const begin=Math.floor(start*sr),end=Math.min(wave.length,begin+Math.floor(length*sr));
   for(let i=begin;i<end;i++){
    const dt=(i-begin)/sr;
-   const attack=1-Math.exp(-dt*180),decay=Math.exp(-dt*5.8);
+   const attack=1-Math.exp(-dt*180),decay=Math.exp(-dt*decayRate);
    wave[i]+=volume*attack*decay*(Math.sin(2*Math.PI*freq*dt)+.28*Math.sin(2*Math.PI*freq*2*dt)+.12*Math.sin(2*Math.PI*freq*3*dt));
+  }
+ }
+ // Original kick/snare/hat synthesis; no external samples or licensed tracks.
+ function drum(start,type){
+  const begin=Math.floor(start*sr);
+  const length=type==='kick'?.29:type==='snare'?.19:.07;
+  const end=Math.min(wave.length,begin+Math.floor(length*sr));
+  for(let i=begin;i<end;i++){
+   const dt=(i-begin)/sr;
+   const noise=((Math.sin(i*12.9898+type.length*78.233)*43758.5453)%1)*2-1;
+   if(type==='kick'){
+    const phase=2*Math.PI*(85*dt-105*dt*dt);
+    wave[i]+=.22*Math.exp(-dt*19)*Math.sin(phase);
+   }else if(type==='snare'){
+    wave[i]+=.082*Math.exp(-dt*24)*(noise*.85+Math.sin(2*Math.PI*180*dt)*.15);
+   }else{
+    wave[i]+=.045*Math.exp(-dt*54)*noise;
+   }
   }
  }
  const beat=.5357;
  for(let i=0;i<112;i++){
   const t=1.3+i*beat*.5;
-  const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0);
+  if([12,13,14].includes(i%16))continue; // Quiet gap after real sustained note.
+  if(i%2===0)drum(t,'hat');
+  if(i%8===0||i%8===6)drum(t,'kick');
+  if(i%8===4)drum(t,'snare');
+  const noteNo=melody[i%melody.length]+(Math.floor(i/16)%2?2:0)+(i>=56?5:0);
   const hz=220*Math.pow(2,noteNo/12);
-  note(t,hz,.41,.34);
+  const sustained=i%16===11;
+  note(t,hz,sustained?1.05:.41,.34,sustained?1.05:5.8);
   if(i%4===0)note(t,110*Math.pow(2,(Math.floor(i/16)%4)*2/12),.70,.19);
-  if(i%8===4)note(t,155,.16,.18);
+  if(i%16===0)note(t,164.81,.65,.14,2.7);
  }
  // Hard limiter avoids browser distortion and preserves transient emphasis.
  let peak=0;for(let i=0;i<wave.length;i++)peak=Math.max(peak,Math.abs(wave[i]));
@@ -175,7 +266,8 @@ async function startDemo(){
   if(!ctx)ctx=new AC();if(ctx.state==='suspended')await ctx.resume();
   const buffer=demoWaveform();
   const times=analyzer.extractOnsets(buffer,{level});
-  const notes=core.chartFromOnsets(times,level);
+  const rawOnsets=level==='easy'?analyzer.extractOnsets(buffer,{level:'normal'}):times;
+  const notes=core.addHoldsFromWaveform(buffer,core.chartFromOnsets(times,level),rawOnsets);
   if(notes.length<8)throw Error('この音源の解析結果が少なすぎます');
   status('✅ 音声から'+notes.length+'個のタイルを検出');
   begin(notes,buffer.duration,'♫ SAIKO ORIGINAL MUSIC','demo',buffer);
@@ -183,6 +275,68 @@ async function startDemo(){
  finally{$('demo').disabled=false}
 }
 $('demo').addEventListener('click',startDemo);
+const songSearch=$('songSearch'),songButtons=Array.from(document.querySelectorAll('[data-song-action]'));
+songSearch.addEventListener('input',()=>{
+ const query=songSearch.value.trim().toLocaleLowerCase('ja-JP');
+ let visible=0;
+ for(const button of songButtons){
+  const match=(button.dataset.search+' '+button.textContent).toLocaleLowerCase('ja-JP').includes(query);
+  button.hidden=!match;
+  if(match)visible++;
+ }
+ $('songEmpty').hidden=visible!==0;
+});
+songButtons.forEach(button=>button.addEventListener('click',()=>{
+ if(button.dataset.songAction==='demo')startDemo();
+ else if(button.dataset.songAction==='local')$('localAudio').click();
+}));
+
+const localInput=$('localAudioFile'),localButton=$('localAudio');
+function localReady(){nativePending=false;localButton.disabled=false}
+localButton.addEventListener('click',()=>{
+ if(nativePending){status('別の曲を解析しています');return}
+ if(native){
+  nativePending=true;localButton.disabled=true;
+  status('📁 スマホ内の音楽ファイルを選択してね');
+  try{window.SaikoNativeAutoChart.chooseLocalAudio(level)}
+  catch(e){window.SaikoNativeLocalError('ファイル選択を開始できませんでした')}
+ }else{
+  localInput.value='';
+  localInput.click();
+ }
+});
+localInput.addEventListener('change',async()=>{
+ const file=localInput.files&&localInput.files[0];
+ if(!file)return;
+ localButton.disabled=true;
+ status('🎼 '+file.name+' の音声を解析しています…');
+ try{
+  if(file.size>48*1024*1024)throw Error('48MB以下の音楽ファイルを選んでね');
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)throw Error('このブラウザは音声に対応していません');
+  if(!ctx)ctx=new AC();
+  if(ctx.state==='suspended')await ctx.resume();
+  const encoded=await file.arrayBuffer();
+  const decoded=await ctx.decodeAudioData(encoded);
+  const times=analyzer.extractOnsets(decoded,{level});
+  const rawOnsets=level==='easy'?analyzer.extractOnsets(decoded,{level:'normal'}):times;
+  const notes=core.addHoldsFromWaveform(decoded,core.chartFromOnsets(times,level),rawOnsets);
+  status('✅ 実音声から'+notes.length+'個のタイルを検出');
+  begin(notes,decoded.duration,'♫ '+file.name,'demo',decoded);
+ }catch(e){status('⚠️ 音楽を解析できませんでした：'+String(e.message||e))}
+ finally{localButton.disabled=false;localInput.value=''}
+});
+window.SaikoNativeLocalCancelled=()=>{localReady();status('音楽の選択をキャンセルしました')};
+window.SaikoNativeLocalError=message=>{localReady();status('⚠️ 音楽を解析できませんでした：'+String(message).slice(0,160))};
+window.SaikoNativeLocalReady=json=>{
+ localReady();
+ try{
+  const result=JSON.parse(json);
+  const notes=core.prepare(result.notes);
+  status('✅ 実音声から'+notes.length+'個のタイルを検出');
+  begin(result.notes,Number(result.duration)||0,'♫ '+String(result.title||'選択した音楽'),'native',null);
+ }catch(e){status('⚠️ 譜面を読み込めませんでした：'+String(e.message||e))}
+};
 function videoId(value){
  const input=String(value||'').trim();
  if(/^[A-Za-z0-9_-]{11}$/.test(input))return input;
@@ -196,7 +350,7 @@ function videoId(value){
 }
 let requestedId=null;
 $('load').addEventListener('click',()=>{
- if(!native){status('YouTube音声解析はAndroid実験版専用です');return}
+ if(!youtubeDiagnostic){status('YouTube音声解析は許諾確認前のデバッグ版でのみ利用できます');return}
  const id=videoId($('videoUrl').value);
  if(!id){status('YouTubeのURLを確認してね');return}
  if(nativePending){status('前の曲を解析しています');return}
@@ -222,11 +376,14 @@ $('quit').addEventListener('click',()=>{
 $('pause').addEventListener('click',async()=>{
  if(!playing)return;
  if(!paused){
-  if(sourceMode==='demo'){offset=now();if(source){source.stop();source=null}}
+  if(game)game.cancelHolds(); // A lost touch must never earn a free sustained note.
+  if(!musicStarted)countdownRemaining=Math.max(0,countdownEnd-performance.now());
+  else if(sourceMode==='demo'){offset=now();if(source){source.stop();source=null}}
   else if(native)window.SaikoNativeAutoChart.pauseMusic();
   paused=true;$('pause').textContent='▶ 再開';
  }else{
-  if(sourceMode==='demo'){if(ctx.state==='suspended')await ctx.resume();startAudio(offset)}
+  if(!musicStarted)countdownEnd=performance.now()+countdownRemaining;
+  else if(sourceMode==='demo'){if(ctx.state==='suspended')await ctx.resume();startAudio(offset)}
   else if(native)window.SaikoNativeAutoChart.playMusic();
   paused=false;$('pause').textContent='⏸ 一時停止';
  }
@@ -234,8 +391,14 @@ $('pause').addEventListener('click',async()=>{
 $('again').addEventListener('click',()=>{
  $('result').hidden=true;$('game').hidden=true;$('menu').hidden=false;$('pause').disabled=false;
 });
+window.SaikoPianoAutoPause=()=>{if(playing&&!paused)$('pause').click()};
+window.addEventListener('blur',()=>{
+ // Some Android WebViews lose focus before visibilitychange fires.
+ window.SaikoPianoAutoPause();
+});
+
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden&&playing&&!paused)$('pause').click();
+ if(document.hidden)window.SaikoPianoAutoPause();
 });
 window.addEventListener('pagehide',()=>{cleanup();if(ctx)ctx.close().catch(()=>{})});
 window.SaikoPianoGame=Object.freeze({videoId,chooseDifficulty,getState:()=>game?.state()||null});
