@@ -14,3 +14,13 @@ Published question bank after this batch: beginner 4 scenes × 5 differences; in
 ## Checks
 
 Game tests cover all answer centers on both images, duplicate taps, hints, completion, local records, difficulty filtering and return to gallery. Asset uploads must match `git hash-object` exactly. Browser checks cover the actual deployed images and UI.
+
+## 2026-11-07 additions
+
+Built-in image generation and precise-object edits, with object masks restricting B to the authored changes:
+- `assets/canal_florist_a.webp`: portrait 1024×1536, rainy canal-side flower shop, mouse florist and duck, warm window light, hydrangeas and roses. Seven isolated objects: umbrella, awning, lantern glass, watering can, apron bow, flowerpot, boots. No lettering or panels.
+- `assets/canal_florist_b.webp`: edit A only: red umbrella→purple, blue awning→green, yellow lantern glass→pale blue, green watering can→turquoise, pink bow→blue, purple pot→yellow, red boots→blue. Everything else retains the original.
+- `assets/mountain_station_a.webp`: portrait 1024×1536, sunny mountain railway cafe, tanuki stationmaster and squirrel, vintage train and viaduct, detailed luminous storybook/anime painting. Five isolated objects: clock frame, cafe flag, scarf, teapot, suitcase. No lettering or panels.
+- `assets/mountain_station_b.webp`: edit A only: blue clock frame→red, red flag→green, yellow scarf→pale blue, green teapot→red, purple suitcase→turquoise. Everything else retains the original.
+
+Answer coordinates and object polygons are in embedded puzzledata. After these additions: 5 beginner, 3 intermediate, 2 advanced scenes; 10 scenes / 66 differences. Unit tests also verify wraparound stays within each difficulty.
