@@ -1,0 +1,27 @@
+name: BASE sales page smoke tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/**'
+      - 'tests/services-smoke.test.cjs'
+      - '.github/workflows/services-smoke.yml'
+  pull_request:
+    paths:
+      - 'services/**'
+      - 'tests/services-smoke.test.cjs'
+      - '.github/workflows/services-smoke.yml'
+  workflow_dispatch:
+jobs:
+  sales-smoke:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run offline consultation tests
+        run: node --test tests/services-smoke.test.cjs
