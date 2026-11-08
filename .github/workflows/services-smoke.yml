@@ -5,11 +5,13 @@ on:
     paths:
       - 'services/**'
       - 'tests/services-smoke.test.cjs'
+      - 'tests/demo-report-smoke.test.cjs'
       - '.github/workflows/services-smoke.yml'
   pull_request:
     paths:
       - 'services/**'
       - 'tests/services-smoke.test.cjs'
+      - 'tests/demo-report-smoke.test.cjs'
       - '.github/workflows/services-smoke.yml'
   workflow_dispatch:
 jobs:
@@ -23,5 +25,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run offline consultation tests
-        run: node --test tests/services-smoke.test.cjs
+      - name: Run offline sales page and report demo tests
+        run: node --test tests/services-smoke.test.cjs tests/demo-report-smoke.test.cjs
