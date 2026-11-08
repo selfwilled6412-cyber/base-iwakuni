@@ -67,7 +67,7 @@ test('CSV escaping treats formula-like cells as literal text',()=>{
   const escape=vm.runInNewContext('('+expr+')');
   for(const value of ['=1+1','+SUM(1,2)','-1+2','@SUM(A1)','  =HYPERLINK("x")','\t=1+1']){
     const output=escape(value);
-    assert.ok(output.startsWith('"\\''),'formula prefix not neutralized: '+JSON.stringify(value));
+    assert.ok(output.startsWith("\"'"),'formula prefix not neutralized: '+JSON.stringify(value));
     assert.ok(output.endsWith('"'));
   }
   assert.equal(escape('ordinary'),'"ordinary"');
