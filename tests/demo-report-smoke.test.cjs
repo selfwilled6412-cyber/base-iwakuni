@@ -39,3 +39,8 @@ test('sales navigation stays separate from any marketplace checkout',()=>{
   assert.match(html,/https:\/\/lin\.ee\/z5T92Yn/);
   assert.doesNotMatch(html,/kardivex/i);
 });
+
+test('CSV neutralizes spreadsheet formula prefixes in user-entered cells',()=>{
+  assert.match(html,/const safe=\/\^\[\\s\]\*\[=\+@\\-\\t\\r\]\//);
+  assert.match(html,/safe\.replaceAll\('\"','\"\"'\)/);
+});
