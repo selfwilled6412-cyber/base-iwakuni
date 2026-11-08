@@ -44,3 +44,11 @@ test('CSV neutralizes spreadsheet formula prefixes in user-entered cells',()=>{
   assert.ok(html.includes('const safe=/^[\\s]*[=+@\\-\\t\\r]/'));
   assert.ok(html.includes('safe.replaceAll'));
 });
+
+test('individual demo entries can be removed without deleting all records',()=>{
+  assert.match(html,/remove\.textContent='この記録を削除'/);
+  assert.match(html,/remove\.addEventListener\('click'/);
+  assert.match(html,/rows=rows\.filter\(x=>x!==r\)/);
+  assert.match(html,/remove\.setAttribute\('aria-label'/);
+  assert.match(html,/div\.append\(title,body,remove\)/);
+});
