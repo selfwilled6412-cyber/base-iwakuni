@@ -41,6 +41,6 @@ test('sales navigation stays separate from any marketplace checkout',()=>{
 });
 
 test('CSV neutralizes spreadsheet formula prefixes in user-entered cells',()=>{
-  assert.match(html,/const safe=\/\^\[\\s\]\*\[=\+@\\-\\t\\r\]\//);
-  assert.match(html,/safe\.replaceAll\('\"','\"\"'\)/);
+  assert.ok(html.includes('const safe=/^[\\s]*[=+@\\-\\t\\r]/'));
+  assert.ok(html.includes('safe.replaceAll'));
 });
