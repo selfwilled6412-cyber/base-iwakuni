@@ -52,3 +52,24 @@ test('individual demo entries can be removed without deleting all records',()=>{
   assert.match(html,/remove\.setAttribute\('aria-label'/);
   assert.match(html,/div\.append\(title,body,remove\)/);
 });
+
+const vm=require('node:vm');
+test('inline demo script parses as valid JavaScript',()=>{
+  const inline=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(inline,'demo script is missing');
+  assert.doesNotThrow(()=>new vm.Script(inline,{filename:'demo-report-inline.js'}));
+});
+test('CSV escaping treats formula-like cells as literal text',()=>{
+  const inline=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+  const source=inline.match(/const escape=v=>\{[\s\S]*?\};const data=/)?.[0];
+  assert.ok(source,'CSV escaping implementation not found');
+  const expr=source.slice('const escape='.length,-';const data='.length);
+  const escape=vm.runInNewContext('('+expr+')');
+  for(const value of ['=1+1','+SUM(1,2)','-1+2','@SUM(A1)','  =HYPERLINK("x")','\t=1+1']){
+    const output=escape(value);
+    assert.ok(output.startsWith('"\\''),'formula prefix not neutralized: '+JSON.stringify(value));
+    assert.ok(output.endsWith('"'));
+  }
+  assert.equal(escape('ordinary'),'"ordinary"');
+  assert.equal(escape('a"b'),'"a""b"');
+});
