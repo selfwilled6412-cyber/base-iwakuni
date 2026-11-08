@@ -73,3 +73,9 @@ test('CSV escaping treats formula-like cells as literal text',()=>{
   assert.equal(escape('ordinary'),'"ordinary"');
   assert.equal(escape('a"b'),'"a""b"');
 });
+
+test('search can be cleared without resetting demo records',()=>{
+  assert.match(html,/id="clearSearch"/);
+  assert.match(html,/querySelector\('#clearSearch'\)\.addEventListener\('click'/);
+  assert.match(html,/search\.value='';render\(\);search\.focus\(\)/);
+});
