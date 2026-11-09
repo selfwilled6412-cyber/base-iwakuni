@@ -1,0 +1,44 @@
+name: BASE SCS Social Draft Factory
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 23 * * *' # 08:30 Japan time, draft only
+  pull_request:
+    paths:
+      - 'marketing/scs/**'
+      - '.github/workflows/base-scs-social-drafts.yml'
+jobs:
+  build-drafts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate two Shorts scripts and captions for 8 channels
+        run: python marketing/scs/scs_draft_factory.py
+      - name: Check draft-only status and brand isolation
+        run: |
+          python - <<'PY'
+          import glob, json
+          files=glob.glob('marketing/scs/output/*/bundle.json')
+          assert len(files)==1, files
+          content=json.load(open(files[0],encoding='utf-8'))
+          assert content['brand']=='株式会社BASE' and content['mode']=='DRAFT_ONLY_NO_POSTING'
+          assert len(content['posts'])==2
+          for post in content['posts']:
+              assert post['channel_verified'] is False
+              assert len(post['short']['slides'])==6
+              assert len(post['platforms'])==8
+              assert len(post['platforms']['x'])<=280
+          print('PASS: BASE-only drafts, two Shorts, eight networks, no publishing')
+          PY
+      - name: Store drafts as workflow artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: base-scs-social-drafts
+          path: marketing/scs/output/
+          retention-days: 14
