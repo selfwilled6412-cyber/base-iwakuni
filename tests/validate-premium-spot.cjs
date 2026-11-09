@@ -6,8 +6,8 @@ const html=fs.readFileSync(path.join(base,'index.html'),'utf8');
 const dataMatch=html.match(/<script id="puzzledata" type="application\/json">([\s\S]*?)<\/script>/);
 assert(dataMatch,'Embedded puzzle configuration is missing');
 const data=JSON.parse(dataMatch[1]);
-assert.equal(data.length,20,'Only verified premium images may be playable; never claim 90');
-assert.deepEqual(data.map(p=>p.answers.length),[5,7,5,5,5,10,7,10,7,5,7,10,5,5,7,10,5,7,7,10]);
+assert.equal(data.length,22,'Only verified premium images may be playable; never claim 90');
+assert.deepEqual(data.map(p=>p.answers.length),[5,7,5,5,5,10,7,10,7,5,7,10,5,5,7,10,5,7,7,10,5,10]);
 assert(!/未制作|体験版|試作|承認済み|本番は/.test(html),'Public screen must contain player-facing language only');
 for(const puzzle of data){
  assert(puzzle.id&&puzzle.name);
@@ -94,11 +94,12 @@ for(let i=0;i<data.length;i++){
 }
 node('back').onclick();
 node('level-hard').onclick();
-assert.equal(node('level-status').textContent,'上級・5問');
+assert.equal(node('level-status').textContent,'上級・6問');
 assert(node('cards').innerHTML.includes('春の温室ティータイム'));
 assert(node('cards').innerHTML.includes('雪の夜の灯台守の台所'));
 assert(node('cards').innerHTML.includes('月夜の香辛料店'));
 assert(node('cards').innerHTML.includes('オーロラの郵便局'));
+assert(node('cards').innerHTML.includes('朝焼けの時計塔'));
 assert(!node('cards').innerHTML.includes('湖畔のピクニック'));
 node('level-normal').onclick();
 assert.equal(node('level-status').textContent,'中級・7問');
@@ -108,16 +109,17 @@ assert(node('cards').innerHTML.includes('サンゴ礁の潜水艇'));
 assert(node('cards').innerHTML.includes('屋上のミツバチ園'));
 assert(node('cards').innerHTML.includes('人形劇の舞台裏'));
 node('level-easy').onclick();
-assert.equal(node('level-status').textContent,'初級・8問');
+assert.equal(node('level-status').textContent,'初級・9問');
 assert(node('cards').innerHTML.includes('高原の気象観測所'));
 assert(node('cards').innerHTML.includes('紅葉の陶芸工房'));
 assert(node('cards').innerHTML.includes('春風の凧あげ'));
+assert(node('cards').innerHTML.includes('さくらんぼ畑の収穫'));
 assert.equal(node('gallery').hidden,false,'Return to gallery');
 assert.equal(node('game').hidden,true);
 node('switch').onclick();
 assert.equal(game.getState().index,0,'Next wraps to first puzzle');
 assert(storage.has('saiko-premium-spot-preview-v1'),'Local progress must persist');
-console.log('PASS: 20 premium paired original image scenes, 139 exact tappable differences, and WebP files');
+console.log('PASS: 22 premium paired original image scenes, 154 exact tappable differences, and WebP files');
 console.log('PASS: correct/incorrect taps, both sides, no double-score, hints, completion and saved record');
 
 for(const level of ["初級","中級","上級"]){const ids=data.map((p,i)=>p.difficulty===level?i:-1).filter(i=>i>=0);game.open(ids[ids.length-1]);node("switch").onclick();assert.equal(game.getState().index,ids[0],"Next stays within "+level)}
