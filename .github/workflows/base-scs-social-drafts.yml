@@ -1,0 +1,60 @@
+name: BASE SCS Social Draft Factory
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 23 * * *' # 08:30 Japan time, draft only
+  pull_request:
+    paths:
+      - 'marketing/scs/**'
+      - '.github/workflows/base-scs-social-drafts.yml'
+jobs:
+  build-drafts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install text-video renderer dependencies
+        run: |
+          python -m pip install Pillow==11.3.0
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+      - name: Generate two Shorts scripts and captions for 8 channels
+        run: python marketing/scs/scs_draft_factory.py
+      - name: Check draft-only status and brand isolation
+        run: |
+          python - <<'PY'
+          import glob, json
+          files=glob.glob('marketing/scs/output/*/bundle.json')
+          assert len(files)==1, files
+          content=json.load(open(files[0],encoding='utf-8'))
+          assert content['brand']=='株式会社BASE' and content['mode']=='DRAFT_ONLY_NO_POSTING'
+          assert len(content['posts'])==2
+          for post in content['posts']:
+              assert post['channel_verified'] is False
+              assert len(post['short']['slides'])==6
+              assert len(post['platforms'])==8
+              assert len(post['platforms']['x'])<=280
+          print('PASS: BASE-only drafts, two Shorts, eight networks, no publishing')
+          PY
+      - name: Render two 30-second 9:16 MP4 video drafts
+        run: python marketing/scs/render_shorts.py
+      - name: Validate output videos
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          files=list(Path('marketing/scs/output').rglob('*.mp4'))
+          assert len(files)==2,files
+          assert all(p.stat().st_size>25000 for p in files),files
+          print('PASS: two generated BASE-only MP4 drafts')
+          PY
+      - name: Store drafts as workflow artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: base-scs-social-drafts
+          path: marketing/scs/output/
+          retention-days: 14
