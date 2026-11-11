@@ -2,6 +2,12 @@ name: BASE Buffer Connection Check (Read-only)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "marketing/scs/buffer_verify_channels.py"
+      - ".github/workflows/base-buffer-verify.yml"
   pull_request:
     paths:
       - "marketing/scs/buffer_verify_channels.py"
@@ -21,7 +27,7 @@ jobs:
         run: python marketing/scs/buffer_verify_channels.py --self-test
 
   verify-connected-channels:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     needs: unit-test
     runs-on: ubuntu-latest
     permissions:
