@@ -1,0 +1,37 @@
+name: BASE Buffer Connection Check (Read-only)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "marketing/scs/buffer_verify_channels.py"
+      - ".github/workflows/base-buffer-verify.yml"
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify BASE channel matching without network access
+        run: python marketing/scs/buffer_verify_channels.py --self-test
+
+  verify-connected-channels:
+    if: github.event_name == 'workflow_dispatch'
+    needs: unit-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Read BASE channel identities only (never post)
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+        run: python marketing/scs/buffer_verify_channels.py
