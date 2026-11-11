@@ -1,10 +1,13 @@
-name: BASE SNS Core Test
+name: BASE SNS Buffer Connection Test
 
 on:
+  push:
+    branches:
+      - buffer-connection-test
   workflow_dispatch:
 
 jobs:
-  test-core:
+  buffer-connection:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,12 +16,16 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r automation/sns/requirements.txt
 
+      - name: Install rendering dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-noto-cjk
+          fc-match 'Noto Sans CJK JP'
+
       - name: Generate SNS content
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python automation/sns/generate_content.py
 
       - name: Check Buffer connection
@@ -26,9 +33,33 @@ jobs:
           BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
         run: python automation/sns/buffer_client.py
 
-      - name: Save test results
+      - name: Discover Buffer channels
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+        run: python automation/sns/buffer_channels.py
+
+      - name: Validate Buffer draft plan without creating drafts
+        env:
+          BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+          BUFFER_CREATE_DRAFTS: 'false'
+        run: python automation/sns/buffer_draft_video.py
+
+      - name: Render 30-second vertical preview
+        run: python automation/sns/render_video.py
+
+      - name: Validate public media publishing stays locked by default
+        env:
+          CONFIRM_PUBLIC_MEDIA: 'NO'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash automation/sns/publish_media.sh
+          test ! -e automation/sns/output/public_media_url.txt
+          echo 'NEXT_GATE=explicit approval required before public media URL or Buffer draft creation' > automation/sns/output/approval_gate.txt
+
+      - name: Save Buffer test result
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sns-core-test
+          name: buffer-connection-test
           path: automation/sns/output/
           retention-days: 7
