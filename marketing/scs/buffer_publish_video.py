@@ -13,7 +13,7 @@ def video_url_ok(url):
 def mutation():
     return """mutation PublishBaseVideo($input: CreatePostInput!) {
       createPost(input: $input) {
-        ... on PostActionSuccess { post { id text status } }
+        ... on PostActionSuccess { post { id text } }
         ... on MutationError { message }
       }
     }"""
