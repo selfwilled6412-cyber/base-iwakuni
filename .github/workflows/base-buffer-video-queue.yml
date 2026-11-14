@@ -1,0 +1,45 @@
+name: BASE Buffer Video Queue (manual gated)
+on:
+  workflow_dispatch:
+    inputs:
+      video_url:
+        description: 'Public HTTPS MP4 URL (BASE video)'
+        required: true
+        type: string
+      caption:
+        description: 'BASE video caption'
+        required: true
+        type: string
+      publish:
+        description: 'Actually queue to 3 BASE accounts (false = read-only dry run)'
+        required: true
+        default: false
+        type: boolean
+jobs:
+  verify-and-queue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: base-buffer-video-queue
+      cancel-in-progress: false
+    env:
+      BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+      BASE_BUFFER_CHANNEL_IDS: ${{ secrets.BASE_BUFFER_CHANNEL_IDS }}
+      BASE_VIDEO_URL: ${{ inputs.video_url }}
+      BASE_VIDEO_CAPTION: ${{ inputs.caption }}
+      BASE_PUBLISH_AUTHORIZED: YES_BASE_ONLY
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Self-test publisher
+        run: python marketing/scs/buffer_publish_video.py --self-test
+      - name: Verify target channels and optionally queue
+        run: |
+          if [ "${{ inputs.publish }}" = "true" ]; then
+            python marketing/scs/buffer_publish_video.py --publish
+          else
+            python marketing/scs/buffer_publish_video.py
+          fi
