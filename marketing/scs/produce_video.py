@@ -22,6 +22,8 @@ def wrap(text,size,width):
     f=font(size)
     for ch in text:
         if ch=='\n': lines.append('');continue
+        if ch in '、。？！）」』' and lines[-1]:
+            lines[-1]+=ch;continue
         if f.getlength(lines[-1]+ch)>width: lines.append('')
         lines[-1]+=ch
     return lines
@@ -103,7 +105,21 @@ def voice(text,path):
             if attempt==2: raise RuntimeError('Japanese narration unavailable; refusing an unvoiced video') from None
             time.sleep(3*(attempt+1))
 
+def ensure_voice_engine():
+    try:
+        urllib.request.urlopen('http://127.0.0.1:50021/version',timeout=3)
+        return
+    except Exception:
+        subprocess.run(['docker','run','-d','--name','base-voice','-p','127.0.0.1:50021:50021','voicevox/voicevox_engine@sha256:46fe4ddaef27e8bfc2ff4f9709d27f3e38e295d405c5f9351d7c62056e0b4ca7'],check=True,timeout=420)
+    for attempt in range(60):
+        try:
+            urllib.request.urlopen('http://127.0.0.1:50021/version',timeout=3)
+            return
+        except Exception: time.sleep(2)
+    raise RuntimeError('Local Japanese speech engine failed to start')
+
 def produce(plan,out,voice_fn=voice):
+    if voice_fn is voice: ensure_voice_engine()
     out=Path(out);out.mkdir(parents=True,exist_ok=True)
     (out/'plan.json').write_text(json.dumps(plan,ensure_ascii=False,indent=2))
     parts=[];total=0

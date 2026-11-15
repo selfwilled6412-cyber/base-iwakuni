@@ -50,6 +50,18 @@ class PublishTests(unittest.TestCase):
         self.assertFalse(pub.eligible_retry({'retries':3},p))
         self.assertFalse(pub.eligible_retry({'last_attempt':pub.now()},p))
         self.assertFalse(pub.eligible_retry({},dict(p,status='sent')))
+    def test_error_resubmission_edits_same_post(self):
+        plan=video.make_plan('2026-11-15')
+        post={'id':'original','text':plan['caption'],'status':'error','externalLink':None}
+        sent=dict(post,status='sent')
+        journal=Journal({'days':{'2026-11-15':{'plan':plan,'services':{'youtube':{'state':'error','post':post}}}}})
+        with patch.object(pub,'posts_for',return_value=[post]),patch.object(pub,'mutation',return_value=sent) as mutate,patch.dict(os.environ,{'BASE_POLL_ATTEMPTS':'0'}):
+            pub.process(journal,'2026-11-15',{'youtube':{'id':pub.CHANNELS['youtube']}})
+            mutate.assert_called_once_with('editPost',{'id':'original','mode':'shareNow','schedulingType':'automatic','saveToDraft':False})
+    def test_lookalike_wrong_channel_id_is_rejected(self):
+        channels=[{'id':'WRONG','service':s,'name':'岩国BASE 店舗・事業者相談' if s=='youtube' else 'base_iwakuni'} for s in pub.CHANNELS]
+        with patch.object(pub,'gql',side_effect=[{'account':{'organizations':[{'id':'org'}]}},{'channels':channels}]):
+            with self.assertRaisesRegex(RuntimeError,'ID mismatch'): pub.verify()
     def test_duplicate_marker_fails_closed(self):
         with self.assertRaises(RuntimeError):pub.matching([{'text':'#marker'},{'text':'#marker'}],'#marker')
 
