@@ -45,9 +45,10 @@
       },
       "services": {
         "tiktok": {},
-        "youtube": {}
+        "youtube": {},
+        "instagram": {}
       }
     }
   },
-  "updated_at": "2026-11-15T00:20:39.136169+00:00"
+  "updated_at": "2026-11-15T00:20:40.220242+00:00"
 }
