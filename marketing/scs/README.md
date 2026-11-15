@@ -7,9 +7,8 @@ cron can be delayed; the hourly recovery makes up a missed daily run. Only the e
 three verified BASE Buffer IDs in `buffer_publish_video.py` can be used.
 
 Videos: original 1080×1920 graphics, 30fps H.264/AAC, Japanese neural narration,
-full scene captions, moving camera, five timed scenes. Uses an existing
-`OPENAI_API_KEY` with gpt-4o-mini-tts if present; otherwise free Nanami neural
-speech through edge-tts. A voice failure fails the job; unvoiced content is never
+full scene captions, moving camera, five timed scenes. Uses the official local VOICEVOX CPU engine with 四国めたん narration and
+required voice credits in the video and captions. No paid API key is required. A voice failure fails the job; unvoiced content is never
 published. The 72-day industry/topic rotation gives practical, non-time-sensitive
 checks rather than claiming regulatory certification or a guaranteed defense.
 

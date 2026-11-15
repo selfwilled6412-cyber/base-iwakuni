@@ -36,9 +36,9 @@ def make_plan(day):
       {'label':'見落としがちなリスク','headline':risk,'voice':f'{risk}。思い当たることはありませんか。','kind':'risk'},
       {'label':'今日のアクション','headline':action,'voice':f'まずは、{action}。','kind':'check'},
       {'label':'小さな確認が、大きな備えに','headline':'担当を決める。\n実施を確かめる。','voice':'担当者と確認する日を決めて、実施できたかも確かめましょう。','kind':'check'},
-      {'label':'岩国市の法人・店舗の皆さまへ','headline':'会社の情報を守る\n最初の一歩を。','voice':'岩国市の株式会社ベースが、サイバー対策の現状整理をお手伝いします。ご相談はプロフィールから。','kind':'shield'}]
+      {'label':'岩国市の法人・店舗の皆さまへ','headline':'会社の情報を守る\n最初の一歩を。','voice':'岩国市の株式会社ベースが、サイバー対策の現状整理をお手伝いします。ご相談は公式LINEから。','kind':'shield'}]
     marker='#BASE対策'+day.replace('-','')
-    caption=f'【{sector}の{topic}】\n{action}。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談はプロフィールから。\nAI音声・図解を使用。\n#岩国市 #中小企業 #情報セキュリティ {marker}'
+    caption=f'【{sector}の{topic}】\n{action}。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ {marker}'
     return {'date':day,'id':'base-security-'+day,'marker':marker,'title':f'{topic}、見直していますか？｜株式会社BASE #Shorts',
             'caption':caption,'youtube_caption':caption+'\nご相談：'+tracked('youtube')+'\n参考：IPA '+IPA,
             'scenes':scenes,'brand':'株式会社BASE'}
@@ -78,28 +78,29 @@ def draw(scene,index,path):
     captions=wrap(scene['voice'],39,860)
     assert len(captions)<=5, captions
     for i,line in enumerate(captions): d.text((110,1350+i*49),line,font=font(39),fill=(221,240,247))
-    d.text((90,1675),'株式会社BASE  /  岩国市',font=font(32),fill=(146,185,204))
+    d.text((90,1660),'株式会社BASE  /  岩国市',font=font(32),fill=(146,185,204))
+    d.text((90,1710),'音声：VOICEVOX 四国めたん',font=font(22),fill=(146,185,204))
+    if index==4: d.text((90,1160),'公式LINE  lin.ee/z5T92Yn',font=font(43),fill=accent)
     for n in range(5): d.rounded_rectangle((90+n*180,1760,245+n*180,1767),radius=3,fill=accent if n<=index else (35,58,74))
     img.save(path)
 
-async def edge_voice(text,path):
-    import edge_tts
-    await asyncio.wait_for(edge_tts.Communicate(text,'ja-JP-NanamiNeural',rate='+0%',proxy=os.getenv('HTTPS_PROXY') or None).save(str(path)),60)
-
 def voice(text,path):
-    # Prefer existing OpenAI credential; otherwise use free Japanese neural voice.
-    key=os.getenv('OPENAI_API_KEY','').strip()
+    # Official local VOICEVOX engine: no paid key or external speech endpoint.
+    from urllib.parse import urlencode
+    endpoint='http://127.0.0.1:50021'
     for attempt in range(3):
         try:
-            if key:
-                body={'model':'gpt-4o-mini-tts','voice':'coral','input':text,'instructions':'自然で明瞭な日本語。落ち着いた企業向けナレーション。ベースと発音。','response_format':'mp3'}
-                req=urllib.request.Request('https://api.openai.com/v1/audio/speech',data=json.dumps(body).encode(),headers={'Authorization':'Bearer '+key,'Content-Type':'application/json'})
-                with urllib.request.urlopen(req,timeout=65) as r: path.write_bytes(r.read())
-            else: asyncio.run(edge_voice(text,path))
+            query_url=endpoint+'/audio_query?'+urlencode({'text':text,'speaker':2})
+            with urllib.request.urlopen(urllib.request.Request(query_url,data=b'',method='POST'),timeout=45) as r:
+                query=json.load(r)
+            query['speedScale']=1.08
+            query['intonationScale']=1.0
+            req=urllib.request.Request(endpoint+'/synthesis?speaker=2',data=json.dumps(query).encode(),headers={'Content-Type':'application/json'})
+            with urllib.request.urlopen(req,timeout=90) as r: path.write_bytes(r.read())
             assert path.stat().st_size>2000 and duration(path)>1
             return
         except Exception:
-            if attempt==2: raise RuntimeError('Japanese neural narration unavailable; refusing to publish an unvoiced video') from None
+            if attempt==2: raise RuntimeError('Japanese narration unavailable; refusing an unvoiced video') from None
             time.sleep(3*(attempt+1))
 
 def produce(plan,out,voice_fn=voice):
@@ -107,7 +108,7 @@ def produce(plan,out,voice_fn=voice):
     (out/'plan.json').write_text(json.dumps(plan,ensure_ascii=False,indent=2))
     parts=[];total=0
     for i,scene in enumerate(plan['scenes']):
-        image=out/f'scene-{i}.png';audio=out/f'voice-{i}.mp3';part=out/f'part-{i}.mp4'
+        image=out/f'scene-{i}.png';audio=out/f'voice-{i}.wav';part=out/f'part-{i}.mp4'
         draw(scene,i,image);voice_fn(scene['voice'],audio)
         seconds=duration(audio)+.45;total+=seconds
         subprocess.run(['ffmpeg','-v','error','-y','-loop','1','-i',str(image),'-i',str(audio),'-t',str(seconds),
@@ -117,8 +118,10 @@ def produce(plan,out,voice_fn=voice):
         parts.append(part.resolve())
     assert 15<total<90, total
     listing=out/'parts.txt';listing.write_text(''.join(f"file '{p}'\n" for p in parts))
+    from render_shorts import audio_wave
+    bed=out/'original_ambient.wav';audio_wave(bed,seconds=math.ceil(total)+1)
     dest=out/(plan['id']+'.mp4')
-    subprocess.run(['ffmpeg','-v','error','-y','-f','concat','-safe','0','-i',str(listing),'-c','copy','-movflags','+faststart',str(dest)],check=True,timeout=60)
+    subprocess.run(['ffmpeg','-v','error','-y','-f','concat','-safe','0','-i',str(listing),'-i',str(bed),'-filter_complex','[0:a][1:a]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.94[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','-b:a','160k','-movflags','+faststart',str(dest)],check=True,timeout=60)
     probe=json.loads(run('ffprobe','-v','error','-show_streams','-show_format','-of','json',str(dest)))
     video=next(s for s in probe['streams'] if s['codec_type']=='video');audio=next(s for s in probe['streams'] if s['codec_type']=='audio')
     assert (video['width'],video['height'])==(W,H) and audio['codec_name']=='aac'

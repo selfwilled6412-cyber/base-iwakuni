@@ -20,6 +20,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -27,9 +28,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install Pillow==11.3.0 edge-tts==7.2.7
+      - run: python -m pip install Pillow==11.3.0
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
       - run: python -m unittest discover -s marketing/scs -p 'test_publish*.py' -v
+      - name: Start local Japanese narration engine
+        run: |
+          docker run -d --name base-voice -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:cpu-latest
+          python - <<'PYVOICE'
+          import time,urllib.request
+          for n in range(60):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:50021/version',timeout=3)
+                  break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise SystemExit('Local narration engine failed to start')
+          PYVOICE
       - name: Render Japanese narrated preview (PR only)
         if: github.event_name == 'pull_request'
         run: python marketing/scs/produce_video.py --date 2026-11-15 --out marketing/scs/output/preview
@@ -50,14 +65,27 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install Pillow==11.3.0 edge-tts==7.2.7
+      - run: python -m pip install Pillow==11.3.0
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+      - name: Start local Japanese narration engine
+        run: |
+          docker run -d --name base-voice -p 127.0.0.1:50021:50021 voicevox/voicevox_engine:cpu-latest
+          python - <<'PYVOICE'
+          import time,urllib.request
+          for n in range(60):
+              try:
+                  urllib.request.urlopen('http://127.0.0.1:50021/version',timeout=3)
+                  break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise SystemExit('Local narration engine failed to start')
+          PYVOICE
       - name: Verify BASE identities, generate, publish and reconcile
         env:
           FORCE_TODAY: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
