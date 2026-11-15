@@ -1,0 +1,97 @@
+name: BASE Security Daily Publish
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'marketing/scs/buffer_publish_video.py'
+      - 'marketing/scs/produce_video.py'
+      - '.github/workflows/base-buffer-video-queue.yml'
+  schedule:
+    - cron: '15 1 * * *' # 10:15 JST daily production
+    - cron: '45 * * * *' # hourly recovery and delivery monitoring
+  pull_request:
+    paths:
+      - 'marketing/scs/**'
+      - '.github/workflows/base-buffer-video-queue.yml'
+concurrency:
+  group: base-security-publish
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install Pillow==11.3.0
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+      - run: python -m unittest discover -s marketing/scs -p 'test_publish*.py' -v
+      - name: Render Japanese narrated preview (PR only)
+        if: github.event_name == 'pull_request'
+        run: python marketing/scs/produce_video.py --date 2026-11-15 --out marketing/scs/output/preview
+      - uses: actions/upload-artifact@v4
+        if: always() && github.event_name == 'pull_request'
+        with:
+          name: base-security-narrated-preview
+          path: marketing/scs/output/preview/
+          retention-days: 7
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install Pillow==11.3.0
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+      - name: Verify BASE identities, generate, publish and reconcile
+        env:
+          FORCE_TODAY: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [ "$FORCE_TODAY" = "true" ]; then
+            python marketing/scs/buffer_publish_video.py --force-today
+          else
+            python marketing/scs/buffer_publish_video.py
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: base-security-publication-${{ github.run_id }}
+          path: marketing/scs/output/
+          retention-days: 14
+  alert:
+    if: always() && github.event_name != 'pull_request' && (needs.test.result == 'failure' || needs.publish.result == 'failure')
+    needs: [test, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Record infrastructure failure
+        env:
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python - <<'PY'
+          import json,os,subprocess
+          title='BASE security auto-publishing: operational alert'
+          cmd=['gh','issue','list','--repo',os.environ['GITHUB_REPOSITORY'],'--state','open','--search',title+' in:title','--json','number,title']
+          items=json.loads(subprocess.check_output(cmd))
+          found=next((i for i in items if i['title']==title),None)
+          if not found:
+              subprocess.run(['gh','issue','create','--repo',os.environ['GITHUB_REPOSITORY'],'--title',title,'--body','Automatic publishing needs attention. Logs: '+os.environ['RUN_URL']+'\nHourly recovery will retry safe operations; ambiguous creates are reconciled, never blindly repeated.'],check=True)
+          PY

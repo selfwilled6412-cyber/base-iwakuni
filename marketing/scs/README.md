@@ -1,15 +1,40 @@
-# BASE SCS Social Draft Factory
+# BASE security PR publishing
 
-Purpose: generate 2 vertical 30-second Shorts MP4 previews, narration scripts, and platform-specific post copy every day using zero external APIs or credits.
+Production entry point: `.github/workflows/base-buffer-video-queue.yml`.
+Daily generation and immediate automatic publication at 10:15 JST; hourly monitoring
+at :45. Initial merge and manual dispatch also process today's one video. GitHub
+cron can be delayed; the hourly recovery makes up a missed daily run. Only the exact
+three verified BASE Buffer IDs in `buffer_publish_video.py` can be used.
 
-Workflow: .github/workflows/base-scs-social-drafts.yml, scheduled at 08:30 JST. Script: marketing/scs/scs_draft_factory.py. Output: dated bundle.json, drafts.md, and 2 MP4 videos in GitHub Actions artifacts (14-day retention). Videos are motion-text drafts with a low-volume original ambient sound bed; scripted voiceover is not rendered yet.
+Videos: original 1080×1920 graphics, 30fps H.264/AAC, Japanese neural narration,
+full scene captions, moving camera, five timed scenes. Uses the official local VOICEVOX CPU engine with 四国めたん narration and
+required voice credits in the video and captions. No paid API key is required. A voice failure fails the job; unvoiced content is never
+published. The 72-day industry/topic rotation gives practical, non-time-sensitive
+checks rather than claiming regulatory certification or a guaranteed defense.
 
-Coverage: 6 industries x 12 security topics = 72 rotations. Each daily pack includes YouTube Shorts title, 6 scenes, Japanese narration, source link and 8 platform-specific caption variants (YouTube, Facebook, Instagram, TikTok, LinkedIn, Threads, X, Google Business Profile).
+Secrets: existing `BUFFER_API_TOKEN` needs account:read, posts:read and posts:write.
+No new account or BASE_BUFFER_CHANNEL_IDS secret is needed. Exact IDs were verified
+by successful connection run 43651956417 (2026-11-15 JST). Never print tokens.
 
-SAFETY: generated MP4 is a working draft, not fully voiced or approved. Drafts only. No YouTube/Buffer/Metricool posting call. No secrets required. BASE channel ownership/ID and explicit publishing approval MUST be verified. Never publish on KARDIVEX or personal accounts. Manually verify current sources before posting.
+Public video hosting: one GitHub Release per day, permanent public MP4 asset.
+No files/accounts/posts are deleted. The journal lives on `base-security-post-state`
+in `marketing/scs/runtime/ledger.json`. A write-ahead intent is committed before
+creating each Buffer post. A crash or unknown API response causes reconciliation
+with remote posts by unique date marker, never a blind second create. A failure to
+persist state prevents further mutation. Existing sent posts are skipped. Buffer
+errors are retried using editPost on the SAME post ID, with 30-minute backoff and a
+three-retry cap. A missing/uncertain result is alerted for investigation instead
+of risking a duplicate. Every channel is processed independently.
 
-Official source: https://www.ipa.go.jp/security/scs/details.html
-Business landing: https://selfwilled6412-cyber.github.io/base-iwakuni/security/scs/
-LINE: https://lin.ee/z5T92Yn
+A single GitHub issue titled `BASE security auto-publishing: operational alert`
+tracks outstanding failures. Runs include status and public post URLs in the
+Actions summary and artifacts; this distinguishes accepted/sending from `sent`.
+Infrastructure/authorization failures create an incident too. Hourly recovery
+continues without requiring individual approval. A disconnected social account
+or expired token requires its owner to reconnect it; the job reports the error.
+GitHub may disable inactive scheduled workflows; the existing external BASE PR
+scheduled task can inspect that condition and restore operation.
 
-Planned next step after authorization: BASE-specific OAuth, verify channel ID, private upload test, then scheduling with approval and duplicate protections.
+PRs run isolation, duplicate/crash, retry and layout tests plus a narrated video
+preview without publishing or exposing secrets. The older `scs_draft_factory.py`
+and `render_shorts.py` remain as historical draft tools; they do not publish.
