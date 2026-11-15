@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101839"><meta name="robots" content="noindex,nofollow">
+<meta name="description" content="みんなで遊べるゲームから、ひとりで挑戦するゲームまで。好きなゲームを選んですぐに遊ぼう。">
+<title>みんなのゲームパーク｜ゲーム一覧</title>
+<style>
+:root{color-scheme:dark;--bg:#090f26;--panel:#151e3c;--border:#ffffff22;--ink:#f9faff;--muted:#b7c6e6;--lime:#baffc8;--blue:#a8e9ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",Meiryo,sans-serif;background:radial-gradient(ellipse at 8% 8%,#6849a04c,transparent 39%),radial-gradient(ellipse at 92% 12%,#1667a65c,transparent 40%),var(--bg)}
+button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #ffdb71;outline-offset:4px}
+.top{padding:30px 18px 22px;border-bottom:1px solid var(--border)}.wrap{max-width:1120px;margin:auto}.eyebrow{font-size:11px;font-weight:900;letter-spacing:.17em;color:#a5eaff}.top h1{font-size:clamp(32px,7vw,59px);line-height:1.14;letter-spacing:-.05em;margin:11px 0}.top h1 em{font-style:normal;color:var(--lime)}.lead{font-size:clamp(14px,2vw,18px);font-weight:700;color:#dce8fa;line-height:1.65;margin:8px 0 15px}.count{display:inline-block;padding:8px 13px;border:1px solid #baffc85e;border-radius:99px;color:#d2ffde;font-size:12px;font-weight:900;background:#84ffd00c}
+main{padding:23px 16px 45px}.controls{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 14px}.chip{border:1px solid #7185b573;border-radius:99px;color:#e0eaff;background:#1a2850;padding:11px 16px;min-height:46px;font-weight:850;font-size:14px}.chip[aria-pressed="true"]{background:linear-gradient(105deg,#b9ffca,#9ddfff);color:#102448;border-color:transparent;box-shadow:0 5px 23px #64ecdc35}
+.searchBox{display:flex;align-items:center;gap:8px;background:#ffffff0d;border:1px solid #748ab17c;border-radius:14px;padding:4px 13px;margin:17px 0 14px}.searchBox span{font-size:22px}.searchBox input{height:48px;min-width:0;width:100%;color:#fff;background:none;border:0;outline:none;font-size:16px}.searchBox input::placeholder{color:#a4b5d0}.summary{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#c8d6ef;font-size:13px;margin:12px 0 15px}
+.games{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.game{display:flex;min-width:0;align-items:center;gap:13px;border:1px solid #9baef83c;background:linear-gradient(125deg,#202b53,#141d39);border-radius:19px;padding:17px 16px;min-height:127px;transition:transform .17s,border-color .17s,background .17s;box-shadow:0 7px 22px #0002}.game:hover{transform:translateY(-3px);border-color:#b8ffdbbb;background:linear-gradient(125deg,#273a63,#172a4c)}.ico{display:grid;place-items:center;flex-shrink:0;width:59px;height:59px;border-radius:16px;background:#ffffff0f;font-size:30px}.info{min-width:0;flex:1}.info b{display:block;font-size:16px;font-weight:950;line-height:1.38}.info small{display:block;font-size:12px;line-height:1.55;color:#c2d0e9;margin-top:5px}.arrow{align-self:end;color:#a6f2d1;font-size:24px;font-weight:900}.empty{padding:35px;text-align:center;background:#ffffff08;border-radius:17px;color:#c2d0e9}.empty[hidden]{display:none}
+footer{border-top:1px solid #ffffff17;text-align:center;padding:22px 16px 35px;color:#a4b6d6;font-size:12px;line-height:1.8}.footmark{color:#caffda;font-weight:900}
+@media(max-width:900px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:580px){.top{padding:24px 16px 20px}.games{grid-template-columns:1fr;gap:10px}.game{min-height:95px;padding:13px}.ico{width:51px;height:51px;font-size:26px}.chip{font-size:13px;padding:10px 13px}.info b{font-size:15px}.info small{font-size:12px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="eyebrow">GAME PARK</div><h1>みんなの<em>ゲームパーク</em> 🎮</h1><p class="lead">みんなでワイワイ、ひとりでじっくり。<br>好きなゲームを選んで、すぐに遊ぼう！</p><span class="count" id="totalCount">ゲーム 35 タイトル</span></div></header>
+<main class="wrap">
+<nav class="controls" aria-label="ゲームの種類を選択">
+<button class="chip" type="button" data-cat="all" aria-pressed="true">🎮 すべて</button>
+<button class="chip" type="button" data-cat="group" aria-pressed="false">🎉 みんなで</button>
+<button class="chip" type="button" data-cat="solo" aria-pressed="false">🕹️ ひとりで</button>
+<button class="chip" type="button" data-cat="music" aria-pressed="false">🎵 音楽</button>
+<button class="chip" type="button" data-cat="kids" aria-pressed="false">🚀 キッズ</button>
+</nav>
+<label class="searchBox"><span aria-hidden="true">🔎</span><input type="search" id="search" placeholder="ゲーム名で検索" autocomplete="off" aria-label="ゲーム名を検索"></label>
+<div class="summary"><strong id="resultCount" aria-live="polite">表示中</strong><span>ゲームをタップで開始 ↗</span></div>
+<section class="games" id="games" aria-label="ゲーム一覧"></section>
+<p id="empty" class="empty" hidden>見つからなかったよ。別のキーワードで探してね。</p>
+</main>
+<footer><div class="footmark">GAME PARK</div>各ゲームは別のページで開きます。ゲームの操作はページ内の説明を確認してね。</footer>
+<script>
+"use strict";
+const data=[["まちがいさがし","美しい風景の中から違いを探そう","🔎","../saiko-premium-spot/","solo","puzzle"],["謎解きゲーム","初級から上級までのひらめきクイズ","🧩","../saiko-nazotoki/","group","puzzle"],["脱出ミッション","50ステージの謎を解こう","🔐","../saiko-escape/","group","puzzle"],["脱出ミッションⅡ","難しい謎に挑戦する上級編","🧠","../saiko-escape-2/","group","puzzle"],["宝さがし大冒険","迷路を進んで宝物を見つけよう","🗺️","../saiko-adventure/","solo","puzzle"],["数字の以心伝心","ヒントを出し合って数字を並べよう","💡","../saiko-party-games/?game=numberMind","group","party"],["ビンゴ大会","みんなで盛り上がる数字ビンゴ","🎱","../saiko-party-games/?game=bingo","group","party"],["ぴったり21カード","21を目指す駆け引きカードゲーム","🎯","../saiko-party-games/?game=team21","group","cards"],["同じ絵スピード","同じマークをいち早く見つけよう","⚡","../saiko-party-games/?game=symbolSpeed","group","action"],["神経衰弱（個人・チーム）","個人戦もチーム戦も楽しめる","🃏","../saiko-party-games/?game=teamMemory","group","cards"],["みんなでハイ＆ロー","次の数字を予想して勝負","⬆️","../saiko-party-games/?game=teamHighLow","group","cards"],["究極の二択","みんなの意見はどちらかな？","🤔","../saiko-party-games/?game=two","group","party"],["爆笑ツッコミ選手権","珍事件にツッコミを入れよう","🎤","../saiko-party-games/?game=tsukkomi","group","party"],["ジェスチャー対決","動きだけでお題を伝えよう","🎭","../saiko-party-games/?game=gesture","group","party"],["ヒントで連想大会","面白いお題でひらめき勝負","💭","../saiko-party-games/?game=association","group","party"],["○×クイズ大会","みんなで正解を考えよう","⭕","../saiko-party-games/?game=ox","group","party"],["じゃんけんバトル","10回勝負で勝利を目指そう","✊","../saiko-solo-arcade/?game=rps","solo","action"],["スライドパズル","数字を正しい順番にそろえよう","🔢","../saiko-solo-arcade/?game=slide","solo","puzzle"],["反射神経チャレンジ","光った瞬間にタップ","⚡","../saiko-solo-arcade/?game=reaction","solo","action"],["もぐらタッチ","もぐらを素早くタップしよう","🐹","../saiko-solo-arcade/?game=mole","solo","action"],["カラー記憶ゲーム","光る色の順番を覚えよう","🌈","../saiko-solo-arcade/?game=simon","solo","puzzle"],["数字を順番に","1から16まで素早くタップ","🔢","../saiko-solo-arcade/?game=order","solo","puzzle"],["計算スピード対決","10問連続の計算チャレンジ","🧮","../saiko-solo-arcade/?game=math","solo","puzzle"],["ちがいを見つけよう","絵文字からひとつ違うものを探そう","👀","../saiko-solo-arcade/?game=odd","solo","puzzle"],["ことば並べ替え","ひらがなを正しく並べよう","🔤","../saiko-solo-arcade/?game=word","solo","puzzle"],["2048数字パズル","同じ数字を合わせて2048を目指そう","🎲","../saiko-solo-arcade/?game=merge","solo","puzzle"],["神経衰弱（ひとり）","カードをめくってペアを探そう","🃏","../saiko-card-games/?game=memory","solo","cards"],["ハイ＆ロー（ひとり）","次のカードの大小を当てよう","🎴","../saiko-card-games/?game=highlow","solo","cards"],["ババ抜き","キャラクターとカード対決","🃏","../saiko-card-games/?game=oldmaid","solo","cards"],["七並べ","7からつながるカードを出そう","7️⃣","../saiko-card-games/?game=sevens","solo","cards"],["キッズ・絵合わせ","同じ絵のカードを2枚見つけよう","🧸","../saiko-kids/?game=memory","kids","kids"],["キッズ・ちがいさがし","やさしい絵から違いを探そう","🧸","../saiko-kids/?game=spot","kids","kids"],["キッズ・ひらめきクイズ","ヒントを見ながら答えよう","🚀","../saiko-kids/?game=puzzle","kids","kids"],["BEAT RUSH","リズムに合わせて楽しくタップ","🎵","../saiko-rhythm/","music","music"],["PIANO RUSH","流れるタイルに合わせて演奏","🎹","../saiko-rhythm/piano-tiles.html","music","music"]];
+const root=document.getElementById('games');
+const q=document.getElementById('search');
+const count=document.getElementById('resultCount');
+const empty=document.getElementById('empty');
+const valid=['all','group','solo','music','kids'];
+let selected=new URLSearchParams(location.search).get('category')||'all';
+if(!valid.includes(selected)) selected='all';
+function render(){
+document.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.cat===selected)));
+const term=q.value.trim().toLocaleLowerCase('ja');
+const matches=data.filter(d=>(selected==='all'||d[4]===selected) && (!term||(d[0]+' '+d[1]).toLocaleLowerCase('ja').includes(term)));
+root.replaceChildren();
+for(const [name,detail,emoji,url,cat] of matches){
+const a=document.createElement('a');a.className='game';a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.setAttribute('aria-label',name+'を開く（新しいタブ）');
+const icon=document.createElement('span');icon.className='ico';icon.setAttribute('aria-hidden','true');icon.textContent=emoji;
+const info=document.createElement('span');info.className='info';const b=document.createElement('b');b.textContent=name;const small=document.createElement('small');small.textContent=detail;info.append(b,small);
+const arrow=document.createElement('span');arrow.className='arrow';arrow.setAttribute('aria-hidden','true');arrow.textContent='›';a.append(icon,info,arrow);root.append(a);
+}
+count.textContent=matches.length+'タイトルを表示';empty.hidden=!!matches.length;
+}
+document.querySelectorAll('[data-cat]').forEach(btn=>btn.addEventListener('click',()=>{
+selected=btn.dataset.cat;const u=new URL(location.href);if(selected==='all')u.searchParams.delete('category');else u.searchParams.set('category',selected);history.replaceState(null,'',u);render();
+}));
+q.addEventListener('input',render);window.addEventListener('popstate',()=>{selected=new URLSearchParams(location.search).get('category')||'all';if(!valid.includes(selected))selected='all';render()});
+render();
+</script>
+</body></html>
