@@ -71,13 +71,22 @@
           }
         },
         "instagram": {
-          "state": "creating",
-          "last_attempt": "2026-11-15T00:22:00.820663+00:00"
+          "state": "sending",
+          "last_attempt": "2026-11-15T00:22:00.820663+00:00",
+          "post": {
+            "id": "6af8fb2ac5b364e062253e2d",
+            "text": "【建設業の多要素認証】\n重要なアカウントに多要素認証を設定する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261115",
+            "channelId": "6a7d4a0fb2d9d577436a99b0",
+            "status": "sending",
+            "externalLink": null,
+            "sentAt": null,
+            "error": null
+          }
         }
       },
       "sha256": "598d4a7697ae39cf0e753b41f0b671376bfeb4929d6b863b64763e673880170e",
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-15/base-security-2026-11-15.mp4"
     }
   },
-  "updated_at": "2026-11-15T00:22:00.820684+00:00"
+  "updated_at": "2026-11-15T00:22:12.247783+00:00"
 }
