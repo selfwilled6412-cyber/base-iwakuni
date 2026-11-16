@@ -141,6 +141,10 @@ def eligible_retry(entry,post):
 
 def ensure_review(journal, record, plan, path=None):
     from review_video import approved, review_video
+    if not os.environ.get('OPENAI_API_KEY'):
+        record['ai_review']={'status':'error','attempts':0,'error_type':'MissingAPIKey',
+                             'reason':'Set repository Actions secret OPENAI_API_KEY; review is required before publication'}
+        journal.save();return False
     review=record.get('ai_review',{})
     if approved(review,record.get('sha256')):return True
     if review.get('status')=='rejected' or review.get('attempts',0)>=3:return False
@@ -180,6 +184,8 @@ def process(journal,day,channels,allow_generate=True):
             entry['state']='uncertain';failures.append(service+': uncertain, will reconcile without duplicate create')
         journal.save()
     missing=[s for s,e in services.items() if not e.get('post') and e.get('state') not in ('creating','uncertain')]
+    if missing and not os.environ.get('OPENAI_API_KEY') and not ensure_review(journal,record,plan):
+        return ['AI review blocked: repository Actions secret OPENAI_API_KEY is missing']
     if missing and (record.get('ai_review',{}).get('status')=='rejected' or record.get('ai_review',{}).get('attempts',0)>=3):
         return ['AI quality review blocked publication; see ai_review in journal']
     if missing and allow_generate and not record.get('video_url'):
@@ -232,6 +238,10 @@ def report(journal,failures):
         for s,e in rec['services'].items():
             p=e.get('post',{});url=p.get('externalLink') or ''
             lines.append(f"| {day} | {s} | {e.get('state','missing')} | {url} |")
+    lines+=['','## AI quality review']
+    for day,rec in sorted(journal.data['days'].items(),reverse=True)[:14]:
+        review=rec.get('ai_review',{})
+        if review:lines.append(day+': '+json.dumps(review,ensure_ascii=False))
     if failures: lines+=['','## Needs attention',*failures]
     text='\n'.join(lines)+'\n'
     Path('marketing/scs/output').mkdir(exist_ok=True,parents=True)
