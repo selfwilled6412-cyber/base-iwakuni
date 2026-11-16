@@ -136,11 +136,12 @@
       },
       "sha256": "8063ff8a02f2d6504995c6465bff12169c63071bf38ef8ab82c1b42eb0ffb51a",
       "ai_review": {
-        "status": "checking",
-        "attempts": 1
+        "status": "error",
+        "attempts": 1,
+        "error_type": "RuntimeError"
       }
     }
   },
-  "updated_at": "2026-11-16T00:28:59.020600+00:00",
+  "updated_at": "2026-11-16T00:29:00.315825+00:00",
   "last_health_check": "2026-11-16T00:24:37.323009+00:00"
 }
