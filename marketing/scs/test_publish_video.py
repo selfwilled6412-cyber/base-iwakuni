@@ -14,6 +14,27 @@ class Journal:
         self.saved.append(copy.deepcopy(self.data))
 
 class PublishTests(unittest.TestCase):
+    def setUp(self):
+        self.gate=patch.object(pub,'ensure_review',return_value=True)
+        self.gate.start();self.addCleanup(self.gate.stop)
+
+    def test_failed_review_prevents_all_publication_mutations(self):
+        plan=video.make_plan('2026-11-16')
+        record={'plan':plan,'video_url':'https://example.com/base.mp4','services':{}}
+        with patch.object(pub,'ensure_review',return_value=False), patch.object(pub,'posts_for',return_value=[]), patch.object(pub,'mutation') as mutate:
+            failures=pub.process(Journal({'days':{'2026-11-16':record}}),'2026-11-16',{'youtube':{'id':pub.CHANNELS['youtube']}})
+            self.assertTrue(failures);mutate.assert_not_called()
+
+    def test_approval_bound_to_file_and_all_thresholds(self):
+        from review_video import approved, CATEGORIES
+        r={'version':1,'sha256':'abc','status':'approved','decision':'pass','issues':[],'scores':{k:90 for k in CATEGORIES}}
+        self.assertTrue(approved(r,'abc'))
+        self.assertFalse(approved(r,'changed'))
+        r['scores']['readability']=84
+        self.assertFalse(approved(r,'abc'))
+        r['scores']['readability']=90;r['issues']=['文字欠け']
+        self.assertFalse(approved(r,'abc'))
+
     def test_exact_destinations_and_metadata(self):
         p=video.make_plan('2026-11-15')
         for s in pub.CHANNELS:

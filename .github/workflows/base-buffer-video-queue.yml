@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install Pillow==11.3.0
+      - run: python -m pip install Pillow==11.3.0 openai
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
       - run: python -m unittest discover -s marketing/scs -p 'test_publish*.py' -v
       - name: Render Japanese narrated preview (PR only)
@@ -50,13 +50,14 @@ jobs:
       issues: write
     env:
       GH_TOKEN: ${{ github.token }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m pip install Pillow==11.3.0
+      - run: python -m pip install Pillow==11.3.0 openai
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
       - name: Verify BASE identities, generate, publish and reconcile
         env:

@@ -139,6 +139,33 @@ def eligible_retry(entry,post):
     last=entry.get('last_attempt')
     return not last or (dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(last)).total_seconds()>=1800
 
+def ensure_review(journal, record, plan, path=None):
+    from review_video import approved, review_video
+    review=record.get('ai_review',{})
+    if approved(review,record.get('sha256')):return True
+    if review.get('status')=='rejected' or review.get('attempts',0)>=3:return False
+    attempts=review.get('attempts',0)+1
+    record['ai_review']={'status':'checking','attempts':attempts};journal.save()
+    try:
+        if path is None:
+            # Older, already hosted but unfinished videos must also pass review.
+            url=record.get('video_url','')
+            prefix=f'https://github.com/{REPO}/releases/download/base-security-'
+            if not url.startswith(prefix):raise RuntimeError('Untrusted review media URL')
+            path=Path('marketing/scs/output/review')/plan['date']/(plan['id']+'.mp4')
+            path.parent.mkdir(parents=True,exist_ok=True)
+            with urlopen(url,timeout=90) as response:path.write_bytes(response.read(50_000_001))
+            if path.stat().st_size>50_000_000:raise RuntimeError('Review video too large')
+        sha=hashlib.sha256(path.read_bytes()).hexdigest()
+        if record.get('sha256')!=sha:raise RuntimeError('Review video checksum mismatch')
+        result=review_video(path,plan);result['attempts']=attempts
+        record['ai_review']=result;journal.save()
+        return approved(result,sha)
+    except Exception as exc:
+        # Never expose API request bodies or credentials in operational alerts.
+        record['ai_review']={'status':'error','attempts':attempts,'error_type':type(exc).__name__}
+        journal.save();return False
+
 def process(journal,day,channels,allow_generate=True):
     from produce_video import make_plan,produce
     record=journal.data['days'].setdefault(day,{'plan':make_plan(day),'services':{}})
@@ -153,9 +180,17 @@ def process(journal,day,channels,allow_generate=True):
             entry['state']='uncertain';failures.append(service+': uncertain, will reconcile without duplicate create')
         journal.save()
     missing=[s for s,e in services.items() if not e.get('post') and e.get('state') not in ('creating','uncertain')]
+    if missing and (record.get('ai_review',{}).get('status')=='rejected' or record.get('ai_review',{}).get('attempts',0)>=3):
+        return ['AI quality review blocked publication; see ai_review in journal']
     if missing and allow_generate and not record.get('video_url'):
         path=produce(plan,Path('marketing/scs/output/published')/day)
-        record['sha256']=hashlib.sha256(path.read_bytes()).hexdigest();record['video_url']=upload(plan,path);journal.save()
+        record['sha256']=hashlib.sha256(path.read_bytes()).hexdigest();journal.save()
+        if not ensure_review(journal,record,plan,path):
+            return ['AI quality review blocked publication; see ai_review in journal']
+        record['video_url']=upload(plan,path);journal.save()
+    needs_write=any(not e.get('post') or eligible_retry(e,e['post']) for e in services.values())
+    if needs_write and not ensure_review(journal,record,plan):
+        return ['AI quality review blocked publication; see ai_review in journal']
     for service,channel in channels.items():
         entry=services[service]
         try:
