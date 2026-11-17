@@ -143,7 +143,10 @@
             "error": null
           }
         },
-        "youtube": {},
+        "youtube": {
+          "state": "creating",
+          "last_attempt": "2026-11-17T00:36:45.348484+00:00"
+        },
         "instagram": {}
       },
       "sha256": "8063ff8a02f2d6504995c6465bff12169c63071bf38ef8ab82c1b42eb0ffb51a",
@@ -169,6 +172,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-16/base-security-2026-11-16.mp4"
     }
   },
-  "updated_at": "2026-11-17T00:36:44.307718+00:00",
+  "updated_at": "2026-11-17T00:36:45.348502+00:00",
   "last_health_check": "2026-11-16T17:29:45.806215+00:00"
 }
