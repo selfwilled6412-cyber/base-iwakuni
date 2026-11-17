@@ -136,13 +136,11 @@
       },
       "sha256": "8063ff8a02f2d6504995c6465bff12169c63071bf38ef8ab82c1b42eb0ffb51a",
       "ai_review": {
-        "status": "error",
-        "attempts": 0,
-        "error_type": "MissingAPIKey",
-        "reason": "Set repository Actions secret OPENAI_API_KEY; review is required before publication"
+        "status": "checking",
+        "attempts": 1
       }
     }
   },
-  "updated_at": "2026-11-17T00:36:25.701366+00:00",
+  "updated_at": "2026-11-17T00:36:26.579984+00:00",
   "last_health_check": "2026-11-16T17:29:45.806215+00:00"
 }
