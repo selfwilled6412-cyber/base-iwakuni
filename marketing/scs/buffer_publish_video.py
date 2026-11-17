@@ -140,11 +140,8 @@ def eligible_retry(entry,post):
     return not last or (dt.datetime.now(dt.timezone.utc)-dt.datetime.fromisoformat(last)).total_seconds()>=1800
 
 def ensure_review(journal, record, plan, path=None):
-    from review_video import approved, review_video
-    if not os.environ.get('OPENAI_API_KEY'):
-        record['ai_review']={'status':'error','attempts':0,'error_type':'MissingAPIKey',
-                             'reason':'Set repository Actions secret OPENAI_API_KEY; review is required before publication'}
-        journal.save();return False
+    from review_video import approved, review_video, free_review_video
+    free_mode=not bool(os.environ.get('OPENAI_API_KEY'))
     review=record.get('ai_review',{})
     if approved(review,record.get('sha256')):return True
     if review.get('status')=='rejected' or review.get('attempts',0)>=3:return False
@@ -162,7 +159,7 @@ def ensure_review(journal, record, plan, path=None):
             if path.stat().st_size>50_000_000:raise RuntimeError('Review video too large')
         sha=hashlib.sha256(path.read_bytes()).hexdigest()
         if record.get('sha256')!=sha:raise RuntimeError('Review video checksum mismatch')
-        result=review_video(path,plan);result['attempts']=attempts
+        result=(free_review_video(path,plan) if free_mode else review_video(path,plan));result['attempts']=attempts
         record['ai_review']=result;journal.save()
         return approved(result,sha)
     except Exception as exc:
@@ -184,8 +181,6 @@ def process(journal,day,channels,allow_generate=True):
             entry['state']='uncertain';failures.append(service+': uncertain, will reconcile without duplicate create')
         journal.save()
     missing=[s for s,e in services.items() if not e.get('post') and e.get('state') not in ('creating','uncertain')]
-    if missing and not os.environ.get('OPENAI_API_KEY') and not ensure_review(journal,record,plan):
-        return ['AI review blocked: repository Actions secret OPENAI_API_KEY is missing']
     if missing and (record.get('ai_review',{}).get('status')=='rejected' or record.get('ai_review',{}).get('attempts',0)>=3):
         return ['AI quality review blocked publication; see ai_review in journal']
     if missing and allow_generate and not record.get('video_url'):
