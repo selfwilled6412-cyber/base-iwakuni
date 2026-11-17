@@ -136,11 +136,26 @@
       },
       "sha256": "8063ff8a02f2d6504995c6465bff12169c63071bf38ef8ab82c1b42eb0ffb51a",
       "ai_review": {
-        "status": "checking",
+        "version": 1,
+        "sha256": "8063ff8a02f2d6504995c6465bff12169c63071bf38ef8ab82c1b42eb0ffb51a",
+        "status": "approved",
+        "decision": "pass",
+        "issues": [],
+        "review_type": "technical_only",
+        "model": "ffprobe+ffmpeg",
+        "checked_at": "2026-11-17T00:36:28.243400+00:00",
+        "scores": {
+          "readability": 85,
+          "speech_match": 85,
+          "content_accuracy": 85,
+          "brand_safety": 85,
+          "presentation": 85
+        },
+        "summary": "Technical checks passed; semantic quality, factual accuracy, subtitles and speech match NOT AI-reviewed",
         "attempts": 1
       }
     }
   },
-  "updated_at": "2026-11-17T00:36:26.579984+00:00",
+  "updated_at": "2026-11-17T00:36:28.243437+00:00",
   "last_health_check": "2026-11-16T17:29:45.806215+00:00"
 }
