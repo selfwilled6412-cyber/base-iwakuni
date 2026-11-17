@@ -98,7 +98,7 @@ def free_review_video(path, plan):
              '-frames:v','1','-f','null','-'],capture_output=True,timeout=40)
         if check.returncode:
             raise RuntimeError('Failed to decode video frames')
-    if not str(plan.get('marker','')).startswith('base-security-'):
+    if not str(plan.get('marker','')).startswith('#BASE対策'):
         raise RuntimeError('Missing BASE-only marker')
     return dict(version=VERSION,sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                 status='approved',decision='pass',issues=[],
