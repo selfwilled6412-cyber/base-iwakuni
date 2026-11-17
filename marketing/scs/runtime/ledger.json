@@ -191,8 +191,54 @@
         "attempts": 1
       },
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-16/base-security-2026-11-16.mp4"
+    },
+    "2026-11-17": {
+      "plan": {
+        "date": "2026-11-17",
+        "id": "base-security-2026-11-17",
+        "marker": "#BASE対策20261117",
+        "title": "退職者ID、見直していますか？｜株式会社BASE #Shorts",
+        "caption": "【建設業の退職者ID】\n退職時にアカウントを無効化して権限を回収する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261117",
+        "youtube_caption": "【建設業の退職者ID】\n退職時にアカウントを無効化して権限を回収する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261117\nご相談：https://selfwilled6412-cyber.github.io/base-iwakuni/security/scs/?utm_source=youtube&utm_medium=organic&utm_campaign=scs_security_2026\n参考：IPA https://www.ipa.go.jp/security/scs/details.html",
+        "scenes": [
+          {
+            "label": "その設定、大丈夫？",
+            "headline": "退職者IDを\n見直そう",
+            "voice": "建設業の皆さん。今日は、退職者IDのチェックです。",
+            "kind": "shield"
+          },
+          {
+            "label": "見落としがちなリスク",
+            "headline": "退職者のIDが使えるまま",
+            "voice": "退職者のIDが使えるまま。思い当たることはありませんか。",
+            "kind": "risk"
+          },
+          {
+            "label": "今日のアクション",
+            "headline": "退職時にアカウントを無効化して権限を回収する",
+            "voice": "まずは、退職時にアカウントを無効化して権限を回収する。",
+            "kind": "check"
+          },
+          {
+            "label": "小さな確認が、大きな備えに",
+            "headline": "担当を決める。\n実施を確かめる。",
+            "voice": "担当者と確認する日を決めて、実施できたかも確かめましょう。",
+            "kind": "check"
+          },
+          {
+            "label": "岩国市の法人・店舗の皆さまへ",
+            "headline": "会社の情報を守る\n最初の一歩を。",
+            "voice": "岩国市の株式会社ベースが、サイバー対策の現状整理をお手伝いします。ご相談は公式LINEから。",
+            "kind": "shield"
+          }
+        ],
+        "brand": "株式会社BASE"
+      },
+      "services": {
+        "tiktok": {}
+      }
     }
   },
-  "updated_at": "2026-11-17T00:38:27.668649+00:00",
+  "updated_at": "2026-11-17T00:38:28.816098+00:00",
   "last_health_check": "2026-11-16T17:29:45.806215+00:00"
 }
