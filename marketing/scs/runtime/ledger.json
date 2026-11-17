@@ -262,8 +262,17 @@
           }
         },
         "instagram": {
-          "state": "creating",
-          "last_attempt": "2026-11-17T00:39:13.570815+00:00"
+          "state": "sending",
+          "last_attempt": "2026-11-17T00:39:13.570815+00:00",
+          "post": {
+            "id": "6afba233f83aaca8f39b2808",
+            "text": "【建設業の退職者ID】\n退職時にアカウントを無効化して権限を回収する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261117",
+            "channelId": "6a7d4a0fb2d9d577436a99b0",
+            "status": "sending",
+            "externalLink": null,
+            "sentAt": null,
+            "error": null
+          }
         }
       },
       "sha256": "56cff622c3419d2ac8c73e9725a94c2d86a6b311be66bbfdf2a27740c799d4b2",
@@ -289,6 +298,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-17/base-security-2026-11-17.mp4"
     }
   },
-  "updated_at": "2026-11-17T00:39:13.570833+00:00",
+  "updated_at": "2026-11-17T00:39:25.271361+00:00",
   "last_health_check": "2026-11-16T17:29:45.806215+00:00"
 }
