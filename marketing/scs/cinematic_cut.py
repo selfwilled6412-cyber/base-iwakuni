@@ -81,9 +81,9 @@ def make_overlay(dest, size, heading, index, count, cta=False):
                   stroke_width=max(1,int(w*.003)), stroke_fill=(0, 13, 22))
         y += int(w*.109)
     if cta:
-        draw.text((left,int(h*.835)), '法人のセキュリティ相談',
+        draw.text((left,int(h*.785)), '法人のセキュリティ相談',
                   font=font(int(w*.038)),fill=cyan)
-        draw.text((left,int(h*.872)), 'BASE 公式サイトへ',
+        draw.text((left,int(h*.83)), 'BASE 公式サイトへ',
                   font=font(int(w*.045)),fill=white)
     draw.line((left,int(h*.944),left+(w-left*2)*(index+1)/count,
                int(h*.944)),width=max(3,int(w*.009)),fill=cyan)
@@ -117,7 +117,7 @@ def render(clips, narration, output, size=(1080,1920),
         for idx,clip in enumerate(list(clips)+[clips[-1]]):
             last=idx==len(clips)
             name=temp/('cta.png' if last else f'heading-{idx}.png')
-            make_overlay(name,size,'株式会社BASE\n企業の情報を守る第一歩' if last
+            make_overlay(name,size,'株式会社BASE\nまずは無料相談' if last
                          else headlines[idx%len(headlines)],
                          idx,len(clips)+1,cta=last)
             dest=temp/f'part-{idx}.mp4'
@@ -137,11 +137,19 @@ def render(clips, narration, output, size=(1080,1920),
         concat=temp/'parts.txt'
         concat.write_text(''.join("file '"+str(p)+"'\n" for p in parts))
         total=len(clips)*seconds_per_clip+cta_seconds
+        # Original royalty-free ambient underscoring: do not leave a silent tail.
+        from render_shorts import audio_wave
+        bed = temp / 'original-ambient.wav'
+        audio_wave(bed, seconds=int(total)+1)
         run(['ffmpeg','-nostdin','-v','error','-y',
              '-f','concat','-safe','0','-i',str(concat),
-             '-i',str(narration),
-             '-filter_complex',f'[1:a]apad,atrim=0:{total},'
-                               'loudnorm=I=-16:TP=-1.5:LRA=9[a]',
+             '-i',str(narration),'-i',str(bed),
+             '-filter_complex',(
+                 f'[1:a]apad,atrim=0:{total},loudnorm=I=-16:TP=-1.5:LRA=9[n];'
+                 f'[2:a]atrim=0:{total},volume=0.45,'
+                 f'afade=t=out:st={max(0,total-1.5)}:d=1.5[b];'
+                 '[n][b]amix=inputs=2:duration=first:normalize=0,'
+                 'alimiter=limit=0.94[a]'),
              '-map','0:v','-map','[a]','-c:v','copy','-c:a','aac',
              '-b:a','160k','-movflags','+faststart',str(output)])
     info=probe(output)
