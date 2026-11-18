@@ -367,8 +367,17 @@
           }
         },
         "instagram": {
-          "state": "creating",
-          "last_attempt": "2026-11-18T01:55:26.355690+00:00"
+          "state": "sending",
+          "last_attempt": "2026-11-18T01:55:26.355690+00:00",
+          "post": {
+            "id": "6afd058ffc933ac285b7e39c",
+            "text": "【建設業の更新管理】\n端末を一覧化し計画的に更新する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261118",
+            "channelId": "6a7d4a0fb2d9d577436a99b0",
+            "status": "sending",
+            "externalLink": null,
+            "sentAt": null,
+            "error": null
+          }
         }
       },
       "sha256": "7dbbac07af769d3f66e90072b599c119b8fa6bc26470892b973c855216d2c5e3",
@@ -394,6 +403,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-18/base-security-2026-11-18.mp4"
     }
   },
-  "updated_at": "2026-11-18T01:55:26.355705+00:00",
+  "updated_at": "2026-11-18T01:55:38.137254+00:00",
   "last_health_check": "2026-11-17T18:47:53.267227+00:00"
 }
