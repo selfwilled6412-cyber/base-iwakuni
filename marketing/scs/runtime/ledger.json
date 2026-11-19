@@ -448,9 +448,10 @@
         "tiktok": {},
         "youtube": {},
         "instagram": {}
-      }
+      },
+      "sha256": "5af1203f974eefec9170c79f5abfac4ccf54eb6caaf0d58a1b43db5e67324723"
     }
   },
-  "updated_at": "2026-11-19T01:31:28.189168+00:00",
+  "updated_at": "2026-11-19T01:32:25.106167+00:00",
   "last_health_check": "2026-11-18T19:38:52.439006+00:00"
 }
