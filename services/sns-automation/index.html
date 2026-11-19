@@ -36,6 +36,10 @@
 .sns-page .last p{color:#d7e6f3}
 .sns-page .last .cta.secondary{border-color:#aed2e6}
 @media(max-width:600px){.sns-page .intro{padding:75px 0 65px}.sns-page section.content{padding:54px 0}.sns-page .actions .cta{width:100%}}
+/* Keep text legible on white LP surfaces despite bx-detail's dark-theme text rules. */
+body.bx-detail.sns-page :is(.tile,.price,.evidence,details){color:#08182d!important}
+body.bx-detail.sns-page :is(.tile,.price,.evidence,details) :is(h3,p,li,summary){color:#08182d!important}
+body.bx-detail.sns-page :is(.tile,.price,.evidence,details) .notes{color:#516278!important}
 </style></head>
 <body class="bx-detail sns-page" data-bx-label="SNS AUTOMATION">
 <header class="header"><a class="brand" href="../../"><span class="brand-mark" aria-hidden="true">B</span><strong>株式会社BASE</strong></a><nav><a href="../../#about">BASEとは</a><a href="../../#services">サービス</a><a href="../../security/scs/">セキュリティ</a><a href="https://lin.ee/z5T92Yn" target="_blank" rel="noopener" class="nav-cta">LINEで相談</a></nav></header>
