@@ -8,8 +8,8 @@
 
 ## 次の作業
 1. BufferのPersonal Accessには2026-10-27発行の既存APIキー `BUFFER_API_KEY` がある。**新規キー発行不要**。
-2. GitHubリポジトリ `selfwilled6412-cyber/base-iwakuni` のActions secret `BUFFER_API_TOKEN` に**既存のBuffer APIキーの値**を登録する（未登録の場合のみ）。キーはチャットやファイルに貼らない。
-3. `.github/workflows/base-buffer-verify.yml` をmainへマージ後、Actionsで手動実行し3チャンネルの一致を確認。
+2. 2026-11-12のGitHub Actions読み取り専用接続テストはHTTP 401（認証失敗）: https://github.com/selfwilled6412-cyber/base-iwakuni/actions/runs/43112904773 。`BUFFER_API_TOKEN` Secret自体は登録済みだが、現行Bufferキー（2026-10-27作成）と一致していない可能性がある。ユーザー本人がGitHub Actions Secretの値を現行キーに**置換**する必要がある。キーはチャット・PR・ファイル・ログへ貼らない。
+3. Secret更新後、`.github/workflows/base-buffer-verify.yml` の読み取り専用Actionsを手動実行し、HTTP 200とBASE専用3チャンネルの固有ID一致を確認。成功するまでは接続済みとみなさない。
 4. 安全確認後、別途投稿システムを設計する。公開先はBASE専用の3チャンネルだけ。KARDIVEXへの誤投稿を絶対に避ける。
 
 このチェックはBuffer GraphQL APIの`account`と`channels`**読み取りのみ**。投稿/予約/削除のAPIは使用しない。Secretsはジョブ環境にしか読み込まず、PR時にはSecretsを渡さない。
