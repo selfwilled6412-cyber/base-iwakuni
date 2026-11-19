@@ -126,8 +126,9 @@ def render(clips, narration, output, size=(1080,1920),
                   f'crop={w}:{h},eq=contrast=1.05:saturation=.93,'
                   'format=rgba[shot];'
                   '[shot][1:v]overlay=0:0:format=auto,'
-                  + (f'fade=t=out:st={seconds-.6:.2f}:d=.6,' if last else '')
-                  + 'format=yuv420p[out]')
+                  + 'format=yuv420p'
+                  + (f',fade=t=out:st={seconds-.6:.2f}:d=.6' if last else '')
+                  + '[out]')
             run(['ffmpeg','-nostdin','-v','error','-y',
                  '-stream_loop','-1','-i',str(clip),
                  '-loop','1','-i',str(name),
