@@ -474,8 +474,17 @@
           }
         },
         "instagram": {
-          "state": "creating",
-          "last_attempt": "2026-11-19T01:32:48.880475+00:00"
+          "state": "sending",
+          "last_attempt": "2026-11-19T01:32:48.880475+00:00",
+          "post": {
+            "id": "6afe51c246636f319e7af570",
+            "text": "【建設業のメール詐欺】\n怪しい請求や振込変更は別経路で確認する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261119",
+            "channelId": "6a7d4a0fb2d9d577436a99b0",
+            "status": "sending",
+            "externalLink": null,
+            "sentAt": null,
+            "error": null
+          }
         }
       },
       "sha256": "5af1203f974eefec9170c79f5abfac4ccf54eb6caaf0d58a1b43db5e67324723",
@@ -501,6 +510,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-19/base-security-2026-11-19.mp4"
     }
   },
-  "updated_at": "2026-11-19T01:32:48.880491+00:00",
+  "updated_at": "2026-11-19T01:33:00.714667+00:00",
   "last_health_check": "2026-11-18T19:38:52.439006+00:00"
 }
