@@ -75,15 +75,20 @@ def preview(folder):
     if not 13<seconds<23:
         raise RuntimeError('Japanese narration length outside supported film timeline: '+str(seconds))
     mp4=folder/(PILOT+'.mp4')
-    report=render(clips,str(narration),str(mp4),seconds_per_clip=7,cta_seconds=4)
+    report=render(clips,str(narration),str(mp4),seconds_per_clip=4.5,cta_seconds=3)
     review=free_review_video(mp4,PLAN)
     if review['decision']!='pass':
         raise RuntimeError('Media technical quality check failed')
+    # A cinematic ad must end near the spoken CTA rather than linger in silence.
+    trailing=report['duration']-seconds
+    if trailing<0 or trailing>1.8:
+        raise RuntimeError('Video ends too far from Japanese voiceover: '+str(trailing))
+    report['trailing_silence_seconds']=round(trailing,2)
     report['review']=review
     report['sources']=[{'url':page,'creator':creator} for _,page,creator in STOCK]
     report['voice_duration']=seconds
     (folder/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
-    for n,t in enumerate((2,10,18,23)):
+    for n,t in enumerate((2,6,11,15.8)):
         subprocess.run(['ffmpeg','-nostdin','-v','error','-y','-ss',str(t),'-i',str(mp4),
                         '-frames:v','1',str(folder/f'frame-{n+1}.jpg')],check=True,timeout=60)
     print('Preview generated:',mp4, 'speech seconds', seconds)
