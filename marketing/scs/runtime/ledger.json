@@ -551,7 +551,10 @@
         "brand": "株式会社BASE"
       },
       "services": {
-        "tiktok": {},
+        "tiktok": {
+          "state": "creating",
+          "last_attempt": "2026-11-20T08:32:05.132442+00:00"
+        },
         "youtube": {},
         "instagram": {}
       },
@@ -578,6 +581,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-20/base-security-2026-11-20.mp4"
     }
   },
-  "updated_at": "2026-11-20T08:32:03.812905+00:00",
+  "updated_at": "2026-11-20T08:32:05.132458+00:00",
   "last_health_check": "2026-11-20T00:57:00.371824+00:00"
 }
