@@ -552,15 +552,15 @@
       },
       "services": {
         "tiktok": {
-          "state": "sending",
+          "state": "sent",
           "last_attempt": "2026-11-20T08:32:05.132442+00:00",
           "post": {
             "id": "6b000586ca85ebefb00b51ee",
             "text": "【建設業の共有リンク】\n共有相手と有効期限を見直す。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261120",
             "channelId": "6a7df1dab2d9d577436ec3f7",
-            "status": "sending",
-            "externalLink": null,
-            "sentAt": null,
+            "status": "sent",
+            "externalLink": "https://tiktok.com/@base_iwakuni/video/7710168653085412615",
+            "sentAt": "2026-11-20T08:33:49.530Z",
             "error": null
           }
         },
@@ -572,7 +572,7 @@
             "text": "【建設業の共有リンク】\n共有相手と有効期限を見直す。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261120\nご相談：https://selfwilled6412-cyber.github.io/base-iwakuni/security/scs/?utm_source=youtube&utm_medium=organic&utm_campaign=scs_security_2026\n参考：IPA https://www.ipa.go.jp/security/scs/details.html",
             "channelId": "6a7d6d57b2d9d577436b9dd1",
             "status": "sent",
-            "externalLink": "https://www.youtube.com/watch?v=ZlDB5C29pV4",
+            "externalLink": "https://www.youtube.com/shorts/ZlDB5C29pV4",
             "sentAt": "2026-11-20T08:32:21.209Z",
             "error": null
           }
@@ -614,6 +614,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-20/base-security-2026-11-20.mp4"
     }
   },
-  "updated_at": "2026-11-20T08:33:41.964224+00:00",
+  "updated_at": "2026-11-20T08:34:03.920236+00:00",
   "last_health_check": "2026-11-20T00:57:00.371824+00:00"
 }
