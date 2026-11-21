@@ -75,7 +75,14 @@ def preview(folder):
     if not 13<seconds<23:
         raise RuntimeError('Japanese narration length outside supported film timeline: '+str(seconds))
     mp4=folder/(PILOT+'.mp4')
-    report=render(clips,str(narration),str(mp4),seconds_per_clip=4.5,cta_seconds=3)
+    # Align the end of the film with the *measured* VOICEVOX narration.
+    # A fixed 4.5s x 3 + 3s cut truncated the spoken closing CTA.
+    cta_seconds=3.0
+    scene_seconds=(seconds+0.65-cta_seconds)/len(clips)
+    if not 2 <= scene_seconds <= 10:
+        raise RuntimeError('Narration cannot fit cinematic scene limits: '+str(seconds))
+    report=render(clips,str(narration),str(mp4),
+                  seconds_per_clip=scene_seconds,cta_seconds=cta_seconds)
     review=free_review_video(mp4,PLAN)
     if review['decision']!='pass':
         raise RuntimeError('Media technical quality check failed')
@@ -88,7 +95,7 @@ def preview(folder):
     report['sources']=[{'url':page,'creator':creator} for _,page,creator in STOCK]
     report['voice_duration']=seconds
     (folder/'report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2))
-    for n,t in enumerate((2,6,11,15.8)):
+    for n,t in enumerate((2,report['duration']*.33,report['duration']*.66,report['duration']-.65)):
         subprocess.run(['ffmpeg','-nostdin','-v','error','-y','-ss',str(t),'-i',str(mp4),
                         '-frames:v','1',str(folder/f'frame-{n+1}.jpg')],check=True,timeout=60)
     print('Preview generated:',mp4, 'speech seconds', seconds)
