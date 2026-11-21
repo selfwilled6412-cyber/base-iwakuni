@@ -683,15 +683,15 @@
           }
         },
         "instagram": {
-          "state": "sending",
+          "state": "sent",
           "last_attempt": "2026-11-21T07:46:19.442785+00:00",
           "post": {
             "id": "6b014c4c510276624505ebbd",
             "text": "【建設業の管理者権限】\n必要な人だけに管理者権限を限定する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261121",
             "channelId": "6a7d4a0fb2d9d577436a99b0",
-            "status": "sending",
-            "externalLink": null,
-            "sentAt": null,
+            "status": "sent",
+            "externalLink": "https://www.instagram.com/reel/Df_ugkQAsyE/",
+            "sentAt": "2026-11-21T07:47:17.978Z",
             "error": null
           }
         }
@@ -719,6 +719,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-21/base-security-2026-11-21.mp4"
     }
   },
-  "updated_at": "2026-11-21T07:47:16.460167+00:00",
+  "updated_at": "2026-11-21T07:47:38.120188+00:00",
   "last_health_check": "2026-11-21T00:16:42.064917+00:00"
 }
