@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - marketing/scs/stock_ad_pilot.py
+      - marketing/scs/test_cinematic_approval.py
       - marketing/scs/cinematic_cut.py
       - .github/workflows/base-cinematic-pilot.yml
   pull_request:
@@ -34,6 +35,8 @@ jobs:
           python -m pip install Pillow==11.3.0
           sudo apt-get update -qq
           sudo apt-get install -y -qq fonts-noto-cjk ffmpeg
+      - name: Test publication approval gate (offline)
+        run: python -m unittest discover -s marketing/scs -p test_cinematic_approval.py -v
       - name: Render real 3-shot cinematic preview (no social publishing)
         run: python marketing/scs/stock_ad_pilot.py --preview
       - name: Upload film, sampled review frames, and rights attribution
@@ -54,6 +57,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       BUFFER_API_TOKEN: ${{ secrets.BUFFER_API_TOKEN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
+      BASE_CINEMATIC_APPROVED_SHA256: ${{ vars.BASE_CINEMATIC_APPROVED_SHA256 }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
