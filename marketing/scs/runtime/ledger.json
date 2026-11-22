@@ -788,15 +788,15 @@
           }
         },
         "instagram": {
-          "state": "sending",
+          "state": "sent",
           "last_attempt": "2026-11-22T01:38:14.070452+00:00",
           "post": {
             "id": "6b024787846b0ee907504346",
             "text": "【建設業の事故連絡】\n初動担当と報告ルートを決めておく。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261122",
             "channelId": "6a7d4a0fb2d9d577436a99b0",
-            "status": "sending",
-            "externalLink": null,
-            "sentAt": null,
+            "status": "sent",
+            "externalLink": "https://www.instagram.com/reel/DgBpK2MGZ88/",
+            "sentAt": "2026-11-22T01:39:15.485Z",
             "error": null
           }
         }
@@ -824,6 +824,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-22/base-security-2026-11-22.mp4"
     }
   },
-  "updated_at": "2026-11-22T01:39:10.443681+00:00",
+  "updated_at": "2026-11-22T01:39:31.984314+00:00",
   "last_health_check": "2026-11-21T21:12:47.339556+00:00"
 }
