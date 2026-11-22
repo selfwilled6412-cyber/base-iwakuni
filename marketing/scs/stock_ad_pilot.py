@@ -101,6 +101,15 @@ def preview(folder):
     print('Preview generated:',mp4, 'speech seconds', seconds)
     return mp4,review
 
+def require_approved_film(sha256):
+    """Fail closed until the exact reviewed MP4 has been explicitly approved."""
+    approved = os.environ.get('BASE_CINEMATIC_APPROVED_SHA256', '').strip().lower()
+    if len(approved) != 64 or any(c not in '0123456789abcdef' for c in approved):
+        raise RuntimeError('Cinematic publication blocked: set BASE_CINEMATIC_APPROVED_SHA256 to the reviewed MP4 SHA-256')
+    if approved != sha256.lower():
+        raise RuntimeError('Cinematic publication blocked: approved SHA-256 differs from generated film')
+
+
 def publish(folder):
     import buffer_publish_video as bp
     if os.environ.get('GITHUB_REPOSITORY')!=bp.REPO:
@@ -125,9 +134,16 @@ def publish(folder):
     if all(services[n].get('post',{}).get('status')=='sent' for n in channels):
         print('Already published on all three BASE channels: no duplicates')
         return
+    # No upload or post creation without approval for this exact rendered file.
+    # An earlier uploaded URL is not proof that the media was reviewed.
+    if rec.get('video_url'):
+        if not rec.get('sha256'):
+            raise RuntimeError('Existing upload has no verifiable film hash; refuse publication')
+        require_approved_film(rec['sha256'])
     if not rec.get('video_url'):
         film,review=preview(folder)
         rec['sha256']=hashlib.sha256(film.read_bytes()).hexdigest()
+        require_approved_film(rec['sha256'])
         rec['technical_review']=review
         ledger.save()
         rec['video_url']=bp.upload(PLAN,film)
