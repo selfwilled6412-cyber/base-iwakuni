@@ -765,9 +765,13 @@
         "youtube": {},
         "instagram": {}
       },
-      "sha256": "c054507cf6c34225737acd95e8d29b96deb70e876edd8b0924ba86e9678a06e6"
+      "sha256": "c054507cf6c34225737acd95e8d29b96deb70e876edd8b0924ba86e9678a06e6",
+      "ai_review": {
+        "status": "checking",
+        "attempts": 1
+      }
     }
   },
-  "updated_at": "2026-11-22T01:37:46.319372+00:00",
+  "updated_at": "2026-11-22T01:37:47.398939+00:00",
   "last_health_check": "2026-11-21T21:12:47.339556+00:00"
 }
