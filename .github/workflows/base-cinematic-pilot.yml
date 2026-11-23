@@ -11,6 +11,7 @@ on:
   pull_request:
     paths:
       - marketing/scs/stock_ad_pilot.py
+      - marketing/scs/test_cinematic_approval.py
       - marketing/scs/cinematic_cut.py
       - .github/workflows/base-cinematic-pilot.yml
   schedule:
