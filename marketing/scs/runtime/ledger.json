@@ -893,8 +893,17 @@
           }
         },
         "instagram": {
-          "state": "creating",
-          "last_attempt": "2026-11-23T04:02:39.051400+00:00"
+          "state": "sending",
+          "last_attempt": "2026-11-23T04:02:39.051400+00:00",
+          "post": {
+            "id": "6b03bae0d864a011051c5f27",
+            "text": "【建設業の紛失対策】\n端末の暗号化・画面ロック・遠隔停止を確認する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261123",
+            "channelId": "6a7d4a0fb2d9d577436a99b0",
+            "status": "sending",
+            "externalLink": null,
+            "sentAt": null,
+            "error": null
+          }
         }
       },
       "sha256": "171dbd344b430c80a808a95600d35b4a55f1d2f837cd4a98d48b678c1598a3f8",
@@ -920,6 +929,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-23/base-security-2026-11-23.mp4"
     }
   },
-  "updated_at": "2026-11-23T04:02:39.051416+00:00",
+  "updated_at": "2026-11-23T04:02:50.856259+00:00",
   "last_health_check": "2026-11-22T22:50:12.188330+00:00"
 }
