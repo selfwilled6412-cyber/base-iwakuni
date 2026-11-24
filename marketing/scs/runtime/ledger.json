@@ -994,9 +994,10 @@
         },
         "summary": "Technical checks passed; semantic quality, factual accuracy, subtitles and speech match NOT AI-reviewed",
         "attempts": 1
-      }
+      },
+      "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-24/base-security-2026-11-24.mp4"
     }
   },
-  "updated_at": "2026-11-24T02:37:48.278950+00:00",
+  "updated_at": "2026-11-24T02:37:52.299811+00:00",
   "last_health_check": "2026-11-23T15:30:53.393577+00:00"
 }
