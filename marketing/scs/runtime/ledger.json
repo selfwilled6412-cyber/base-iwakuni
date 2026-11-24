@@ -974,9 +974,10 @@
         "tiktok": {},
         "youtube": {},
         "instagram": {}
-      }
+      },
+      "sha256": "377cc8e135b6bf2a123be1a21eba73c8c2a752e3b9709d7ed0e3243df4cd5eff"
     }
   },
-  "updated_at": "2026-11-24T02:36:59.192041+00:00",
+  "updated_at": "2026-11-24T02:37:44.978797+00:00",
   "last_health_check": "2026-11-23T15:30:53.393577+00:00"
 }
