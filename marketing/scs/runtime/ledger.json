@@ -985,8 +985,17 @@
           }
         },
         "youtube": {
-          "state": "creating",
-          "last_attempt": "2026-11-24T02:38:06.609526+00:00"
+          "state": "sent",
+          "last_attempt": "2026-11-24T02:38:06.609526+00:00",
+          "post": {
+            "id": "6b04f890db52b449cf1b5075",
+            "text": "【建設業の委託先管理】\n情報管理の役割と責任分界を確認する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261124\nご相談：https://selfwilled6412-cyber.github.io/base-iwakuni/security/scs/?utm_source=youtube&utm_medium=organic&utm_campaign=scs_security_2026\n参考：IPA https://www.ipa.go.jp/security/scs/details.html",
+            "channelId": "6a7d6d57b2d9d577436b9dd1",
+            "status": "sent",
+            "externalLink": "https://www.youtube.com/watch?v=cOBgLCPzEm0",
+            "sentAt": "2026-11-24T02:38:09.353Z",
+            "error": null
+          }
         },
         "instagram": {}
       },
@@ -1013,6 +1022,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-24/base-security-2026-11-24.mp4"
     }
   },
-  "updated_at": "2026-11-24T02:38:06.609540+00:00",
+  "updated_at": "2026-11-24T02:38:10.201454+00:00",
   "last_health_check": "2026-11-23T15:30:53.393577+00:00"
 }
