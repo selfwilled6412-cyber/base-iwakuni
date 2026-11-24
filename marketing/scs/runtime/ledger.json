@@ -998,8 +998,17 @@
           }
         },
         "instagram": {
-          "state": "creating",
-          "last_attempt": "2026-11-24T02:38:11.396710+00:00"
+          "state": "sending",
+          "last_attempt": "2026-11-24T02:38:11.396710+00:00",
+          "post": {
+            "id": "6b04f894bc151fa8ad18590d",
+            "text": "【建設業の委託先管理】\n情報管理の役割と責任分界を確認する。\n株式会社BASE（岩国市）｜法人・店舗のサイバー対策の現状整理を支援します。\nご相談は公式LINEから：https://lin.ee/z5T92Yn\nAI音声・図解を使用。音声：VOICEVOX 四国めたん。\n#岩国市 #中小企業 #情報セキュリティ #BASE対策20261124",
+            "channelId": "6a7d4a0fb2d9d577436a99b0",
+            "status": "sending",
+            "externalLink": null,
+            "sentAt": null,
+            "error": null
+          }
         }
       },
       "sha256": "377cc8e135b6bf2a123be1a21eba73c8c2a752e3b9709d7ed0e3243df4cd5eff",
@@ -1025,6 +1034,6 @@
       "video_url": "https://github.com/selfwilled6412-cyber/base-iwakuni/releases/download/base-security-2026-11-24/base-security-2026-11-24.mp4"
     }
   },
-  "updated_at": "2026-11-24T02:38:11.396723+00:00",
+  "updated_at": "2026-11-24T02:38:22.760173+00:00",
   "last_health_check": "2026-11-23T15:30:53.393577+00:00"
 }
