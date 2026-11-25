@@ -7,9 +7,6 @@ on:
       - 'marketing/scs/buffer_publish_video.py'
       - 'marketing/scs/produce_video.py'
       - '.github/workflows/base-buffer-video-queue.yml'
-  schedule:
-    - cron: '15 1 * * *' # 10:15 JST daily production
-    - cron: '45 * * * *' # hourly recovery and delivery monitoring
   pull_request:
     paths:
       - 'marketing/scs/**'
@@ -41,7 +38,8 @@ jobs:
           path: marketing/scs/output/preview/
           retention-days: 7
   publish:
-    if: github.event_name != 'pull_request'
+    # Owner requested a publication pause on 2026-11-26. Explicit approval required to resume.
+    if: ${{ false }}
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 25
