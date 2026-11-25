@@ -1080,9 +1080,13 @@
         "youtube": {},
         "instagram": {}
       },
-      "sha256": "49418cdefac5e7a5c54aec7894dc2a540ea3f9c086908d0455f59a6d9d708ba6"
+      "sha256": "49418cdefac5e7a5c54aec7894dc2a540ea3f9c086908d0455f59a6d9d708ba6",
+      "ai_review": {
+        "status": "checking",
+        "attempts": 1
+      }
     }
   },
-  "updated_at": "2026-11-25T05:42:59.355263+00:00",
+  "updated_at": "2026-11-25T05:43:00.584931+00:00",
   "last_health_check": "2026-11-24T23:17:52.628518+00:00"
 }
