@@ -48,7 +48,7 @@ jobs:
           path: marketing/scs/output/cinematic-pilot/
           retention-days: 7
   publish:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'workflow_dispatch' && vars.BASE_CINEMATIC_PUBLISH_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
